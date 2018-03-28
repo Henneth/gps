@@ -10,7 +10,7 @@ class DataImportController extends Controller {
 
     public function import() {
         $entityBody = file_get_contents('php://input');
-    	GPS_Model::insertRawData($entityBody); // store raw data into a single row
+    	DataImport_Model::insertRawData($entityBody); // store raw data into a single row
 
     	$array = json_decode($entityBody, 1);
     	foreach($array['content'] as $item){
@@ -24,7 +24,7 @@ class DataImportController extends Controller {
     			$latitude_final = (($latitude_logo == 'N') ? 1 : -1) * $latitude;
     			$date = DateTime::createFromFormat('ymd', $item['date'])->format('Y-m-d');
     			$time = DateTime::createFromFormat('His', $item['time'])->format('H:i:s');
-    			GPS_Model::storeGPSData($longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $date, $time);
+    			DataImport_Model::storeGPSData($longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $date, $time);
     		}
     	}
     }

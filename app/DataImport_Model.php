@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class DataImport_Model extends Model
 {
-	public static function storeGPSData($longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $date, $time) {
+	public static function storeGPSData($device_id, $longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $date, $time) {
 		DB::insert("INSERT INTO gps_data
-            (`longitude`,`longitude_logo`, `longitude_final`,`latitude`,`latitude_logo`, `latitude_final`, `datetime`)
-            VALUES (:longitude, :longitude_logo, :longitude_final, :latitude, :latitude_logo, :latitude_final, :datetime)", [
+            (`device_id`, `longitude`,`longitude_logo`, `longitude_final`,`latitude`,`latitude_logo`, `latitude_final`, `datetime`)
+            VALUES (:device_id, :longitude, :longitude_logo, :longitude_final, :latitude, :latitude_logo, :latitude_final, :datetime)", [
+                "device_id"=>$device_id,
                 "longitude"=>$longitude,
                 "longitude_logo"=>$longitude_logo,
                 "longitude_final"=>$longitude_final,

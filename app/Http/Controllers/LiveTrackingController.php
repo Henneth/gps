@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 
-class LiveTradingController extends Controller {
+class LiveTrackingController extends Controller {
 
     public function index($event_id) {
         // $event = DB::table('gps_data')

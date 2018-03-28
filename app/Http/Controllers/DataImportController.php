@@ -14,10 +14,10 @@ class DataImportController extends Controller {
     	DataImport_Model::insertRawData($entityBody); // store raw data into a single row
 
     	$array = json_decode($entityBody, 1);
+        $device_id = $array['device_id'];
     	foreach($array['content'] as $item){
     		$command = $item['command'];
     		if ($command =="UD2" || $command =="UD"){
-                $device_id = $item['device_id'];
     			$longitude = $item['longitude'];
     			$longitude_logo = $item['longitude_logo'];
     			$longitude_final = (($longitude_logo == 'E') ? 1 : -1) * $longitude;

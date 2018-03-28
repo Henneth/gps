@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'title' => 'BodyDanceVision | Admin Panel',
+    'title' => 'Race Timing Solutions | GPS Tracking',
 
     'title_prefix' => '',
 
@@ -30,9 +30,9 @@ return [
     |
     */
 
-    'logo' => '<b>Body Dance Vision</b>',
+    'logo' => '<b>RTS</b> | GPS Tracking',
 
-    'logo_mini' => '<b>BDV</b>',
+    'logo_mini' => '<b>RTS</b>',
 
     /*
     |--------------------------------------------------------------------------
@@ -91,7 +91,7 @@ return [
 
     'logout_method' => 'GET',
 
-    'login_url' => 'login',
+    'login_url' => 'auth/login',
 
     'register_url' => null,
 

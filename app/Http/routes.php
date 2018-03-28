@@ -10,12 +10,55 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-Route::get('/', ['middleware' => 'auth', function () {
-    return view('home');
-}]);
-Route::get('/home', ['middleware' => 'auth', function () {
-    return view('home');
-}]);
+
+// Public
+Route::get('/', function () {
+    return redirect('view-all-events');
+});
+Route::get('view-all-events', function () {
+    return view('view-all-events');
+});
+Route::get('event/{event_id}', function ($event_id) {
+    return redirect('event/'.$event_id.'/live-tracking');
+});
+Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index');
+
+Route::get('event/{event_id}/replay-tracking', function () {
+    return view('replay-tracking');
+});
+
+// Admins
+Route::group(['middleware' => 'auth'], function () {
+
+    Route::get('home', function () {
+        return view('home');
+    });
+    Route::get('raw-data', 'RawDataController@index');
+    Route::get('create-new-event', function () {
+        return view('create-new-event');
+    });
+    Route::get('event/{event_id}/device-mapping', function () {
+        return view('device-mapping');
+    });
+    Route::get('event/{event_id}/draw-route', function () {
+        return view('draw-route');
+    });
+
+    // Other Configs
+    Route::get('event/{event_id}/other-configurations', 'OtherConfigsController@index');
+    Route::post('event/{event_id}/other-configurations/post', 'OtherConfigsController@postOtherConfigs');
+
+    // Playground
+    Route::get('/playground', function () {
+        return view('playground');
+    });
+
+});
+
+// Data import
+Route::post('data-import', 'DataImportController@import');
+
+
 
 // Authentication routes...
 Route::get('auth/login', 'Auth\AuthController@getLogin');
@@ -33,3 +76,9 @@ Route::post('password/email', 'Auth\PasswordController@postEmail');
 // Password reset routes...
 Route::get('password/reset/{token}', 'Auth\PasswordController@getReset');
 Route::post('password/reset', 'Auth\PasswordController@postReset');
+
+// Logout
+Route::get('logout', function() {
+	Auth::logout();
+	return redirect('/');
+});

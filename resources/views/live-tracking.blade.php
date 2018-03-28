@@ -26,15 +26,21 @@
 @section('js')
     <script>
         function initMap() {
-            var uluru = {lat: {{$data->latitude_final}}, lng: {{$data->longitude_final}}};
+            @if ($data)
+                var uluru = {lat: {{$data->latitude_final}}, lng: {{$data->longitude_final}}};
+            @else
+                var uluru = {lat: 22.2816616, lng: 114.1577151};
+            @endif
             var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 14,
-                center: uluru
+                center: uluru,
+                zoom: {{ $data ? '14' : '11'}}
             });
-            var marker = new google.maps.Marker({
-                position: uluru,
-                map: map
-            });
+            @if ($data)
+                var marker = new google.maps.Marker({
+                    position: uluru,
+                    map: map
+                });
+            @endif
         }
     </script>
     <script async defer

@@ -10,6 +10,6 @@
 
 @section('main-content')
 <div class="container-flex">
-    Map
+    Coming Soon
 </div>
 @endsection

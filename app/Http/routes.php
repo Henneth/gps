@@ -22,7 +22,7 @@ Route::get('event/{event_id}', function ($event_id) {
     return redirect('event/'.$event_id.'/live-tracking');
 });
 Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index');
-
+Route::get('event/{event_id}/live-tracking/poll', 'LiveTrackingController@poll');
 Route::get('event/{event_id}/replay-tracking', function () {
     return view('replay-tracking');
 });
@@ -37,9 +37,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('create-new-event', function () {
         return view('create-new-event');
     });
-    Route::get('event/{event_id}/device-mapping', function () {
-        return view('device-mapping');
-    });
+    Route::get('event/{event_id}/device-mapping', 'DeviceMappingController@index');
     Route::get('event/{event_id}/draw-route', function () {
         return view('draw-route');
     });

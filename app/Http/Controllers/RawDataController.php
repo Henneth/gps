@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 class RawDataController extends Controller {
 
     public function index() {
-        $raw_data = DB::table('gps_raw')->get();
+        $raw_data = DB::table('gps_raw')->orderby('id', 'desc')->get();
         foreach ($raw_data as &$datum) {
             $temp = $datum->raw;
             $datum->raw = $this->indent($temp);
@@ -74,5 +74,5 @@ class RawDataController extends Controller {
 
         return $result;
     }
-    
+
 }

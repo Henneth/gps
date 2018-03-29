@@ -4,15 +4,19 @@ namespace App\Http\Controllers;
 
 use DB;
 use App\Http\Controllers\Controller;
+use App\LiveTracking_Model as LiveTracking_Model;
 
 class LiveTrackingController extends Controller {
 
     public function index($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
-        $data = DB::table('gps_data')
-            ->where('datetime', '>', $event->datetime_from)
-            ->where('datetime', '<', $event->datetime_to)->orderBy('datetime', 'desc')->distinct()->first();
-        return view('live-tracking')->with(array('data' => $data));
+        $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to);
+        return view('live-tracking')->with(array('data' => $data, 'event_id' => $event_id));
+    }
+    public function poll($event_id) {
+        $event = DB::table('events')->where('event_id', $event_id)->first();
+        $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to);
+        return response()->json($data);
     }
 
 }

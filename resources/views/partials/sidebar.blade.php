@@ -37,7 +37,7 @@
                 @endforeach
 
                 @if (Auth::check())
-                    @foreach ([['Draw Route', 'fa-close'], ['Device Mapping', 'fa-file'], ['Other Configurations', 'fa-gear']] as $item)
+                    @foreach ([['Draw Route', 'fa-close'], ['Device Mapping', 'fa-file-text'], ['Other Configurations', 'fa-gear']] as $item)
                         <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/1/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                     @endforeach
                 @endif

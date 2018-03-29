@@ -16,7 +16,7 @@
             <table class="table table-bordered">
                 <tbody>
                     <tr>
-                        <th style="width: 12%">Created At</th>
+                        <th style="width: 12%">Received At</th>
                         <th>Data</th>
                     </tr>
                     @foreach ($raw_data as $datum)

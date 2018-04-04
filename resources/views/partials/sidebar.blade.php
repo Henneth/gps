@@ -27,30 +27,40 @@
         </form>
         <!-- /.search form --> --}}
 
+        <div style="padding: 12px 18px;">
+            <label style="color: white;">Current Event</label>
+            <select class="sidebar-select form-control" style="width: 100%;" tabindex="-1" aria-hidden="true">
+                <option disabled selected>=== Select an event ===</option>
+                @foreach ($events as $event)
+                    <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
+                @endforeach
+            </select>
+        </div>
+
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
             @if (!Request::is('view-all-events') && !Request::is('create-new-event') && !Request::is('home') && !Request::is('raw-data'))
 
-                <li class="header">CURRENT EVENT</li>
-                @foreach ([['Live Tracking', 'fa-map-marker'], ['Replay Tracking', 'fa-close']] as $item)
-                    <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/1/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
+                {{-- <li class="header">CURRENT EVENT</li> --}}
+                @foreach ([['Live Tracking', 'fa-map-marker-alt'], ['Replay Tracking', 'fa-redo']] as $item)
+                    <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/1/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                 @endforeach
 
                 @if (Auth::check())
-                    @foreach ([['Draw Route', 'fa-close'], ['Device Mapping', 'fa-file-text'], ['Other Configurations', 'fa-gear']] as $item)
-                        <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/1/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
+                    @foreach ([['Draw Route', 'fa-pencil-alt'], ['Device Mapping', 'fa-exchange-alt'], ['Other Configurations', 'fa-gear']] as $item)
+                        <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/1/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                     @endforeach
                 @endif
 
             @endif
 
             <li class="header">ALL EVENTS</li>
-                @foreach ([['View all events', 'fa-file']] as $item)
+                @foreach ([['View all events', 'fa-file-text']] as $item)
                     <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                 @endforeach
 
                 @if (Auth::check())
-                    @foreach ([['Create new event', 'fa-close'], ['Raw Data', 'fa-database']] as $item)
+                    @foreach ([['Create new event', 'fa-plus'], ['Raw Data', 'fa-database']] as $item)
                         <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                     @endforeach
                 @endif

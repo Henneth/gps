@@ -47,6 +47,9 @@
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
                             html += '<div>Given Name: <b>' + content['given_name'] + '</b></div>';
                             html += '<div>Family Name: <b>' + content['family_name'] + '</b></div>';
+                            html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
+                            html += '<div>Latitude: <b>' + content['latitude_final'] + '</b></div>';
+                            html += '<div>Longitude: <b>' + content['longitude_final'] + '</b></div>';
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}

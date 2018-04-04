@@ -9,12 +9,11 @@ class OtherConfigsController extends Controller {
 
     public function index($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
-        return view('other-configurations')->with(array('event' => $event));
+        return view('other-configurations')->with(array('event' => $event, 'event_id' => $event_id));
     }
     public function postOtherConfigs($event_id) {
-        $datetime_range = explode(' to ', $_POST['datetime_range']);
-        $datetime_from = $datetime_range[0];
-        $datetime_to = $datetime_range[1];
+        $datetime_from = $_POST['start-time'];
+        $datetime_to = $_POST['end-time'];
         DB::table('events')
             ->where('event_id', $event_id)
             ->update(

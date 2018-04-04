@@ -17,12 +17,21 @@
                 <tbody>
                     <tr>
                         <th style="width: 12%">Received At</th>
-                        <th>Data</th>
+                        <th>Device ID</th>
+                        <th>Timestamp</th>
+                        <th>Longitude</th>
+                        <th>Latitude</th>
+                        <th>Elevation</th>
                     </tr>
-                    @foreach ($raw_data as $datum)
+                    @foreach ($data as $datum)
                         <tr>
                             <td>{{$datum->created_at}}</td>
-                            <td>{!! nl2br(e(str_replace(" ", " &nbsp;", $datum->raw))) !!}</td>
+                            {{-- <td>{!! nl2br(e(str_replace(" ", " &nbsp;", $datum->raw))) !!}</td> --}}
+                            <td>{{$datum->device_id}}</td>
+                            <td>{{$datum->datetime}}</td>
+                            <td>{{$datum->longitude_final}}</td>
+                            <td>{{$datum->latitude_final}}</td>
+                            <td>{{$datum->elevation}}</td>
                         </tr>
                     @endforeach
                 </tbody>

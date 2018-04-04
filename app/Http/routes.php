@@ -15,41 +15,35 @@
 Route::get('/', function () {
     return redirect('view-all-events');
 });
-Route::get('view-all-events', function () {
-    return view('view-all-events');
-});
+Route::get('view-all-events', 'EventController@viewAllEvents');
 Route::get('event/{event_id}', function ($event_id) {
     return redirect('event/'.$event_id.'/live-tracking');
 });
-Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index');
+Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index')->name('live-tracking');
 Route::get('event/{event_id}/live-tracking/poll', 'LiveTrackingController@poll');
-Route::get('event/{event_id}/replay-tracking', function () {
-    return view('replay-tracking');
-});
+Route::get('event/{event_id}/replay-tracking', 'ReplayTrackingController@index')->name('replay-tracking');
 
 // Admins
 Route::group(['middleware' => 'auth'], function () {
 
     Route::get('home', function () {
-        return view('home');
+        $events = DB::table('events')->orderby('event_id', 'desc')->get();
+        return view('home')->with(array('events' => $events));
     });
     Route::get('raw-data', 'RawDataController@index');
-    Route::get('create-new-event', function () {
-        return view('create-new-event');
-    });
-    Route::get('event/{event_id}/device-mapping', 'DeviceMappingController@index');
-    Route::get('event/{event_id}/draw-route', function () {
-        return view('draw-route');
-    });
+    Route::get('create-new-event', 'EventController@createNewEvent');
+    Route::post('create-new-event/post', 'EventController@createNewEventPost');
+    Route::get('event/{event_id}/device-mapping', 'DeviceMappingController@index')->name('device-mapping');
+    Route::get('event/{event_id}/draw-route', 'DrawRouteController@index')->name('draw-route');
 
     // Other Configs
-    Route::get('event/{event_id}/other-configurations', 'OtherConfigsController@index');
+    Route::get('event/{event_id}/other-configurations', 'OtherConfigsController@index')->name('other-configurations');
     Route::post('event/{event_id}/other-configurations/post', 'OtherConfigsController@postOtherConfigs');
 
     // Playground
-    Route::get('/playground', function () {
-        return view('playground');
-    });
+    // Route::get('/playground', function () {
+    //     return view('playground');
+    // });
 
 });
 

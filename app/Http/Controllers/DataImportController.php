@@ -24,9 +24,10 @@ class DataImportController extends Controller {
     			$latitude = $item['latitude'];
     			$latitude_logo = $item['latitude_logo'];
     			$latitude_final = (($latitude_logo == 'N') ? 1 : -1) * $latitude;
+                $elevation = $item['elevation'];
     			$date = DateTime::createFromFormat('dmy', $item['date'])->format('Y-m-d');
     			$time = DateTime::createFromFormat('His', $item['time'])->format('H:i:s');
-    			DataImport_Model::storeGPSData($device_id, $longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $date, $time);
+    			DataImport_Model::storeGPSData($device_id, $longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $elevation, $date, $time);
     		}
     	}
     }

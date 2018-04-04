@@ -8,8 +8,12 @@
 <script src="{{ asset('/js/moment.min.js') }}" type="text/javascript"></script>
 <!-- Date Range Picker -->
 <script src="{{ asset('/js/daterangepicker.js') }}" type="text/javascript"></script>
+<!-- Date Time Picker -->
+<script src="{{ asset('/js/bootstrap-datetimepicker.min.js') }}" type="text/javascript"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('/js/app.min.js') }}" type="text/javascript"></script>
+<!-- Custom -->
+<script src="{{ asset('/js/custom.js') }}" type="text/javascript"></script>
 
 @yield('js')
 

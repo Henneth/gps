@@ -9,7 +9,7 @@ class DeviceMappingController extends Controller {
 
     public function index($event_id) {
         $devices = DB::table('device_mapping')->where('event_id', $event_id)->get();
-        return view('device-mapping')->with(array('devices' => $devices));
+        return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id));
     }
 
 }

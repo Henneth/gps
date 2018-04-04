@@ -19,20 +19,26 @@
                 <table class="table table-bordered">
                     <tbody>
                         <tr>
-                            <th style="width: 10px">#</th>
+                            <th style="width: 10%">Event ID</th>
                             <th>Event Name</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
                             {{-- <th style="width: 40px">Label</th> --}}
                         </tr>
-                        <tr>
-                            <td>1</td>
-                            <td><a href="{{url('/')}}/event/1">Dummy Event</a></td>
-                            {{-- <td><span class="badge bg-red">55%</span></td> --}}
-                        </tr>
+                        @foreach ($events as $event)
+                            <tr>
+                                <td>{{$event->event_id}}</td>
+                                <td><a href="{{url('/')}}/event/{{$event->event_id}}">{{$event->event_name}}</a></td>
+                                <td>{{$event->datetime_from}}</td>
+                                <td>{{$event->datetime_to}}</td>
+                                {{-- <td><span class="badge bg-red">55%</span></td> --}}
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
             <!-- /.box-body -->
-            <div class="box-footer clearfix">
+            {{-- <div class="box-footer clearfix">
                 <ul class="pagination pagination-sm no-margin pull-right">
                     <li><a href="#">«</a></li>
                     <li><a href="#">1</a></li>
@@ -40,7 +46,7 @@
                     <li><a href="#">3</a></li>
                     <li><a href="#">»</a></li>
                 </ul>
-            </div>
+            </div> --}}
         </div>
     </div>
 @endsection

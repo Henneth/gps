@@ -10,11 +10,7 @@
 
 @section('main-content')
 <div class="container-flex">
-	{{-- <div class="alert alert-danger alert-dismissible">
-		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-		<h4><i class="icon fa fa-ban"></i> Error!</h4>
-		{{session('error')}}
-	</div> --}}
+    <div class="form-group" style="color: #666;">Last location of athletes within {{$event->datetime_from}} - {{$event->datetime_to}}</div>
     <div id="map"></div>
 </div>
 @endsection
@@ -71,11 +67,11 @@
                 var labelIndex = 0;
 
                 // Locations
-                var locations = [
+                {{--var locations = [
                     @foreach ($data as $key => $datum)
                         [{{$datum->device_id}}, { lat: {{$datum->latitude_final}}, lng: {{$datum->longitude_final}} }, { bib_number: '{{$datum->bib_number}}', given_name: '{{$datum->given_name}}', family_name: '{{$datum->family_name}}' }]{{ $key == count($data) - 1 ? '' : ',' }}
                     @endforeach
-                ]
+                ]--}}
 
                 // Add Markers
                 var markers = [];

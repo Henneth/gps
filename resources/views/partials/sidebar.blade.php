@@ -30,7 +30,7 @@
         <div style="padding: 12px 18px;">
             <label style="color: white;">Current Event</label>
             <select class="sidebar-select form-control" style="width: 100%;" tabindex="-1" aria-hidden="true">
-                <option disabled selected>=== Select an event ===</option>
+                <option disabled selected>---- Select an event ----</option>
                 @foreach ($events as $event)
                     <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
                 @endforeach
@@ -47,7 +47,7 @@
                 @endforeach
 
                 @if (Auth::check())
-                    @foreach ([['Draw Route', 'fa-pencil-alt'], ['Device Mapping', 'fa-exchange-alt'], ['Other Configurations', 'fa-gear']] as $item)
+                    @foreach ([['Draw Route', 'fa-pencil-alt'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Other Configurations', 'fa-gear']] as $item)
                         <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/1/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                     @endforeach
                 @endif

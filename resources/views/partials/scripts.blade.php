@@ -6,10 +6,12 @@
 <script src="{{ asset('/js/bootstrap.min.js') }}" type="text/javascript"></script>
 <!-- Moment.js -->
 <script src="{{ asset('/js/moment.min.js') }}" type="text/javascript"></script>
-<!-- Date Range Picker -->
-<script src="{{ asset('/js/daterangepicker.js') }}" type="text/javascript"></script>
+{{-- <!-- Date Range Picker -->
+<script src="{{ asset('/js/daterangepicker.js') }}" type="text/javascript"></script> --}}
 <!-- Date Time Picker -->
 <script src="{{ asset('/js/bootstrap-datetimepicker.min.js') }}" type="text/javascript"></script>
+<!-- Bootstrap Slider -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/bootstrap-slider.min.js" integrity="sha256-ssw743RfM8cbNhwou26tmmPhiNhq3buUbRG/RevtfG4=" crossorigin="anonymous"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('/js/app.min.js') }}" type="text/javascript"></script>
 <!-- Custom -->

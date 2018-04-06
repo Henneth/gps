@@ -18,10 +18,14 @@
     <link href="{{ asset('/css/skins/skin-blue.css') }}" rel="stylesheet" type="text/css" />
     <!-- iCheck -->
     <link href="{{ asset('/plugins/iCheck/square/blue.css') }}" rel="stylesheet" type="text/css" />
-    <!-- Date Range Picker -->
-    <link rel="stylesheet" type="text/css" href="{{ asset('/css/daterangepicker.css')}}" />
     <!-- Date Time Picker -->
     <link rel="stylesheet" type="text/css" href="{{ asset('/css/bootstrap-datetimepicker.min.css')}}" />
+    <!-- bootstrap-slider -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/css/bootstrap-slider.min.css" integrity="sha256-WfuSLYdzGvlsFU6ImYYSE277WsjfyU30QeGuNIjeJEI=" crossorigin="anonymous" />
+    <!-- Custom -->
+    <link href="{{ asset('/css/custom.css') }}" rel="stylesheet" type="text/css" />
+    {{-- <!-- Date Range Picker -->
+    <link rel="stylesheet" type="text/css" href="{{ asset('/css/daterangepicker.css')}}" /> --}}
 
     @yield('css')
 

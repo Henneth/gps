@@ -26,14 +26,30 @@ Route::get('event/{event_id}/replay-tracking', 'ReplayTrackingController@index')
 // Admins
 Route::group(['middleware' => 'auth'], function () {
 
+    // Home
     Route::get('home', function () {
         $events = DB::table('events')->orderby('event_id', 'desc')->get();
         return view('home')->with(array('events' => $events));
     });
+
+    // Raw Data
     Route::get('raw-data', 'RawDataController@index');
+
+    // Create New Event
     Route::get('create-new-event', 'EventController@createNewEvent');
     Route::post('create-new-event/post', 'EventController@createNewEventPost');
+
+    // Athletes
+    Route::get('event/{event_id}/athletes', 'AthletesController@index')->name('athletes');
+    Route::post('event/{event_id}/athletes/add', 'AthletesController@addAthlete');
+    Route::post('event/{event_id}/athletes/edit', 'AthletesController@editAthlete');
+
+    // Device Mapping
     Route::get('event/{event_id}/device-mapping', 'DeviceMappingController@index')->name('device-mapping');
+    Route::post('event/{event_id}/device-mapping/add', 'DeviceMappingController@addDeviceMapping');
+    Route::post('event/{event_id}/device-mapping/edit', 'DeviceMappingController@editDeviceMapping');
+
+    // Draw Route
     Route::get('event/{event_id}/draw-route', 'DrawRouteController@index')->name('draw-route');
 
     // Other Configs

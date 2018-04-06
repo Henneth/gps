@@ -17,6 +17,8 @@ class LiveTracking_Model extends Model
 			) t
 			INNER JOIN device_mapping
 			ON t.device_id = device_mapping.device_id
+			INNER JOIN athletes
+			ON device_mapping.athlete_id = athletes.athlete_id
 			WHERE device_mapping.event_id = :event_id
 		    GROUP BY t.device_id", [
 				"event_id"=>$event_id,

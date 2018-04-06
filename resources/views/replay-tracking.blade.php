@@ -22,21 +22,27 @@
 @section('js')
     <script>
     $(function () {
+
+        data = {!! $data !!};
+        // console.log(data);
+        timestamp_from = {{$timestamp_from}};
+        timestamp_to = {{$timestamp_to}};
+
         /* BOOTSTRAP SLIDER */
-        $('.slider').slider({
+        var slider = $('.slider')
+        slider.slider({
         	formatter: function(value) {
         		return value + '%';
         	}
         })
+        slider.slider().on('change', function (ev) {
+            var pc = ev.value.newValue;
+            var offset = (timestamp_to - timestamp_from) * pc / 100;
+            var time = offset + timestamp_from;
 
-        data = {!! $data !!};
-        console.log(data);
-
-        // SLIDER
-        $('input.slider').change(function() {
-            var pc = $(this).val();
-
-        })
+            var dateString = moment.unix(time).format("YYYY-MM-DD H:mm:ss");
+            console.log(dateString);
+        });
     })
     </script>
 @endsection

@@ -28,6 +28,15 @@
         		return value + '%';
         	}
         })
+
+        data = {!! $data !!};
+        console.log(data);
+
+        // SLIDER
+        $('input.slider').change(function() {
+            var pc = $(this).val();
+
+        })
     })
     </script>
 @endsection

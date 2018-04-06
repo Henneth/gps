@@ -44,8 +44,7 @@
                             html += '<div>Given Name: <b>' + content['given_name'] + '</b></div>';
                             html += '<div>Family Name: <b>' + content['family_name'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
-                            html += '<div>Latitude: <b>' + content['latitude_final'] + '</b></div>';
-                            html += '<div>Longitude: <b>' + content['longitude_final'] + '</b></div>';
+                            html += '<div>Location: <b>' + location['lat'] + location['lng'] + '</b></div>';
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -67,11 +66,11 @@
                 var labelIndex = 0;
 
                 // Locations
-                {{--var locations = [
+                var locations = [
                     @foreach ($data as $key => $datum)
-                        [{{$datum->device_id}}, { lat: {{$datum->latitude_final}}, lng: {{$datum->longitude_final}} }, { bib_number: '{{$datum->bib_number}}', given_name: '{{$datum->given_name}}', family_name: '{{$datum->family_name}}' }]{{ $key == count($data) - 1 ? '' : ',' }}
+                        [{{$datum->device_id}}, { lat: {{$datum->latitude_final}}, lng: {{$datum->longitude_final}} }, { bib_number: '{{$datum->bib_number}}', given_name: '{{$datum->first_name}}', family_name: '{{$datum->last_name}}', device_id: '{{$datum->device_id}}' }]{{ $key == count($data) - 1 ? '' : ',' }}
                     @endforeach
-                ]--}}
+                ]
 
                 // Add Markers
                 var markers = [];

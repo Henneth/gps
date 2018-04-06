@@ -23,6 +23,7 @@ Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index')->na
 Route::get('event/{event_id}/live-tracking/poll', 'LiveTrackingController@poll');
 Route::get('event/{event_id}/replay-tracking', 'ReplayTrackingController@index')->name('replay-tracking');
 
+
 // Admins
 Route::group(['middleware' => 'auth'], function () {
 
@@ -65,7 +66,7 @@ Route::group(['middleware' => 'auth'], function () {
 
 // Data import
 Route::post('data-import', 'DataImportController@import');
-
+Route::post('data-import-2', 'DataImportController@import2');
 
 
 // Authentication routes...

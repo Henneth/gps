@@ -27,5 +27,4 @@ class DataImport_Model extends Model
 	public static function insertRawData($json) {
 		DB::insert("INSERT INTO gps_raw (`raw`) VALUES (:json)", ["json"=>$json]);
 	}
-
 }

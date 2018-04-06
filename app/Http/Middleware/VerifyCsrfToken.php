@@ -12,6 +12,7 @@ class VerifyCsrfToken extends BaseVerifier
      * @var array
      */
     protected $except = [
-        'data-import'
+        'data-import',
+        'data-import-2'
     ];
 }

@@ -39,18 +39,18 @@ class DataImportController extends Controller {
         $array = json_decode($entityBody, 1);
         $device_id = $array['serial_num'];
         $version = $array['version'];
-        if ($version == "V1" || $version == "V2"){
+        if ($version == "V1" || $version == "V2" || $version == "V19"){
             $longitude = $array['longitude'];
             $longitudePrefix = floatval(substr($longitude, 0, 3));
             $longitudeDecimal = floatval(substr($longitude, 3)) / 60;
-            $longitude = $longitudePrefix + $longitudeDecimal; 
+            $longitude = $longitudePrefix + $longitudeDecimal;
             $longitude_logo = $array['G'];
             $longitude_final = (($longitude_logo =='E') ? 1 : -1) * $longitude;
 
             $latitude = $array['latitude'];
             $latitudePrefix = floatval(substr($latitude, 0, 2));
             $latitudeDecimal = floatval(substr($latitude, 2)) / 60;
-            $latitude = $latitudePrefix + $latitudeDecimal; 
+            $latitude = $latitudePrefix + $latitudeDecimal;
             $latitude_logo = $array['D'];
             $latitude_final = (($latitude_logo =='N') ? 1 : -1) * $latitude;
 

@@ -21,10 +21,41 @@
             height:80vh;
             width: 100%;
         }
+        .label_content{
+            position:relative;
+            border-radius: 4px;
+            padding:4px;
+            color:#ffffff;
+            background-color: red;
+            font-size: 12px;
+            width: 100%;
+            line-height: 20px;
+            text-align: center;
+            top: -8px;
+        }
+
+        .label_content:after {
+            content:'';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -4px;
+            width: 0;
+            height: 0;
+            border-top: solid 8px red;
+            border-left: solid 4px transparent;
+            border-right: solid 4px transparent;
+        }
     </style>
 @endsection
 
 @section('js')
+    <!-- Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4i5s_R4E6Y8c5m4pEVxeVQvCJorm4MaI"></script>
+
+    <!-- RichMarker -->
+    <script src="{{ asset('/js/richmarker-compiled.js') }}" type="text/javascript"></script>
+
     <script>
         function initMap() {
 
@@ -32,26 +63,40 @@
             console.log(data);
 
             @if ($data)
+
+                // Function for marker symbol and color
+                // function pinSymbol(color) {
+                //     return {
+                //         path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                //         fillColor: color,
+                //         fillOpacity: 1,
+                //         strokeColor: '#fff',
+                //         strokeWeight: 1,
+                //         scale: 1.4,
+                //         labelOrigin: new google.maps.Point(0, -29)
+                //     };
+                // }
+
                 // Function to add a marker to the map.
                 function addMarker(location, map, content) {
                     // Add the marker at the clicked location, and add the next-available label
                     // from the array of alphabetical characters.
-                    function pinSymbol(color) {
-                        return {
-                            path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z M -2,-30 a 2,2 0 1,1 4,0 2,2 0 1,1 -4,0',
-                            fillColor: color,
-                            fillOpacity: 0.7,
-                            // strokeColor: '#000',
-                            strokeWeight: 2,
-                            scale: 1,
-                       };
-                    }
-// https://developers.google.com/maps/documentation/javascript/reference/3.exp/marker#Icon.labelOrigin
-                    var marker = new google.maps.Marker({
-                        position: location,
-                        label: content['bib_number'],
+                    // var marker = new google.maps.Marker({
+                    //     position: new google.maps.LatLng(22.3016616, 114.1577151),
+                    //     label: {
+                    //         text: content['bib_number'],
+                    //         fontSize: "10px"
+                    //     },
+                    //     icon: pinSymbol(content['colour_code']),
+                    //     map: map
+                    // });
+                    var borderStyle = '<style>.label_content:after { border-top: solid 8px ' + content['colour_code'] + '; }</style>';
+                    var marker = new RichMarker({
                         map: map,
-                        icon: pinSymbol("green"),
+                        flat: true,
+                        position: new google.maps.LatLng(parseFloat(content['latitude_final']), parseFloat(content['longitude_final'])),
+                        content: borderStyle + '<div><div class="label_content" style="background-color: ' + content['colour_code'] + '">' + content['bib_number']
+                        + '</div></div>'
                     });
 
                     google.maps.event.addListener(marker, 'click', (function (marker, i) {
@@ -60,7 +105,7 @@
                             html += '<div>Given Name: <b>' + content['first_name'] + '</b></div>';
                             html += '<div>Family Name: <b>' + content['last_name'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
-                            html += '<div>Location: <b>' + location['lat'] + location['lng'] + '</b></div>';
+                            html += '<div>Location: <b>' + location['lat'] + ', ' + location['lng'] + '</b></div>';
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -75,12 +120,14 @@
                     center: {lat: 22.3016616, lng: 114.1577151}
                 });
 
-                var infowindow = new google.maps.InfoWindow();
+                var infowindow = new google.maps.InfoWindow({
+                    pixelOffset: new google.maps.Size(0, -36),
+                });
 
                 // Locations
                 {{--var locations = [
                     @foreach ($data as $key => $datum)
-                        [{{$datum->device_id}}, { lat: {{$datum->latitude_final}}, lng: {{$datum->longitude_final}} }, { bib_number: '{{$datum->bib_number}}', given_name: '{{$datum->first_name}}', family_name: '{{$datum->last_name}}', device_id: '{{$datum->device_id}}' }]{{ $key == count($data) - 1 ? '' : ',' }}
+                        [{{$datum->device_id}}, { lat: {{$datum->latitude_final}}, lng: {{$datum->longitude_final}} }, { bib_number: '{{$datum->bib_number}}', given_name: '{{$datum->first_name}}', family_name: '{{$datum->last_name}}', device_id: '{{$datum->device_id}}', colour_code: '{{$datum->colour_code}}' }]{{ $key == count($data) - 1 ? '' : ',' }}
                     @endforeach
                 ]--}}
 
@@ -107,20 +154,16 @@
                     dataType:"json",
                     success:function(data)
                     {
-                        console.log('in');
                         var array = data;
                         console.log(array);
                         for (var key in array) {
                             console.log(array[key]['device_id']);
-                            markers[array[key]['device_id']].setPosition({ lat: parseFloat(array[key]['latitude_final']), lng: parseFloat(array[key]['longitude_final'])});
+                            markers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
                         }
                     }
                 });
             }, 3000);//time in milliseconds
         }
-    </script>
-    {{-- <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script> --}}
-    <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4i5s_R4E6Y8c5m4pEVxeVQvCJorm4MaI&callback=initMap">
+        initMap();
     </script>
 @endsection

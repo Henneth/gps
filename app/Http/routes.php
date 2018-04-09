@@ -52,7 +52,8 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Draw Route
     Route::get('event/{event_id}/draw-route', 'DrawRouteController@index')->name('draw-route');
-
+    Route::post('event/{event_id}/save-route', 'DrawRouteController@saveRoute');
+    
     // Other Configs
     Route::get('event/{event_id}/other-configurations', 'OtherConfigsController@index')->name('other-configurations');
     Route::post('event/{event_id}/other-configurations/post', 'OtherConfigsController@postOtherConfigs');

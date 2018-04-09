@@ -115,6 +115,7 @@
                     return marker;
                 }
 
+                // Map style
                 var mapStyle = [
                     {
                         featureType: "all",
@@ -125,18 +126,16 @@
                     }
                 ]
 
-                //create map
-                var map = new google.maps.Map(...); //This assumes you already have a working map
-
-                //set style
-                map.set('styles', mapStyle);
-
                 var map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 13,
                     // center: {lat: 22.404767, lng: 114.1057550}
                     center: {lat: 22.3016616, lng: 114.1577151}
                 });
 
+                // set style
+                map.set('styles', mapStyle);
+
+                // set InfoWindow pixelOffset
                 var infowindow = new google.maps.InfoWindow({
                     pixelOffset: new google.maps.Size(0, -36),
                 });

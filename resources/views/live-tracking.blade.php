@@ -27,22 +27,38 @@
 @section('js')
     <script>
         function initMap() {
+
+            data = {!! $data !!};
+            console.log(data);
+
             @if ($data)
                 // Function to add a marker to the map.
                 function addMarker(location, map, content) {
                     // Add the marker at the clicked location, and add the next-available label
                     // from the array of alphabetical characters.
+                    function pinSymbol(color) {
+                        return {
+                            path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z M -2,-30 a 2,2 0 1,1 4,0 2,2 0 1,1 -4,0',
+                            fillColor: color,
+                            fillOpacity: 0.7,
+                            // strokeColor: '#000',
+                            strokeWeight: 2,
+                            scale: 1,
+                       };
+                    }
+// https://developers.google.com/maps/documentation/javascript/reference/3.exp/marker#Icon.labelOrigin
                     var marker = new google.maps.Marker({
                         position: location,
-                        label: labels[labelIndex++ % labels.length],
-                        map: map
+                        label: content['bib_number'],
+                        map: map,
+                        icon: pinSymbol("green"),
                     });
 
                     google.maps.event.addListener(marker, 'click', (function (marker, i) {
             			return function () {
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
-                            html += '<div>Given Name: <b>' + content['given_name'] + '</b></div>';
-                            html += '<div>Family Name: <b>' + content['family_name'] + '</b></div>';
+                            html += '<div>Given Name: <b>' + content['first_name'] + '</b></div>';
+                            html += '<div>Family Name: <b>' + content['last_name'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
                             html += '<div>Location: <b>' + location['lat'] + location['lng'] + '</b></div>';
             				infowindow.setContent(html);
@@ -61,21 +77,18 @@
 
                 var infowindow = new google.maps.InfoWindow();
 
-                // Create an array of alphabetical characters used to label the markers.
-                var labels = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                var labelIndex = 0;
-
                 // Locations
-                var locations = [
+                {{--var locations = [
                     @foreach ($data as $key => $datum)
                         [{{$datum->device_id}}, { lat: {{$datum->latitude_final}}, lng: {{$datum->longitude_final}} }, { bib_number: '{{$datum->bib_number}}', given_name: '{{$datum->first_name}}', family_name: '{{$datum->last_name}}', device_id: '{{$datum->device_id}}' }]{{ $key == count($data) - 1 ? '' : ',' }}
                     @endforeach
-                ]
+                ]--}}
 
                 // Add Markers
                 var markers = [];
-                for (var i = 0; i < locations.length; i++) {
-                    markers[locations[i][0]] = (addMarker(locations[i][1], map, locations[i][2]));
+                for (var i = 0; i < data.length; i++) {
+                    var location = {lat: parseFloat(data[i]['latitude_final']), lng: parseFloat(data[i]['longitude_final'])};
+                    markers[data[i]['device_id']] = (addMarker(location, map, data[i]));
                 }
 
             @else

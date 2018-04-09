@@ -11,7 +11,8 @@ class LiveTrackingController extends Controller {
     public function index($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
         $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to);
-        return view('live-tracking')->with(array('data' => $data, 'event' => $event, 'event_id' => $event_id));
+        $jsonData = json_encode($data);
+        return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id));
     }
     public function poll($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();

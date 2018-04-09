@@ -13,7 +13,7 @@ class LiveTracking_Model extends Model
 		$data = DB::select("SELECT * FROM (
 				SELECT * FROM gps_data
 				WHERE datetime >= :datetime_from AND datetime <= :datetime_to
-				ORDER BY datetime DESC
+				ORDER BY datetime DESC, id DESC
 			) t
 			INNER JOIN device_mapping
 			ON t.device_id = device_mapping.device_id

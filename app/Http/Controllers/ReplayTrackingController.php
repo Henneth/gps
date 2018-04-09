@@ -10,7 +10,7 @@ class ReplayTrackingController extends Controller {
 
     public function index($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
-        $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to);
+        $data = ReplayTracking_Model::getLocations($event_id, $event->datetime_from, $event->datetime_to);
         $jsonData = json_encode($data);
         $timestamp_from = strtotime($event->datetime_from);
         $timestamp_to = strtotime($event->datetime_to);

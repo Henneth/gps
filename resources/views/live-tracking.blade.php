@@ -10,7 +10,8 @@
 
 @section('main-content')
 <div class="container-flex">
-    <div class="form-group" style="color: #666;">Last location of athletes within {{$event->datetime_from}} - {{$event->datetime_to}}</div>
+    <div class="form-group" style="color: #666; float: left;">Athletes' latest locations (Event time range: <b>{{$event->datetime_from}}</b> - <b>{{$event->datetime_to}}</b>)</div>
+    {{-- <div style="color: #666; float: right;">Current Time: <b><span id="time"></span></b></div> --}}
     <div id="map"></div>
 </div>
 @endsection
@@ -113,6 +114,22 @@
 
                     return marker;
                 }
+
+                var mapStyle = [
+                    {
+                        featureType: "all",
+                        elementType: "labels",
+                        stylers: [
+                            { visibility: "off" }
+                        ]
+                    }
+                ]
+
+                //create map
+                var map = new google.maps.Map(...); //This assumes you already have a working map
+
+                //set style
+                map.set('styles', mapStyle);
 
                 var map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 13,

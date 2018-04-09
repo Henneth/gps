@@ -10,9 +10,9 @@
 
 @section('main-content')
 <div class="container-flex flex-container">
-    <button type="button" class="replay-controls btn btn-primary">Play</button>
-    <button type="button" class="replay-controls btn btn-default" disabled>Pause</button>
-    <button type="button" class="replay-controls btn btn-default" disabled>Stop</button>
+    <button type="button" class="replay-controls play btn btn-primary">Play</button>
+    <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
+    <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
     <div class="slider-wrapper">
         <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
     </div>
@@ -23,8 +23,8 @@
     <script>
     $(function () {
 
+        // Data
         data = {!! $data !!};
-        // console.log(data);
         timestamp_from = {{$timestamp_from}};
         timestamp_to = {{$timestamp_to}};
 
@@ -37,12 +37,26 @@
         })
         slider.slider().on('change', function (ev) {
             var pc = ev.value.newValue;
+            updateMapMarkers(pc);
+        });
+
+        // Replay controls
+        $('.replay-controls.play').click(function() {
+            console.log('hi');
+            setInterval(function(){
+                var val = slider.slider('getValue');
+                slider.slider('setValue', val+1);
+                updateMapMarkers(val+1);
+            }, 50);
+        });
+
+        function updateMapMarkers(pc) {
             var offset = (timestamp_to - timestamp_from) * pc / 100;
             var time = offset + timestamp_from;
 
-            var dateString = moment.unix(time).format("YYYY-MM-DD H:mm:ss");
+            var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
             console.log(dateString);
-        });
+        }
     })
     </script>
 @endsection

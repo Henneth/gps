@@ -10,7 +10,7 @@
 
 @section('main-content')
 <div class="container-flex">
-    <div class="form-group" style="color: #666; float: left;">Athletes' latest locations (Event time range: <b>{{$event->datetime_from}}</b> - <b>{{$event->datetime_to}}</b>)</div>
+    <div class="form-group" style="color: #666; float: left;">Athletes' latest locations from <b>{{$event->datetime_from}}</b> to <b>{{$event->datetime_to}}</b></div>
     {{-- <div style="color: #666; float: right;">Current Time: <b><span id="time"></span></b></div> --}}
     <div id="map"></div>
 </div>
@@ -103,8 +103,8 @@
                     google.maps.event.addListener(marker, 'click', (function (marker, i) {
             			return function () {
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
-                            html += '<div>Given Name: <b>' + content['first_name'] + '</b></div>';
-                            html += '<div>Family Name: <b>' + content['last_name'] + '</b></div>';
+                            html += '<div>First Name: <b>' + content['first_name'] + '</b></div>';
+                            html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
                             html += '<div>Location: <b>' + location['lat'] + ', ' + location['lng'] + '</b></div>';
             				infowindow.setContent(html);
@@ -118,7 +118,14 @@
                 // Map style
                 var mapStyle = [
                     {
-                        featureType: "all",
+                        featureType: "transit",
+                        elementType: "labels",
+                        stylers: [
+                            { visibility: "off" }
+                        ]
+                    },
+                    {
+                        featureType: "poi",
                         elementType: "labels",
                         stylers: [
                             { visibility: "off" }

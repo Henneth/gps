@@ -44,6 +44,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('event/{event_id}/athletes', 'AthletesController@index')->name('athletes');
     Route::post('event/{event_id}/athletes/add', 'AthletesController@addAthlete');
     Route::post('event/{event_id}/athletes/edit', 'AthletesController@editAthlete');
+    Route::post('event/{event_id}/athletes/import-from-excel', 'AthletesController@importFromExcel');
 
     // Device Mapping
     Route::get('event/{event_id}/device-mapping', 'DeviceMappingController@index')->name('device-mapping');

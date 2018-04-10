@@ -59,9 +59,9 @@
 
 
 
-      var poly;
-      var map;
-  	  var polyIndex = 0;
+    var poly;
+    var map;
+	  var polyIndex = 0;
 	  //Mirrors the path array to find index to delete and such
 	  var mirrorCoordinates = [];
 	  var markers = [];
@@ -86,98 +86,106 @@
         map.addListener('click', addLatLng);
       }
 
-	@else
-
-	  function initMap() {
-	  	// Decode the encodeString
-	    var decode = google.maps.geometry.encoding.decodePath("{{$data->route}}");
-        // console.log(encodeString);
-        console.log("DECODE" + decode);
-
-        map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 12,
-          center: {lat: 22.3016616, lng: 114.1577151}  // Center the map.
-
-        });
-        poly = new google.maps.Polyline({
-          paths: decode,
-          strokeColor: '#3d00f7',
-          strokeOpacity: 1,
-          strokeWeight: 3
-        });
-        poly.setMap(map);
+	@else  //http://jsfiddle.net/ukRsp/1397/ 
 
 
-        // Add a listener for the click event
-        map.addListener('click', addLatLng);
+      function initMap() {
+          // var myLatlng = new google.maps.LatLng(22.3016616, 114.1577151);
+          map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: {lat: 22.3016616, lng: 114.1577151}  // Center the map on Chicago, USA.
+          });
+              
+          var decodedPath = google.maps.geometry.encoding.decodePath('{{$data->route}}'); 
+          // var decodedLevels = decodeLevels("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
 
+          poly = new google.maps.Polyline({
+            strokeColor: '#3d00f7',
+            strokeOpacity: 1,
+            strokeWeight: 3
+          });
+          poly.setMap(map);
 
-		// var markers = [];//some array
-		// var bounds = new google.maps.LatLngBounds();
-		// for (var i = 0; i < markers.length; i++) {
-		//  bounds.extend(markers[i].getPosition());
-		// }
-		// map.fitBounds(bounds);
+          for (var key in decodedPath) {
+            addLatLngInit(decodedPath[key]);
+          }
+          
+          var bounds = new google.maps.LatLngBounds();
+          for (var i = 0; i < markers.length; i++) {
+            bounds.extend(markers[i].getPosition());
+          }
+          map.fitBounds(bounds);
 
-
-
-    var infowindow = new google.maps.InfoWindow();
-
-    var marker, i;
-	var locations = [
-		[22.54162, 114.07385000000001, 4],
-		[22.524820000000002, 114.14663000000002, 5],
-		[22.477240000000002, 114.11882000000001, 3],
-		[22.47089, 114.06732000000001, 2],
-		// ['Maroubra Beach', -33.950198, 151.259302, 1]
-	];
-
-    for (i = 0; i < locations.length; i++) {  
-      marker = new google.maps.Marker({
-        position: new google.maps.LatLng(locations[i][0], locations[i][1]),
-        map: map
-      });
-
-      google.maps.event.addListener(marker, 'click', (function(marker, i) {
-        return function() {
-          infowindow.setContent(locations[i][0]);
-          infowindow.open(map, marker);
-        }
-      })(marker, i));
-    }
-
-
+          map.addListener('click', addLatLng);
+          console.log(decodedPath);
       }
+
+      // function decodeLevels(encodedLevelsString) {
+      //     var decodedLevels = [];
+
+      //     for (var i = 0; i < encodedLevelsString.length; ++i) {
+      //         var level = encodedLevelsString.charCodeAt(i) - 63;
+      //         decodedLevels.push(level);
+      //     }
+      //     return decodedLevels;
+      // }
 
 	@endif
 
-      // Handles click events on a map, and adds a new point to the Polyline.
-      function addLatLng(event) {
-        path = poly.getPath();
+    // Handles click events on a map, and adds a new point to the Polyline.
+    function addLatLng(event) {
+      path = poly.getPath();
 
-        // Because path is an MVCArray, we can simply append a new coordinate
-        // and it will automatically appear.
-        path.push(event.latLng);
+      // Because path is an MVCArray, we can simply append a new coordinate
+      // and it will automatically appear.
+      path.push(event.latLng);
 
-		mirrorCoordinates.push(event.latLng);
-		polyIndex++;
+  		mirrorCoordinates.push(event.latLng);
+  		polyIndex++;
 
-        // Get the current Zoom Level and Center of the area 
-        var tempZoom = map.getZoom();
-        var tempLat = map.getCenter().lat();
-        var tempLng = map.getCenter().lng();
-        // console.log(tempLat, tempLng, tempZoom);
+      // // Get the current Zoom Level and Center of the area 
+      // var tempZoom = map.getZoom();
+      // var tempLat = map.getCenter().lat();
+      // var tempLng = map.getCenter().lng();
+      // // console.log(tempLat, tempLng, tempZoom);
 
-
-        // Add a new marker at the new plotted point on the polyline.
-        var marker = new google.maps.Marker({
-          position: event.latLng,
-          title: '#' + path.getLength(),
-          map: map
-        });
-        markers.push(marker);
-        // console.log(markers);
+      // Add a new marker at the new plotted point on the polyline.
+      var marker = new google.maps.Marker({
+        position: event.latLng,
+        title: '#' + path.getLength(),
+        map: map
+      });
+      markers.push(marker);
+      // console.log(markers);
 	  }
+
+    // Handles click events on a map, and adds a new point to the Polyline.
+    function addLatLngInit(position) {
+      path = poly.getPath();
+
+      // Because path is an MVCArray, we can simply append a new coordinate
+      // and it will automatically appear.
+      path.push(position);
+
+      mirrorCoordinates.push(position);
+      polyIndex++;
+
+      // // Get the current Zoom Level and Center of the area 
+      // var tempZoom = map.getZoom();
+      // var tempLat = map.getCenter().lat();
+      // var tempLng = map.getCenter().lng();
+      // // console.log(tempLat, tempLng, tempZoom);
+
+
+      // Add a new marker at the new plotted point on the polyline.
+      var marker = new google.maps.Marker({
+        position: position,
+        title: '#' + path.getLength(),
+        map: map
+      });
+      markers.push(marker);
+      // console.log(markers);
+    }
 
 	  //Remove the Polyline and the previous marker
 	  $('#undo').click(function(){
@@ -200,7 +208,7 @@
 		// map.fitBounds(bounds);
 	  $('#save').click(function(e){
 	  	e.preventDefault();
-        encodeString = google.maps.geometry.encoding.encodePath(path);
+      encodeString = google.maps.geometry.encoding.encodePath(path);
 	  	$('#route').val(encodeString);
 	  	document.getElementById('save-route').submit();
 	  });

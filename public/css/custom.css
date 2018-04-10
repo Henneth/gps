@@ -27,3 +27,7 @@
 .icon-directions_run:before {
   content: "\e900";
 }
+
+.display-inline-block {
+    display: inline-block;
+}

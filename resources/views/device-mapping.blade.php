@@ -8,24 +8,27 @@
     Device Mapping
 @endsection
 
+@section('contentheader_class')
+    display-inline-block
+@endsection
+
+@section('contentheader_right')
+<div class="pull-right"><button class="btn btn-primary" disabled><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
+@endsection
+
 @section('main-content')
     @include('partials/alerts')
     <div class="container-flex">
         <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Devices</h3>
-            </div>
-            <!-- /.box-header -->
             <div class="box-body">
-
                 <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th style="width: 15%">Device ID</th>
-                            <th style="width: 15%">Athlete ID</th>
-                            <th>Bib Number</th>
+                            <th>Athlete</th>
+                            {{-- <th>Bib Number</th>
                             <th>First Name</th>
-                            <th>Last Name</th>
+                            <th>Last Name</th> --}}
                             <th>Status</th>
                             <th style="width: 64px;">&nbsp;</th>
                             {{-- <th style="width: 40px">Label</th> --}}
@@ -36,10 +39,10 @@
                             <form method="post" action="{{url('/')}}/event/{{$event_id}}/device-mapping/add">
                                 {{ csrf_field() }}
                                 <td><input class="form-control" name="device_id" placeholder="Device ID"></td>
-                                <td colspan="4">
+                                <td>
                                     <select name="athlete_id" class="form-control">
                                         @foreach ($athletes as $athlete)
-                                            <option value="{{$athlete->athlete_id}}">{{$athlete->athlete_id}}: {{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}})</option>
+                                            <option value="{{$athlete->athlete_id}}">{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -61,20 +64,17 @@
                                         <span>{{$device->device_id}}</span>
                                         <input style="display: none;" class="form-control" name="device_id" placeholder="Device ID" value="{{$device->device_id}}"></td>
                                     <td class="athlete_tds">
-                                        <span>{{$device->athlete_id}}</span>
+                                        <span>{{$device->first_name}} {{$device->last_name}} (Bib: {{$device->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</span>
                                     </td>
-                                    <td class="athlete_tds">{{$device->bib_number}}</td>
-                                    <td class="athlete_tds">{{$device->first_name}}</td>
-                                    <td class="athlete_tds">{{$device->last_name}}</td>
-                                    <td class="athlete_select" colspan="4" style="display: none;">
+                                    <td class="athlete_select" style="display: none;">
                                         <select name="athlete_id" class="form-control">
                                             @foreach ($athletes as $athlete)
-                                                <option value="{{$athlete->athlete_id}}" {{($athlete->athlete_id == $device->athlete_id) ? 'selected' : ''}}>{{$athlete->athlete_id}}: {{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}})</option>
+                                                <option value="{{$athlete->athlete_id}}" {{($athlete->athlete_id == $device->athlete_id) ? 'selected' : ''}}>{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$device->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</option>
                                             @endforeach
                                         </select>
                                     </td>
                                     <td class="status">
-                                        <span>{{$device->status}}</span>
+                                        <span><i class="fas fa-{{($device->status == 'visible' ? 'eye' : 'eye-slash')}}"></i> {{ucfirst($device->status)}}</span>
                                         <select name="status" class="form-control" style="display: none;">
                                             <option value="visible" {{($device->status == 'visible' ? 'selected' : '')}}>Visible</option>
                                             <option value="hidden" {{($device->status == 'hidden' ? 'selected' : '')}}>Hidden</option>

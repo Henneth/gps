@@ -22,6 +22,15 @@ class DeviceMappingController extends Controller {
         }
 
         $device_id = $_POST['device_id'];
+        $mapping = DB::table('device_mapping')
+            ->where('event_id', $event_id)
+            ->where('device_id', $device_id)
+            ->first();
+
+        if (!empty($mapping)) {
+            return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Device ID has already mapped.');
+        }
+
         $athlete_id = $_POST['athlete_id'];
         $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
 

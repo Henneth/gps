@@ -52,16 +52,17 @@
 
 @section('js')
     <!-- Google Maps -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4i5s_R4E6Y8c5m4pEVxeVQvCJorm4MaI"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4i5s_R4E6Y8c5m4pEVxeVQvCJorm4MaI&libraries=geometry"></script>
 
     <!-- RichMarker -->
     <script src="{{ asset('/js/richmarker-compiled.js') }}" type="text/javascript"></script>
 
     <script>
+
         function initMap() {
 
             data = {!! $data !!};
-            console.log(data);
+            // console.log(data);
 
             @if ($data)
 
@@ -143,17 +144,32 @@
                 // set style
                 map.set('styles', mapStyle);
 
+                // set route
+                poly = new google.maps.Polyline({
+                    strokeColor: '#3d00f7',
+                    strokeOpacity: 1,
+                    strokeWeight: 3,
+                    map: map
+                });
+
+                @if ($route->route)
+                    var decodedPath = google.maps.geometry.encoding.decodePath('{{$route->route}}');
+                    tempmarkers = [];
+                    for (var key in decodedPath) {
+                        addLatLngInit(decodedPath[key]);
+                    }
+
+                    var bounds = new google.maps.LatLngBounds();
+                    for (var i = 0; i < tempmarkers.length; i++) {
+                        bounds.extend(tempmarkers[i].getPosition());
+                    }
+                    map.fitBounds(bounds);
+                @endif
+
                 // set InfoWindow pixelOffset
                 var infowindow = new google.maps.InfoWindow({
                     pixelOffset: new google.maps.Size(0, -36),
                 });
-
-                // Locations
-                {{--var locations = [
-                    @foreach ($data as $key => $datum)
-                        [{{$datum->device_id}}, { lat: {{$datum->latitude_final}}, lng: {{$datum->longitude_final}} }, { bib_number: '{{$datum->bib_number}}', given_name: '{{$datum->first_name}}', family_name: '{{$datum->last_name}}', device_id: '{{$datum->device_id}}', colour_code: '{{$datum->colour_code}}' }]{{ $key == count($data) - 1 ? '' : ',' }}
-                    @endforeach
-                ]--}}
 
                 // Add Markers
                 var markers = [];
@@ -179,9 +195,9 @@
                     success:function(data)
                     {
                         var array = data;
-                        console.log(array);
+                        // console.log(array);
                         for (var key in array) {
-                            console.log(array[key]['device_id']);
+                            // console.log(array[key]['device_id']);
                             markers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
                         }
                     }
@@ -189,5 +205,33 @@
             }, 3000);//time in milliseconds
         }
         initMap();
+
+        function addLatLngInit(position) {
+          path = poly.getPath();
+
+          // Because path is an MVCArray, we can simply append a new coordinate
+          // and it will automatically appear.
+          path.push(position);
+
+          // mirrorCoordinates.push(position);
+          // polyIndex++;
+
+          // // Get the current Zoom Level and Center of the area
+          // var tempZoom = map.getZoom();
+          // var tempLat = map.getCenter().lat();
+          // var tempLng = map.getCenter().lng();
+          // // console.log(tempLat, tempLng, tempZoom);
+
+
+          // Add a new marker at the new plotted point on the polyline.
+          var marker = new google.maps.Marker({
+            position: position,
+            title: '#' + path.getLength(),
+            map: map
+          });
+          tempmarkers.push(marker);
+
+        }
+
     </script>
 @endsection

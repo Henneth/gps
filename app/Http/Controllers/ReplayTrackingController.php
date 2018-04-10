@@ -20,6 +20,7 @@ class ReplayTrackingController extends Controller {
         echo $timestamp_from.' ';
         $timestamp_to = strtotime($event->datetime_to." HKT");
         echo $timestamp_to;
+        echo 'updated';
         // return view('replay-tracking')->with(array('data' => $jsonData, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to));
     }
 

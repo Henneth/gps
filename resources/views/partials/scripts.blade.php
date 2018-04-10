@@ -12,6 +12,9 @@
 <script src="{{ asset('/js/bootstrap-datetimepicker.min.js') }}" type="text/javascript"></script>
 <!-- Bootstrap Slider -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/bootstrap-slider.min.js" integrity="sha256-ssw743RfM8cbNhwou26tmmPhiNhq3buUbRG/RevtfG4=" crossorigin="anonymous"></script>
+<!-- Datatables -->
+<script src="{{ asset('/js/jquery.dataTables.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('/js/dataTables.bootstrap.min.js') }}" type="text/javascript"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('/js/app.min.js') }}" type="text/javascript"></script>
 <!-- Custom -->

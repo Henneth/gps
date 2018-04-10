@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 class RawDataController extends Controller {
 
     public function index() {
-        $data = DB::table('gps_data')->orderby('id', 'desc')->get();
+        $data = DB::table('gps_data')->orderby('datetime', 'desc')->get();
         return view('raw-data')->with(array('data' => $data));
     }
 

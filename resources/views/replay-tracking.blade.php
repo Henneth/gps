@@ -214,6 +214,7 @@
                 markers[device_id].setVisible(true);
                 for (var i in data[device_id]) {
                     if (data[device_id][i]['timestamp'] <= time) {
+                        console.log(data[device_id][i]['timestamp']);
                         markers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id][i]['latitude_final']), parseFloat(data[device_id][i]['longitude_final'])) );
                         markerHasData = true;
                         break;

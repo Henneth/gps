@@ -16,22 +16,22 @@
             <table class="table table-bordered">
                 <tbody>
                     <tr>
-                        <th style="width: 12%">Received At</th>
-                        <th>Device ID</th>
                         <th>Timestamp</th>
+                        <th>Device ID</th>
                         <th>Longitude</th>
                         <th>Latitude</th>
                         <th>Elevation</th>
+                        <th style="width: 12%">Received At</th>
                     </tr>
                     @foreach ($data as $datum)
                         <tr>
-                            <td>{{$datum->created_at}}</td>
+                            <td>{{$datum->datetime}}</td>
                             {{-- <td>{!! nl2br(e(str_replace(" ", " &nbsp;", $datum->raw))) !!}</td> --}}
                             <td>{{$datum->device_id}}</td>
-                            <td>{{$datum->datetime}}</td>
                             <td>{{$datum->longitude_final}}</td>
                             <td>{{$datum->latitude_final}}</td>
                             <td>{{$datum->elevation}}</td>
+                            <td>{{$datum->created_at}}</td>
                         </tr>
                     @endforeach
                 </tbody>

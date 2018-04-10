@@ -10,13 +10,10 @@
 
 @section('css')
     <style>
-      #map {
-        height:80vh;
-        width: 100%;
-      }
-      .data-form {
-      	display: inline-block;
-      }
+        #map {
+            height:80vh;
+            width: 100%;
+        }
     </style>
 @endsection
 
@@ -39,8 +36,8 @@
 		<!-- /.box -->
 	@endif
 	<div>
-		<button type="button" class="btn btn-default" id="undo"><i class="fa fa-undo"></i> Undo</button>
-		<div class="data-form">
+		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;"><i class="fa fa-undo"></i> Undo</button>
+		<div class="data-form display-inline-block">
 			<form id="save-route" action="{{ url('/') }}/event/{{$event_id}}/save-route" method="POST">
 				{{ csrf_field() }}
 				<input type="hidden" id="route" name="route">
@@ -132,7 +129,7 @@
 		// ['Maroubra Beach', -33.950198, 151.259302, 1]
 	];
 
-    for (i = 0; i < locations.length; i++) {  
+    for (i = 0; i < locations.length; i++) {
       marker = new google.maps.Marker({
         position: new google.maps.LatLng(locations[i][0], locations[i][1]),
         map: map
@@ -162,7 +159,7 @@
 		mirrorCoordinates.push(event.latLng);
 		polyIndex++;
 
-        // Get the current Zoom Level and Center of the area 
+        // Get the current Zoom Level and Center of the area
         var tempZoom = map.getZoom();
         var tempLat = map.getCenter().lat();
         var tempLng = map.getCenter().lng();
@@ -186,9 +183,9 @@
 		poly.getPath().setAt(polyIndex, mirrorCoordinates[mirrorCoordinates.length - 1]);
 		poly.getPath().removeAt(polyIndex);
 
-		// console.log(markers.length); 
+		// console.log(markers.length);
 
-		var markerIndex = markers.length - 1; 
+		var markerIndex = markers.length - 1;
 		markers[markerIndex].setMap(null);
 		markers.pop();
 	  });

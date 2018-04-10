@@ -22,7 +22,7 @@ Route::get('event/{event_id}', function ($event_id) {
 Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index')->name('live-tracking');
 Route::get('event/{event_id}/live-tracking/poll', 'LiveTrackingController@poll');
 Route::get('event/{event_id}/replay-tracking', 'ReplayTrackingController@index')->name('replay-tracking');
-
+Route::get('test', 'DataImportController@test');
 
 // Admins
 Route::group(['middleware' => 'auth'], function () {
@@ -54,7 +54,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Draw Route
     Route::get('event/{event_id}/draw-route', 'DrawRouteController@index')->name('draw-route');
     Route::post('event/{event_id}/save-route', 'DrawRouteController@saveRoute');
-    
+
     // Other Configs
     Route::get('event/{event_id}/other-configurations', 'OtherConfigsController@index')->name('other-configurations');
     Route::post('event/{event_id}/other-configurations/post', 'OtherConfigsController@postOtherConfigs');

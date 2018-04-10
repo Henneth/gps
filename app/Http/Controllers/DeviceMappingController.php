@@ -37,7 +37,7 @@ class DeviceMappingController extends Controller {
         DB::table('device_mapping')->insert(
             ['device_id' => $device_id, 'event_id' => $event_id, 'athlete_id' => $athlete_id, 'status' => $status]
         );
-        return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Mapping is added.');
+        return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Device and athlete is mapped.');
     }
     public function editDeviceMapping($event_id) {
         if (empty($_POST['device_id']) || empty($_POST['athlete_id'])) {

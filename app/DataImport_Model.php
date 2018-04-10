@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DataImport_Model extends Model
 {
-	public static function storeGPSData($device_id, $longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $elevation, $date, $time) {
+	public static function storeGPSData($device_id, $longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $elevation, $datetime) {
 		DB::insert("INSERT INTO gps_data
             (`device_id`, `longitude`,`longitude_logo`, `longitude_final`,`latitude`,`latitude_logo`, `latitude_final`, `elevation`, `datetime`)
             VALUES (:device_id, :longitude, :longitude_logo, :longitude_final, :latitude, :latitude_logo, :latitude_final, :elevation, :datetime)", [
@@ -21,7 +21,7 @@ class DataImport_Model extends Model
                 "latitude_logo"=>$latitude_logo,
                 "latitude_final"=>$latitude_final,
 				"elevation"=>$elevation,
-                "datetime"=>$date.' '.$time
+                "datetime"=>$datetime
             ]);
 	}
 	public static function insertRawData($json) {

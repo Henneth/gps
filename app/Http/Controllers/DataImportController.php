@@ -6,6 +6,7 @@ use DB;
 use App\Http\Controllers\Controller;
 use App\DataImport_Model as DataImport_Model;
 use DateTime;
+use DateTimeZone;
 
 class DataImportController extends Controller {
 
@@ -57,9 +58,21 @@ class DataImportController extends Controller {
             $elevation = NULL;
             $date = DateTime::createFromFormat('dmy', $array['date'])->format('Y-m-d');
             $time = DateTime::createFromFormat('His', $array['time'])->format('H:i:s');
-            DataImport_Model::storeGPSData($device_id, $longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $elevation, $date, $time);
+            $datetime = $this->convertUtc2HkgTime($date . ' ' . $time);
+            DataImport_Model::storeGPSData($device_id, $longitude, $longitude_logo, $longitude_final, $latitude, $latitude_logo, $latitude_final, $elevation, $datetime);
 
         }
+    }
+
+    private function convertUtc2HkgTime($datetime) {
+        $triggerOn = $datetime;
+        $target_tz = 'Asia/Hong_Kong';
+
+        $schedule_datetime = new DateTime($triggerOn, new DateTimeZone('UTC'));
+        $schedule_datetime->setTimeZone(new DateTimeZone($target_tz));
+        $triggerOn = $schedule_datetime->format('Y-m-d H:i:s');
+
+        return $triggerOn;
     }
 
 

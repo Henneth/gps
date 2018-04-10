@@ -8,9 +8,44 @@
     Athletes
 @endsection
 
+@section('contentheader_class')
+    display-inline-block
+@endsection
+
+@section('contentheader_right')
+<div class="pull-right"><button class="btn btn-primary" onclick="toggleExcelImport();return false;"><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
+@endsection
+
 @section('main-content')
     @include('partials/alerts')
     <div class="container-flex">
+        <div id="excelImportBox" class="box box-primary" style="display: none;">
+            <div class="box-header with-border">
+                <h3 class="box-title">Import from Excel</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-remove"></i></button>
+                </div>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+            <form role="form" action="{{url('/')}}/event/{{$event_id}}/athletes/import-from-excel" method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                    <div class="form-group">
+                        <label for="excelFile">Excel file upload</label>
+                        <input type="file" id="excelFile" name="fileToUpload">
+
+                        <p class="help-block">.xls or .xlsx files only.</p>
+                        <p class="help-block">Please refer to this example excel file for the required format: <a>example.xls</a>.</p>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+
+                <div class="box-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
         <div class="box">
             <div class="box-body">
                 <table class="table table-bordered">
@@ -94,5 +129,8 @@
             form.find('.colour_code input').show();
             $(this).next().show();
         })
+        function toggleExcelImport() {
+            $('#excelImportBox').toggle();
+        }
     </script>
 @endsection

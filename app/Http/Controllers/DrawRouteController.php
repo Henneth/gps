@@ -13,7 +13,7 @@ class DrawRouteController extends Controller {
         	->where('event_id',$event_id)
         	->select('route')
         	->first();
-		print_r($data);
+		// print_r($data);
         return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data));
     }
 

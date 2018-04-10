@@ -18,7 +18,7 @@ class ReplayTrackingController extends Controller {
         $jsonData = json_encode($array);
         $timestamp_from = strtotime($event->datetime_from." HKT");
         $timestamp_to = strtotime($event->datetime_to." HKT");
-        return view('replay-tracking')->with(array('data' => $jsonData, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to));
+        return view('replay-tracking')->with(array('data' => $jsonData, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $event->route));
     }
 
 }

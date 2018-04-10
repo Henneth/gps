@@ -22,7 +22,7 @@
 
 @section('js')
     <!-- Google Maps -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4i5s_R4E6Y8c5m4pEVxeVQvCJorm4MaI"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4i5s_R4E6Y8c5m4pEVxeVQvCJorm4MaI&libraries=geometry"></script>
 
     <!-- RichMarker -->
     <script src="{{ asset('/js/richmarker-compiled.js') }}" type="text/javascript"></script>
@@ -112,6 +112,28 @@
                 // set style
                 map.set('styles', mapStyle);
 
+                @if ($route)
+                    // set route
+                    poly = new google.maps.Polyline({
+                        strokeColor: '#3d00f7',
+                        strokeOpacity: 1,
+                        strokeWeight: 3,
+                        map: map
+                    });
+
+                    var decodedPath = google.maps.geometry.encoding.decodePath('{{$route}}');
+                    tempmarkers = [];
+                    for (var key in decodedPath) {
+                        addLatLngInit(decodedPath[key]);
+                    }
+
+                    var bounds = new google.maps.LatLngBounds();
+                    for (var i = 0; i < tempmarkers.length; i++) {
+                        bounds.extend(tempmarkers[i].getPosition());
+                    }
+                    map.fitBounds(bounds);
+                @endif
+
                 // set InfoWindow pixelOffset
                 var infowindow = new google.maps.InfoWindow({
                     pixelOffset: new google.maps.Size(0, -36),
@@ -154,6 +176,22 @@
             // }, 3000);//time in milliseconds
         }
         initMap();
+
+        function addLatLngInit(position) {
+            path = poly.getPath();
+
+            // Because path is an MVCArray, we can simply append a new coordinate
+            // and it will automatically appear.
+            path.push(position);
+
+            // Add a new marker at the new plotted point on the polyline.
+            var marker = new google.maps.Marker({
+                position: position,
+                title: '#' + path.getLength(),
+                map: map
+            });
+            tempmarkers.push(marker);
+        }
     </script>
 
     <script>

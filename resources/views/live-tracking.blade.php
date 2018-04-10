@@ -144,16 +144,17 @@
                 // set style
                 map.set('styles', mapStyle);
 
-                // set route
-                poly = new google.maps.Polyline({
-                    strokeColor: '#3d00f7',
-                    strokeOpacity: 1,
-                    strokeWeight: 3,
-                    map: map
-                });
 
-                @if ($route->route)
-                    var decodedPath = google.maps.geometry.encoding.decodePath('{{$route->route}}');
+                @if ($route)
+                    // set route
+                    poly = new google.maps.Polyline({
+                        strokeColor: '#3d00f7',
+                        strokeOpacity: 1,
+                        strokeWeight: 3,
+                        map: map
+                    });
+
+                    var decodedPath = google.maps.geometry.encoding.decodePath('{{$route}}');
                     tempmarkers = [];
                     for (var key in decodedPath) {
                         addLatLngInit(decodedPath[key]);
@@ -207,30 +208,19 @@
         initMap();
 
         function addLatLngInit(position) {
-          path = poly.getPath();
+            path = poly.getPath();
 
-          // Because path is an MVCArray, we can simply append a new coordinate
-          // and it will automatically appear.
-          path.push(position);
+            // Because path is an MVCArray, we can simply append a new coordinate
+            // and it will automatically appear.
+            path.push(position);
 
-          // mirrorCoordinates.push(position);
-          // polyIndex++;
-
-          // // Get the current Zoom Level and Center of the area
-          // var tempZoom = map.getZoom();
-          // var tempLat = map.getCenter().lat();
-          // var tempLng = map.getCenter().lng();
-          // // console.log(tempLat, tempLng, tempZoom);
-
-
-          // Add a new marker at the new plotted point on the polyline.
-          var marker = new google.maps.Marker({
-            position: position,
-            title: '#' + path.getLength(),
-            map: map
-          });
-          tempmarkers.push(marker);
-
+            // Add a new marker at the new plotted point on the polyline.
+            var marker = new google.maps.Marker({
+                position: position,
+                title: '#' + path.getLength(),
+                map: map
+            });
+            tempmarkers.push(marker);
         }
 
     </script>

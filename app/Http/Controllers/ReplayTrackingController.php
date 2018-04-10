@@ -17,8 +17,10 @@ class ReplayTrackingController extends Controller {
         }
         $jsonData = json_encode($array);
         $timestamp_from = strtotime($event->datetime_from." UTC");
+        echo $timestamp_from.' ';
         $timestamp_to = strtotime($event->datetime_to." UTC");
-        return view('replay-tracking')->with(array('data' => $jsonData, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to));
+        echo $timestamp_to;
+        // return view('replay-tracking')->with(array('data' => $jsonData, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to));
     }
 
 }

@@ -9,7 +9,13 @@ class RawDataController extends Controller {
 
     public function index() {
         $data = DB::table('gps_data')->orderby('datetime', 'desc')->get();
-        return view('raw-data')->with(array('data' => $data));
+        $deviceID = DB::table('gps_data')
+                    ->select('device_id')
+                    ->orderBy('device_id', 'asc')
+                    ->groupBy('device_id')
+                    ->get();
+                    // print_r($deviceID);
+        return view('raw-data')->with(array('data' => $data, 'deviceID' => $deviceID));
     }
 
     /**

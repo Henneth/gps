@@ -243,7 +243,8 @@ a:focus {
   background-color: transparent;
   background-image: none;
   padding: 15px 15px;
-  font-family: fontAwesome;
+  font-family: "Font Awesome 5 Free"; 
+  font-weight: 900;
 }
 .main-header .sidebar-toggle:before {
   content: "\f0c9";
@@ -3653,6 +3654,7 @@ table.text-center th {
   border-radius: 0px;
   padding: 6px 12px;
   height: 34px;
+  padding-right: 24px;
 }
 .select2-container--default.select2-container--open {
   border-color: #3c8dbc;

@@ -28,7 +28,7 @@
                         <label for="start-time">Start Time</label>
                         <div class="input-group">
                             <div class="input-group-addon">
-                                <i class="far fa-clock-o"></i>
+                                <i class="far fa-clock"></i>
                             </div>
                             <input type="text" class="form-control pull-right" name="start-time" id="start-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
                         </div>
@@ -37,7 +37,7 @@
                         <label for="end-time">End Time</label>
                         <div class="input-group">
                             <div class="input-group-addon">
-                                <i class="far fa-clock-o"></i>
+                                <i class="far fa-clock"></i>
                             </div>
                             <input type="text" class="form-control pull-right" name="end-time" id="end-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
                         </div>

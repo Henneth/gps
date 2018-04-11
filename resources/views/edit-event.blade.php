@@ -1,22 +1,19 @@
 @extends('app')
 
 @section('htmlheader_title')
-    Other Configurations
+    Edit Event
 @endsection
 
 @section('contentheader_title')
-    Other Configurations
+    Edit Event
 @endsection
 
 @section('main-content')
     @include('partials/alerts')
     <div class="container-flex">
         <div class="box box-primary">
-            <form method="post" action="{{url('/')}}/event/{{$event->event_id}}/other-configurations/post">
+            <form method="post" action="{{url('/')}}/event/{{$event->event_id}}/edit-event/post">
                 {{ csrf_field() }}
-                <div class="box-header">
-                    <h3 class="box-title">Event Details</h3>
-                </div>
                 <div class="box-body">
                     <div class="form-group">
                         <label>Event name:</label>
@@ -26,7 +23,7 @@
                         <label for="start-time">Start Time</label>
                         <div class="input-group">
                             <div class="input-group-addon">
-                                <i class="far fa-clock-o"></i>
+                                <i class="far fa-clock"></i>
                             </div>
                             <input type="text" class="form-control pull-right" name="start-time" value="{{$event->datetime_from}}" id="start-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
                         </div>
@@ -35,7 +32,7 @@
                         <label for="end-time">End Time</label>
                         <div class="input-group">
                             <div class="input-group-addon">
-                                <i class="far fa-clock-o"></i>
+                                <i class="far fa-clock"></i>
                             </div>
                             <input type="text" class="form-control pull-right" name="end-time" value="{{$event->datetime_to}}" id="end-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
                         </div>

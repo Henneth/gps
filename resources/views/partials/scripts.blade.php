@@ -22,6 +22,9 @@
 {{-- select2 --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 @yield('js')
+{{-- pick-a-color --}}
+<script src="{{ asset('/js/tinycolor-0.9.15.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('/js/pick-a-color-1.2.3.min.js') }}" type="text/javascript"></script>
 
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
       Both of these plugins are recommended to enhance the

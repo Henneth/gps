@@ -12,7 +12,11 @@ class AthletesController extends Controller {
             ->leftJoin('countries', 'athletes.country_code', '=', 'countries.code')
             ->orderby('athlete_id', 'desc')
             ->get();
-        return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id));
+
+        $countries = DB::table('countries')
+        	->orderby('code')
+            ->get();
+        return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries));
     }
     public function addAthlete($event_id) {
         if (empty($_POST['bib_number']) || empty($_POST['first_name'])) {

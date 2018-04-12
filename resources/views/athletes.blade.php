@@ -69,8 +69,19 @@
                                 <td><input form="form_add" class="form-control" name="bib_number" placeholder="Bib Number"></td>
                                 <td><input form="form_add" class="form-control" name="first_name" placeholder="First Name"></td>
                                 <td><input form="form_add" class="form-control" name="last_name" placeholder="Last Name"></td>
-                                <td>@include('partials/countries-dropdown')</td>
-                                <td><input form="form_add" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="#0000ff" style="width:100%;"></td>
+                                {{-- <td>@include('partials/countries-dropdown')</td> --}}
+                                <td>
+                                    <select name="country_code" class="form-control">
+                                        <option disabled selected>---- Select a country ----</option>
+                                        @foreach($countries as $country)
+                                            <option value="{{$country->code}}">{{$country->country}}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" form="form_add" name="colour_code" class="pick-a-color form-control">
+                                </td>
+                                {{-- <td><input form="form_add" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="#0000ff" style="width:100%;"></td> --}}
                                 <td><button form="form_add" type="submit" class="btn btn-primary">Add</button></td>
                             </form>
                         </tr>
@@ -83,12 +94,22 @@
                                     <td class="text"><span>{{$athlete->bib_number}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="bib_number" value="{{$athlete->bib_number}}" placeholder="Bib Number"></td>
                                     <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
                                     <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
-                                    <td class="country_code" data-code="{{$athlete->country_code}}"><span>{{$athlete->country}}</span><div style="display: none;">@include('partials/countries-dropdown')</div></td>
+                                    <td class="country_code" data-code="{{$athlete->country_code}}"><span>{{$athlete->country}}</span><div style="display: none;">
+                                        <select name="country_code" class="form-control">
+                                            @foreach($countries as $country)
+                                                <option value="{{$country->code}}">{{$country->country}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div></td>
                                     <td class="colour_code">
                                         @if ($athlete->colour_code)
-                                            <div style="padding-left: 4px; background: {{$athlete->colour_code}}">{{$athlete->colour_code}}</div>
+                                            <div class="read-only" style="padding-left: 4px; background: #{{$athlete->colour_code}}">#{{$athlete->colour_code}}</div>
                                         @endif
-                                        <input form="form_edit_{{$athlete->athlete_id}}" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}" style="display: none; width:100%;">
+                                        <div class="editable" style="display: none; width:100%;">
+                                            <input type="text" form="form_edit_{{$athlete->athlete_id}}" name="colour_code" class="pick-a-color form-control" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}">
+                                        </div>
+
+                                       {{--  <input form="form_edit_{{$athlete->athlete_id}}" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}" style="display: none; width:100%;"> --}}
                                     </td>
                                     <td><button type="button" class="edit-btn btn btn-default">Edit</button><button form="form_edit_{{$athlete->athlete_id}}" type="submit" class="btn btn-default" style="display: none;">Save</button></td>
                                 </form>
@@ -114,6 +135,8 @@
 
 @section('js')
     <script>
+        
+
         $('.edit-btn').click(function() {
             $(this).hide();
             var form = $(this).parent().parent();
@@ -125,12 +148,24 @@
             form.find('.country_code span').hide();
             form.find('.country_code div').show();
             form.find('.country_code div select').val(countryCode);
-            form.find('.colour_code div').hide();
-            form.find('.colour_code input').show();
+            form.find('.colour_code div.read-only').hide();
+            form.find('.colour_code div.editable').show();
             $(this).next().show();
         })
         function toggleExcelImport() {
             $('#excelImportBox').toggle();
         }
+        $(document).ready(function () {
+            $(".pick-a-color").pickAColor({
+                showSpectrum            : true,
+                showSavedColors         : true,
+                saveColorsPerElement    : false,
+                fadeMenuToggle          : true,
+                showHexInput            : true,
+                showBasicColors         : true,
+                allowBlank              : true,
+                inlineDropdown          : true
+            });
+        });
     </script>
 @endsection

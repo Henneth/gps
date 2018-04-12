@@ -29,6 +29,8 @@
     <link href="{{ asset('/css/custom.css') }}" rel="stylesheet" type="text/css" />
     {{-- <!-- Date Range Picker -->
     <link rel="stylesheet" type="text/css" href="{{ asset('/css/daterangepicker.css')}}" /> --}}
+    {{-- Pick-a-color --}}
+    <link href="{{ asset('/css/pick-a-color-1.2.3.min.css') }}" rel="stylesheet" type="text/css" />
 
     @yield('css')
 

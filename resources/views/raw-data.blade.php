@@ -16,7 +16,7 @@
                 <table id="table1" class="table table-bordered table-striped">
                     <thead>
                         <tr>
-                            <th>
+                            <th style="width: 36%">
                                 <div class="form-group" style="width: 49.5%">
                                     <div class="input-group" style="width: 100%">
                                         <div class="input-group-addon" style="width: 16%">
@@ -43,6 +43,7 @@
                                     @endforeach
                                 </select>
                             </th>
+                            <th></th>
                             <th></th>
                         <tr>
                             <th>Timestamp</th>
@@ -88,17 +89,20 @@
         /* Custom filtering function which will search data in column four between two values */
         $.fn.dataTable.ext.search.push(
             function( settings, data, dataIndex ) {
-                var from = new Date( $('#time-from').val());
-                var to = new Date( $('#time-to').val());
-                console.log(from);
-                console.log(to);
-                var timestamp = new Date( data[0] ) || 0; // use data for the age column
+                var tfrom = new Date( $('#time-from').val());
+                var tto = new Date( $('#time-to').val());
+                var ttfrom = tfrom instanceof Date && isNaN(tfrom.valueOf());
+                var ttto = tto instanceof Date && isNaN(tto.valueOf());
+                console.log(ttfrom);
+                console.log(ttto);
+                var timestamp = new Date( data[0] ) || 0; // use data for the Timestamp column
          
                 if ( 
-                    (timestamp <= to ) ||
-                     ( from <= timestamp ) ||
-                     ( from <= timestamp   && timestamp <= to ) )
-                {
+                        (ttfrom && ttto ) ||
+                        (ttfrom && timestamp <= tto ) ||
+                        ( tfrom <= timestamp  && ttto) ||
+                        ( tfrom <= timestamp   && timestamp <= tto ) 
+                    ) {
                     return true;
                 }
                 return false;

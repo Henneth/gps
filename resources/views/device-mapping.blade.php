@@ -29,6 +29,8 @@
                             {{-- <th>Bib Number</th>
                             <th>First Name</th>
                             <th>Last Name</th> --}}
+                            <th>Start Time</th>
+                            <th>End Time</th>
                             <th>Status</th>
                             <th style="width: 64px;">&nbsp;</th>
                             {{-- <th style="width: 40px">Label</th> --}}
@@ -45,6 +47,22 @@
                                             <option value="{{$athlete->athlete_id}}">{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</option>
                                         @endforeach
                                     </select>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <div class="input-group-addon">
+                                            <i class="far fa-clock"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" name="start_time" id="start-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <div class="input-group-addon">
+                                            <i class="far fa-clock"></i>
+                                        </div>
+                                        <input type="text" class="form-control pull-right" name="end_time" id="end-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
+                                    </div>
                                 </td>
                                 <td>
                                     <select name="status" class="form-control">
@@ -72,6 +90,22 @@
                                                 <option value="{{$athlete->athlete_id}}" {{($athlete->athlete_id == $device->athlete_id) ? 'selected' : ''}}>{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$device->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</option>
                                             @endforeach
                                         </select>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <div class="input-group-addon">
+                                                <i class="far fa-clock"></i>
+                                            </div>
+                                            <input type="text" class="form-control pull-right edit-start-time" name="start_time" id="start-time" autocomplete="off" value="{{$device->start_time}}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <div class="input-group-addon">
+                                                <i class="far fa-clock"></i>
+                                            </div>
+                                            <input type="text" class="form-control pull-right edit-end-time" name="end_time" id="end-time" autocomplete="off" value="{{$device->end_time}}">
+                                        </div>
                                     </td>
                                     <td class="status">
                                         <span><i class="fas fa-{{($device->status == 'visible' ? 'eye' : 'eye-slash')}}"></i> {{ucfirst($device->status)}}</span>
@@ -118,5 +152,9 @@
             form.find('.status select').show();
             $(this).next().show();
         })
+
+
+        $('#start-time, .edit-start-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
+        $('#end-time, edit-end-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
     </script>
 @endsection

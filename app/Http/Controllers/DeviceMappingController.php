@@ -13,6 +13,7 @@ class DeviceMappingController extends Controller {
             ->where('event_id', $event_id)
             ->orderby('device_mapping_id', 'desc')
             ->get();
+            // print_r($devices);
         $athletes = DB::table('athletes')->get();
         return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes));
     }
@@ -32,10 +33,13 @@ class DeviceMappingController extends Controller {
         }
 
         $athlete_id = $_POST['athlete_id'];
+        $start_time = $_POST['start_time'];
+        $end_time = $_POST['end_time'];
+
         $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
 
         DB::table('device_mapping')->insert(
-            ['device_id' => $device_id, 'event_id' => $event_id, 'athlete_id' => $athlete_id, 'status' => $status]
+            ['device_id' => $device_id, 'event_id' => $event_id, 'athlete_id' => $athlete_id, 'status' => $status, 'start_time' => $start_time, 'end_time' => $end_time]
         );
         return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Device and athlete is mapped.');
     }
@@ -47,10 +51,12 @@ class DeviceMappingController extends Controller {
         $device_mapping_id = $_POST['device_mapping_id'];
         $device_id = $_POST['device_id'];
         $athlete_id = $_POST['athlete_id'];
+        $start_time = $_POST['start_time'];
+        $end_time = $_POST['end_time'];
         $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
 
         DB::table('device_mapping')->where('device_mapping_id', $device_mapping_id)->update(
-            ['device_id' => $device_id, 'athlete_id' => $athlete_id, 'status' => $status]
+            ['device_id' => $device_id, 'athlete_id' => $athlete_id, 'status' => $status, 'start_time' => $start_time, 'end_time' => $end_time]
         );
         return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Mapping is edited.');
     }

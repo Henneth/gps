@@ -53,7 +53,7 @@
                                         <div class="input-group-addon">
                                             <i class="far fa-clock"></i>
                                         </div>
-                                        <input type="text" class="form-control pull-right" name="start_time" id="start-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
+                                        <input type="text" class="form-control pull-right start-time" name="start_time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
                                     </div>
                                 </td>
                                 <td>
@@ -61,8 +61,8 @@
                                         <div class="input-group-addon">
                                             <i class="far fa-clock"></i>
                                         </div>
-                                        <input type="text" class="form-control pull-right" name="end_time" id="end-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
-                                    </div>
+                                        <input type="text" class="form-control pull-right end-time" name="end_time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
+                                    </div><div class="check" style="color:red; display: none;">End Time must be after Start Time!</div>
                                 </td>
                                 <td>
                                     <select name="status" class="form-control">
@@ -70,7 +70,7 @@
                                         <option value="hidden">Hidden</option>
                                     </select>
                                 </td>
-                                <td><button type="submit" class="btn btn-primary">Add</button></td>
+                                <td><button type="submit" class="btn btn-primary action-btn">Add</button></td>
                             </form>
                         </tr>
                         @foreach ($devices as $key => $device)
@@ -91,21 +91,24 @@
                                             @endforeach
                                         </select>
                                     </td>
-                                    <td>
-                                        <div class="input-group">
+                                    <td class="start-time-td">
+                                        <span>{{$device->start_time}}</span>
+                                        <div class="input-group" style="display: none;">
                                             <div class="input-group-addon">
                                                 <i class="far fa-clock"></i>
                                             </div>
-                                            <input type="text" class="form-control pull-right edit-start-time" name="start_time" id="start-time" autocomplete="off" value="{{$device->start_time}}">
+                                            <input type="text" class="form-control pull-right start-time" name="start_time"  autocomplete="off" value="{{$device->start_time}}">
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="input-group">
+                                    <td class="end-time-td">
+                                        <span>{{$device->end_time}}</span>
+                                        <div class="input-group" style="display: none;">
                                             <div class="input-group-addon">
                                                 <i class="far fa-clock"></i>
                                             </div>
-                                            <input type="text" class="form-control pull-right edit-end-time" name="end_time" id="end-time" autocomplete="off" value="{{$device->end_time}}">
+                                            <input type="text" class="form-control pull-right end-time" name="end_time"  autocomplete="off" value="{{$device->end_time}}">
                                         </div>
+                                        <div class="check" style="color:red; display: none;">End Time must be after Start Time!</div>
                                     </td>
                                     <td class="status">
                                         <span><i class="fas fa-{{($device->status == 'visible' ? 'eye' : 'eye-slash')}}"></i> {{ucfirst($device->status)}}</span>
@@ -114,7 +117,7 @@
                                             <option value="hidden" {{($device->status == 'hidden' ? 'selected' : '')}}>Hidden</option>
                                         </select>
                                     </td>
-                                    <td><button type="button" class="edit-btn btn btn-default">Edit</button><button type="submit" class="btn btn-default" style="display: none;">Save</button></td>
+                                    <td><button type="button" class="edit-btn btn btn-default">Edit</button><button type="submit" class="btn btn-default action-btn" style="display: none;">Save</button></td>
                                 </form>
                             </tr>
                         @endforeach
@@ -138,23 +141,48 @@
 
 @section('js')
     <script>
-        $('.edit-btn').click(function() {
-            $(this).hide();
-            var form = $(this).parent().parent();
-            form.find('.text').each(function() {
-                $(this).find('span').hide();
-                $(this).find('input').show();
+        $(function(){
+
+            $('.edit-btn').click(function() {
+                $(this).hide();
+                var form = $(this).parent().parent();
+                form.find('.text').each(function() {
+                    $(this).find('span').hide();
+                    $(this).find('input').show();
+                });
+                var countryCode = form.find('.country_code').attr('data-code');
+                form.find('.athlete_tds').hide();
+                form.find('.athlete_select').show();
+                form.find('.status span').hide();
+                form.find('.status select').show();
+                form.find('.start-time-td span').hide();
+                form.find('.start-time-td div.input-group').show();
+                form.find('.end-time-td span').hide();
+                form.find('.end-time-td div.input-group').show();
+                $(this).next().show();
+            })
+
+
+            $('.start-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
+            $('.end-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
+
+
+            $('.start-time, .end-time').change(function() {
+                var form = $(this).parent().parent().parent();
+                var startTime = new Date( form.find('.start-time').val());
+                var endTime = new Date( form.find('.end-time').val());
+                if (startTime > endTime){
+                    form.find('.check').show();
+                    form.find('.action-btn').prop("disabled", true);
+                }else{
+                    form.find('.check').hide();
+                    form.find('.action-btn').prop("disabled", false);
+                }
             });
-            var countryCode = form.find('.country_code').attr('data-code');
-            form.find('.athlete_tds').hide();
-            form.find('.athlete_select').show();
-            form.find('.status span').hide();
-            form.find('.status select').show();
-            $(this).next().show();
-        })
 
+        });
+        
 
-        $('#start-time, .edit-start-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
-        $('#end-time, edit-end-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
+        // var ttfrom = startTime instanceof Date && isNaN(startTime.valueOf());
     </script>
 @endsection

@@ -1,0 +1,24 @@
+<gpx version="1.0" creator="www.maplorer.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">
+<trk>
+<trkseg>
+<trkpt lat="28.528171778684108" lon="103.96262456483919">
+</trkpt>
+</trkseg>
+<trkseg>
+<trkpt lat="28.450924353656028" lon="109.67551518983919">
+</trkpt>
+</trkseg>
+<trkseg>
+<trkpt lat="32.24217408612413" lon="116.13547612733919">
+</trkpt>
+</trkseg>
+<trkseg>
+<trkpt lat="24.878069744962545" lon="110.94992925233919">
+</trkpt>
+</trkseg>
+<trkseg>
+<trkpt lat="24.598683569616917" lon="106.99485112733919">
+</trkpt>
+</trkseg>
+</trk>
+</gpx>

@@ -22,7 +22,7 @@ Route::get('event/{event_id}', function ($event_id) {
 Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index')->name('live-tracking');
 Route::get('event/{event_id}/live-tracking/poll', 'LiveTrackingController@poll');
 Route::get('event/{event_id}/replay-tracking', 'ReplayTrackingController@index')->name('replay-tracking');
-Route::get('test', 'DataImportController@test');
+Route::get('test/{event_id}', 'GPXController@index');
 
 // Admins
 Route::group(['middleware' => 'auth'], function () {

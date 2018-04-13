@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="MapSource 6.13.6" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensions/v3/GpxExtensionsv3.xsd http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+ 
+  <metadata>
+    <link href="http://www.garmin.com">
+      <text>Garmin International</text>
+    </link>
+    <time>2008-11-14T21:23:44Z</time>
+    <bounds maxlat="47.4619833" maxlon="-73.8477775" minlat="38.8624191" minlon="-89.9737000"/>
+  </metadata>
+ 
+  <trk>
+    <name>ACTIVE LOG</name>
+    <extensions>
+      <gpxx:TrackExtension xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
+        <gpxx:DisplayColor>Transparent</gpxx:DisplayColor>
+      </gpxx:TrackExtension>
+    </extensions>
+ 
+    <trkseg>
+      <trkpt lat="40.7697914" lon="-74.0381743">
+        <ele>-108.9722900</ele>
+        <time>2008-06-27T01:34:06Z</time>
+      </trkpt>
+ 
+      <trkpt lat="40.7694440" lon="-74.0373474">
+        <ele>-113.7789307</ele>
+        <time>2008-06-27T01:34:09Z</time>
+      </trkpt>
+ 
+      <trkpt lat="40.7691001" lon="-74.0365290">
+        <ele>-118.5854492</ele>
+        <time>2008-06-27T01:34:12Z</time>
+      </trkpt>
+ 
+      <trkpt lat="40.7688648" lon="-74.0359691">
+        <ele>-109.4528809</ele>
+        <time>2008-06-27T01:34:14Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+ 
+</gpx>

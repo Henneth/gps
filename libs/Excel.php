@@ -1,6 +1,6 @@
 <?php
 
-require '../lib/PHPExcel/PHPExcel.php';
+require base_path().'/libs/PHPExcel.php';
 // require 'libs/PHPExcel/PHPExcel/IOFactory.php';
 
 // function exportAsExcel($filename, $sheets) {
@@ -102,17 +102,17 @@ function importAsExcel($filename){
 	    	// echo '<tr>';
 	        for ($col = 0; $col < $highestColumnIndex; $col ++) {
 	            $cell = $worksheet->getCellByColumnAndRow($col, $row);
-	            if ($col == 4){
-	            	if (is_numeric($cell->getValue())) {
-	            		$val = convertTime($cell->getValue());
-	            	} else {
-	            		$val = $cell->getValue();
-	            	}
-	            } elseif ($col == 8) {
-	            	$val = PHPExcel_Style_NumberFormat::toFormattedString($cell->getCalculatedValue(), 'yyyy-mm-dd');
-	            } else {
+	            // if ($col == 4){
+	            // 	if (is_numeric($cell->getValue())) {
+	            // 		$val = convertTime($cell->getValue());
+	            // 	} else {
+	            // 		$val = $cell->getValue();
+	            // 	}
+	            // } elseif ($col == 8) {
+	            // 	$val = PHPExcel_Style_NumberFormat::toFormattedString($cell->getCalculatedValue(), 'yyyy-mm-dd');
+	            // } else {
 	            	$val = $cell->getValue();
-	            }
+	            // }
 
 	            $results[$row][$col] = $val;
 	            // echo '<td>' . $val . '</td>';
@@ -129,29 +129,29 @@ function importAsExcel($filename){
     return $results;
 }
 
-// function convertTime($dec) {
-//
-//     $seconds = ($dec * 24 * 3600);
-//
-//     $days = floor($dec);
-//
-//     $seconds -= $days * 24 * 3600;
-//
-//     $hours = floor($seconds / 3600);
-//
-//     $seconds -= $hours * 3600;
-//
-//     $minutes = floor($seconds / 60);
-//
-//     $seconds -= $minutes * 60;
-//     // return the time formatted HH:MM:SS
-//     return lz($hours + 24 * $days).":".lz($minutes).":".lz($seconds);
-// }
+function convertTime($dec) {
+
+    $seconds = ($dec * 24 * 3600);
+
+    $days = floor($dec);
+
+    $seconds -= $days * 24 * 3600;
+
+    $hours = floor($seconds / 3600);
+
+    $seconds -= $hours * 3600;
+
+    $minutes = floor($seconds / 60);
+
+    $seconds -= $minutes * 60;
+    // return the time formatted HH:MM:SS
+    return lz($hours).":".lz($minutes).":".lz(intval($seconds));
+}
 
 // lz = leading zero
-// function lz($num) {
-//     return (strlen($num) < 2) ? "0{$num}" : $num;
-// }
+function lz($num) {
+    return (strlen($num) < 2) ? "0{$num}" : $num;
+}
 //
 // function importResultsAsExcel($filename){
 // 	$cacheMethod = PHPExcel_CachedObjectStorageFactory:: cache_to_phpTemp;

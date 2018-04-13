@@ -50,6 +50,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('event/{event_id}/device-mapping', 'DeviceMappingController@index')->name('device-mapping');
     Route::post('event/{event_id}/device-mapping/add', 'DeviceMappingController@addDeviceMapping');
     Route::post('event/{event_id}/device-mapping/edit', 'DeviceMappingController@editDeviceMapping');
+    Route::post('event/{event_id}/device-mapping/import-from-excel', 'DeviceMappingController@importFromExcel');
 
     // Draw Route
     Route::get('event/{event_id}/draw-route', 'DrawRouteController@index')->name('draw-route');

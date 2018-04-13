@@ -30,13 +30,14 @@
             <!-- /.box-header -->
             <!-- form start -->
             <form role="form" action="{{url('/')}}/event/{{$event_id}}/athletes/import-from-excel" method="post" enctype="multipart/form-data">
+                {{ csrf_field() }}
                 <div class="box-body">
                     <div class="form-group">
                         <label for="excelFile">Excel file upload</label>
                         <input type="file" id="excelFile" name="fileToUpload">
 
                         <p class="help-block">.xls or .xlsx files only.</p>
-                        <p class="help-block">Please refer to this example excel file for the required format: <a>example.xls</a>.</p>
+                        <p class="help-block">Please refer to this example excel file for the required format: <a href={{ asset('examples/athletes_example.xls') }}>athletes_example.xls</a>.</p>
                     </div>
                 </div>
                 <!-- /.box-body -->
@@ -55,6 +56,7 @@
                             <th>Bib Number</th>
                             <th>First Name</th>
                             <th>Last Name</th>
+                            <th>Chinese Full Name</th>
                             <th>Country</th>
                             <th>Colour Code</th>
                             <th style="width: 64px;">&nbsp;</th>
@@ -70,6 +72,7 @@
                                 <td><input form="form_add" class="form-control" name="first_name" placeholder="First Name"></td>
                                 <td><input form="form_add" class="form-control" name="last_name" placeholder="Last Name"></td>
                                 {{-- <td>@include('partials/countries-dropdown')</td> --}}
+                                <td><input form="form_add" class="form-control" name="zh_full_name" placeholder="Chinese Full Name"></td>
                                 <td>
                                     <select name="country_code" class="form-control">
                                         <option disabled selected>---- Select a country ----</option>
@@ -78,6 +81,7 @@
                                         @endforeach
                                     </select>
                                 </td>
+
                                 <td>
                                     <input type="text" form="form_add" name="colour_code" class="pick-a-color form-control">
                                 </td>
@@ -94,6 +98,7 @@
                                     <td class="text"><span>{{$athlete->bib_number}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="bib_number" value="{{$athlete->bib_number}}" placeholder="Bib Number"></td>
                                     <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
                                     <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
+                                    <td class="text"><span>{{$athlete->zh_full_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="zh_full_name" value="{{$athlete->zh_full_name}}" placeholder="zh_full_name"></td>
                                     <td class="country_code" data-code="{{$athlete->country_code}}"><span>{{$athlete->country}}</span><div style="display: none;">
                                         <select name="country_code" class="form-control">
                                             @foreach($countries as $country)

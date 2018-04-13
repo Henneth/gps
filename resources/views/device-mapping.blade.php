@@ -13,12 +13,40 @@
 @endsection
 
 @section('contentheader_right')
-<div class="pull-right"><button class="btn btn-primary" disabled><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
+<div class="pull-right"><button class="btn btn-primary" onclick="toggleExcelImport();return false;"><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
 @endsection
 
 @section('main-content')
     @include('partials/alerts')
     <div class="container-flex">
+        <div id="excelImportBox" class="box box-primary" style="display: none;">
+            <div class="box-header with-border">
+                <h3 class="box-title">Import from Excel</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-remove"></i></button>
+                </div>
+            </div>
+            <!-- /.box-header -->
+            <!-- form start -->
+            <form role="form" action="{{url('/')}}/event/{{$event_id}}/device-mapping/import-from-excel" method="post" enctype="multipart/form-data">
+                {{ csrf_field() }}
+                <div class="box-body">
+                    <div class="form-group">
+                        <label for="excelFile">Excel file upload</label>
+                        <input type="file" id="excelFile" name="fileToUpload">
+
+                        <p class="help-block">.xls or .xlsx files only.</p>
+                        <p class="help-block">Please refer to this example excel file for the required format: <a href={{ asset('examples/device_mapping_example.xlsx') }}>device_mapping_example.xlsx</a>.</p>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+
+                <div class="box-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
         <div class="box">
             <div class="box-body">
                 <table class="table table-bordered">
@@ -42,9 +70,9 @@
                                 {{ csrf_field() }}
                                 <td><input class="form-control" name="device_id" placeholder="Device ID"></td>
                                 <td>
-                                    <select name="athlete_id" class="form-control">
+                                    <select name="athlete_bib_num" class="form-control">
                                         @foreach ($athletes as $athlete)
-                                            <option value="{{$athlete->athlete_id}}">{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</option>
+                                            <option value="{{$athlete->bib_number}}">{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}})</option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -82,12 +110,16 @@
                                         <span>{{$device->device_id}}</span>
                                         <input style="display: none;" class="form-control" name="device_id" placeholder="Device ID" value="{{$device->device_id}}"></td>
                                     <td class="athlete_tds">
-                                        <span>{{$device->first_name}} {{$device->last_name}} (Bib: {{$device->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</span>
+                                        @if ($device->bib_number)
+                                            <span>{{$device->first_name}} {{$device->last_name}} (Bib: {{$device->bib_number}})</span>
+                                        @else
+                                            <span style="color: #999">No matched athlete.</span>
+                                        @endif
                                     </td>
                                     <td class="athlete_select" style="display: none;">
-                                        <select name="athlete_id" class="form-control">
+                                        <select name="athlete_bib_num" class="form-control">
                                             @foreach ($athletes as $athlete)
-                                                <option value="{{$athlete->athlete_id}}" {{($athlete->athlete_id == $device->athlete_id) ? 'selected' : ''}}>{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$device->bib_number}}, Athlete ID: {{$athlete->athlete_id}})</option>
+                                                <option value="{{$athlete->bib_number}}" {{($athlete->bib_number == $device->bib_number) ? 'selected' : ''}}>{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}})</option>
                                             @endforeach
                                         </select>
                                     </td>
@@ -141,6 +173,9 @@
 
 @section('js')
     <script>
+        function toggleExcelImport() {
+            $('#excelImportBox').toggle();
+        }
         $(function(){
 
             $('.edit-btn').click(function() {
@@ -161,6 +196,7 @@
                 form.find('.end-time-td div.input-group').show();
                 $(this).next().show();
             })
+
 
 
             $('.start-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});

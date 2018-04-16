@@ -13,8 +13,14 @@ class DrawRouteController extends Controller {
         	->where('event_id',$event_id)
         	->select('route')
         	->first();
-		// print_r($data);
-        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data));
+
+        $gpxData = DB::table('routes') 
+            ->where('event_id', $event_id)
+            ->select('latitude', 'longitude')
+            ->get();
+        $gpxData = json_encode($gpxData);  
+            
+        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'gpxData'=>$gpxData));
     }
 
     public function saveRoute($event_id) {

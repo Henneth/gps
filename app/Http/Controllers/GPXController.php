@@ -59,6 +59,17 @@ class GPXController extends Controller {
 
         // echo $rss_parser->sql;
         DB::unprepared($rss_parser->sql);
-        // return redirect('event/'.$event_id.'/edit-event')->with('success', 'Excel file imported.');
+        return redirect('event/'.$event_id.'/edit-event')->with('success', 'Excel file imported.');
+    }
+
+
+    public function gpxRoute($event_id){
+        $gpxData = DB::table('routes') 
+            ->where('event_id', $event_id)
+            ->select('latitude','longitude')
+            ->get();
+        $gpxData = json_encode($gpxData);
+        // print_r($gpxData);
+        return view('gpx-route')->with(array('event_id' => $event_id, 'gpxData'=>$gpxData));
     }
 }

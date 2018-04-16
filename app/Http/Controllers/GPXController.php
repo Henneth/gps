@@ -8,6 +8,34 @@ use App\Classes\TRKParser;
 
 class GPXController extends Controller {
     public function index($event_id) {
+        $target_dir = storage_path('app/GPX/');
+        $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+        $uploadOk = 1;
+        $gpxFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+
+        // Check if file already exists
+        if (file_exists($target_file)) {
+            return redirect('event/'.$event_id.'/edit-event')->with('error', 'GPX file with the same name has been uploaded.');
+        } 
+
+
+
+
+        // Allow certain file formats
+        if ($gpxFileType != "gpx") {
+            return redirect('event/'.$event_id.'/edit-event')->with('error', 'Sorry, only gpx file is allowed.');
+        }
+
+
+        // if everything is ok, try to upload file
+        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+
+        } else {
+            $error_msg = "Sorry, there was an error uploading your file.";
+            return redirect('event/'.$event_id.'/edit-event')->with('error', $error_msg);
+        }
+
+
         $xml_parser = xml_parser_create();
         $rss_parser = new TRKParser();
         $rss_parser->event_id = $event_id;
@@ -16,7 +44,7 @@ class GPXController extends Controller {
         xml_set_element_handler($xml_parser, "startElement", "endElement");
         xml_set_character_data_handler($xml_parser, "characterData");
          
-        $fp = fopen("TRKFile.gpx","r")
+        $fp = fopen($target_file,"r")
               or die("Error reading Track Point data.");
 
         while ($data = fread($fp, 4096))
@@ -29,7 +57,8 @@ class GPXController extends Controller {
          
         xml_parser_free($xml_parser);
 
-        echo $rss_parser->sql;
+        // echo $rss_parser->sql;
         DB::unprepared($rss_parser->sql);
+        // return redirect('event/'.$event_id.'/edit-event')->with('success', 'Excel file imported.');
     }
 }

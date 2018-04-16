@@ -10,6 +10,7 @@ class TRKParser {
   var $lat         = "";
   var $lon         = "";
   var $time        = "";
+  var $date        = "";
   var $sql         = "";
   var $event_id    = "";
  
@@ -33,13 +34,18 @@ class TRKParser {
     if ($tagName == "TRKPT") {
       $ele      = htmlspecialchars(trim($this->ele));
       $datetime = htmlspecialchars(trim($this->time));
- 
-      # This will split date-time into date & time
-      list($date,$mytime) = explode("T", $datetime);
-      list($time,$null)   = explode("Z", $mytime);
- 
+      if ($datetime){
+        # This will split date-time into date & time
+        list($date,$mytime) = explode("T", $datetime);
+        list($time,$null)   = explode("Z", $mytime);
+        echo $date;
+        echo $time;
+        $this->sql .= "'$ele', '$date', '$time');\n";
+      } else{
+        $this->sql .= "'$ele', NULL, NULL);\n";
+      }
       # This will write the last part of INSERT statment
-      $this->sql .= "'$ele', '$date', '$time');\n";
+      // $this->sql .= "'$ele', '$date', '$time');\n";
  
       $this->ele         = "";
       $this->lat         = "";

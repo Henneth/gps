@@ -59,6 +59,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Edit Event
     Route::get('event/{event_id}/edit-event', 'EditEventController@index')->name('edit-event');
     Route::post('event/{event_id}/edit-event/post', 'EditEventController@postEditEvent');
+    Route::post('event/{event_id}/edit-event/gpx-file-upload', 'GPXController@index');
 
     // Playground
     // Route::get('/playground', function () {

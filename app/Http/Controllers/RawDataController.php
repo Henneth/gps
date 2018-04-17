@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 class RawDataController extends Controller {
 
     public function index() {
-        $data = DB::table('gps_data')->orderby('datetime', 'desc')->get();
+        $data = DB::table('gps_data')->orderby('datetime', 'desc')->limit(1000)->get();
         $deviceID = DB::table('gps_data')
                     ->select('device_id')
                     ->orderBy('device_id', 'asc')

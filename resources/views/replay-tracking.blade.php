@@ -61,12 +61,12 @@
                     //     icon: pinSymbol(content['colour_code']),
                     //     map: map
                     // });
-                    var borderStyle = '<style>.label_content:after { border-top: solid 8px ' + content['colour_code'] + '; }</style>';
+                    var borderStyle = '<style>.id' + content['device_id'] + '.label_content:after { border-top: solid 8px ' + content['colour_code'] + '; }</style>';
                     var marker = new RichMarker({
                         map: map,
                         flat: true,
                         position: new google.maps.LatLng(parseFloat(content['latitude_final']), parseFloat(content['longitude_final'])),
-                        content: borderStyle + '<div><div class="label_content" style="background-color: ' + content['colour_code'] + '">' + content['bib_number']
+                        content: borderStyle + '<div><div class="id' + content['device_id'] + ' label_content" style="background-color: ' + content['colour_code'] + '">' + content['bib_number']
                         + '</div></div>'
                     });
 

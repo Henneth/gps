@@ -38,7 +38,6 @@ desired effect
     <div class="content-wrapper">
 
         @include('partials.contentheader')
-
         <!-- Main content -->
         <section class="content">
             <!-- Your Page Content Here -->

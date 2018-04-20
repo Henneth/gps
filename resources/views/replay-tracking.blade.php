@@ -61,20 +61,20 @@
                     //     icon: pinSymbol(content['colour_code']),
                     //     map: map
                     // });
-                    var borderStyle = '<style>.label_content:after { border-top: solid 8px ' + content['colour_code'] + '; }</style>';
+                    var borderStyle = '<style>.id' + content['device_id'] + '.label_content:after { border-top: solid 8px #' + content['colour_code'] + '; }</style>';
                     var marker = new RichMarker({
                         map: map,
                         flat: true,
                         position: new google.maps.LatLng(parseFloat(content['latitude_final']), parseFloat(content['longitude_final'])),
-                        content: borderStyle + '<div><div class="label_content" style="background-color: ' + content['colour_code'] + '">' + content['bib_number']
+                        content: borderStyle + '<div><div class="id' + content['device_id'] + ' label_content" style="background-color: #' + content['colour_code'] + '">' + content['bib_number']
                         + '</div></div>'
                     });
 
                     google.maps.event.addListener(marker, 'click', function (marker) {
             			return function () {
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
-                            html += '<div>Given Name: <b>' + content['first_name'] + '</b></div>';
-                            html += '<div>Family Name: <b>' + content['last_name'] + '</b></div>';
+                            html += '<div>First Name: <b>' + content['first_name'] + '</b></div>';
+                            html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
                             html += '<div>Location: <b>' + location['lat'] + ', ' + location['lng'] + '</b></div>';
             				infowindow.setContent(html);

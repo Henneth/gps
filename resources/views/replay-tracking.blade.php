@@ -9,15 +9,62 @@
 @endsection
 
 @section('main-content')
-<div class="container-flex flex-container form-group">
-    <button type="button" class="replay-controls play btn btn-primary">Play</button>
-    <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
-    <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
-    <div class="slider-wrapper">
-        <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
+<div>
+
+    <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs">
+            <li id="home-tab" class="active"><a href="#" data-toggle="tab">Map</a></li>
+            <li id="profile-tab" ><a href="#" data-toggle="tab">Athletes</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="map-section tab-pane active">
+                <div class="flex-container form-group">
+                    <button type="button" class="replay-controls play btn btn-primary">Play</button>
+                    <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
+                    <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
+                    <div class="slider-wrapper">
+                        <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
+                    </div>
+                </div>
+                <div id="map"></div>
+            </div>
+            <div class="profile-section tab-pane">
+                <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Bib Number</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Chinese Name</th>
+                            <th>Country Code</th>
+                            <th>Visibility</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $count = 1 ?>
+                        @foreach($profile as $i)
+                        <tr>
+                            <td>{{$i->bib_number}}</td>
+                            <td>{{$i->first_name}}</td>
+                            <td>{{$i->last_name}}</td>
+                            <td>{{$i->zh_full_name}}</td>
+                            <td>{{$i->country_code}}</td>
+                            <td>
+                                <div>
+                                    <input class="tgl tgl-ios check" data-id="{{$i->device_id}}" id="{{$count}}" type="checkbox"  {{($i->status == "visible") ? ' checked="checked" ' :''}}/>
+                                    <label class="tgl-btn" for="{{$count}}"></label>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php $count++ ?>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+
 </div>
-<div id="map"></div>
 @endsection
 
 @section('js')
@@ -141,13 +188,30 @@
 
                 // Add Markers
                 markers = [];
+
+                // check device_id in localStorage 
+                var temp = localStorage.getItem("visibility");
+                var array = jQuery.parseJSON( temp ); 
+                // console.log(" array: " + array );
+
+
                 for (var key in data) {
                     // console.log(data[key]);
                     if (typeof data[key][0] != "undefined") {
                         var location = {lat: parseFloat(data[key][0]['latitude_final']), lng: parseFloat(data[key][0]['longitude_final'])};
-                        markers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
+
+                        if (temp !== null) { // localStorage is not empty
+                            if (jQuery.inArray(data[key][0]['device_id'], array) !== -1) {
+                                markers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
+                            }
+                        } else {
+                            if (data[key][0]['status'] == "visible"){
+                                markers[data[key][0]['device_id']] = (addMarker(location, map, data[0]));
+                            }
+                        }
                     }
                 }
+
 
             @else
                 var central = {lat: 22.2816616, lng: 114.1577151};
@@ -188,7 +252,7 @@
             var marker = new google.maps.Marker({
                 position: position,
                 title: '#' + path.getLength(),
-                map: map
+                setMap: map
             });
             tempmarkers.push(marker);
         }
@@ -247,19 +311,21 @@
             console.log(dateString);
 
             for (var device_id in data) {
-                console.log(device_id);
-                var markerHasData = false;
-                markers[device_id].setVisible(true);
-                for (var i in data[device_id]) {
-                    if (data[device_id][i]['timestamp'] <= time) {
-                        console.log(data[device_id][i]['timestamp']);
-                        markers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id][i]['latitude_final']), parseFloat(data[device_id][i]['longitude_final'])) );
-                        markerHasData = true;
-                        break;
+                if (markers[device_id]) {
+                    console.log(device_id);
+                    var markerHasData = false;
+                    markers[device_id].setVisible(true);
+                    for (var i in data[device_id]) {
+                        if (data[device_id][i]['timestamp'] <= time) {
+                            console.log(data[device_id][i]['timestamp']);
+                            markers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id][i]['latitude_final']), parseFloat(data[device_id][i]['longitude_final'])) );
+                            markerHasData = true;
+                            break;
+                        }
                     }
-                }
-                if (!markerHasData) {
-                    markers[device_id].setVisible(false);
+                    if (!markerHasData) {
+                        markers[device_id].setVisible(false);
+                    }
                 }
             }
         }
@@ -276,6 +342,68 @@
             slider.slider('setValue', 0);
             updateMapMarkers(0);
         });
+
+        // Flip tags
+        $('#profile-tab').click(function(){
+            $('.map-section').removeClass('active');
+            $('.profile-section').addClass('active');
+        })
+        $('#home-tab').click(function(){
+            $('.map-section').addClass('active');
+            $('.profile-section').removeClass('active');
+            initMap();
+        })
+        
+        $(document).ready(function() {
+            $('#profile-table').DataTable({
+                'columnDefs': [
+                    { 'orderable': false, 'targets': 1 },
+                    { 'orderable': false, 'targets': 2 },
+                    { 'orderable': false, 'targets': 3 },
+                    { 'orderable': false, 'targets': 4 },
+                    { 'orderable': false, 'targets': 5 }
+                ]
+            });
+        } );
+
+
+        // Loacl Storage checks browser support
+        if (typeof(Storage) !== "undefined") {
+            var dataID = localStorage.getItem("visibility");
+
+            // check localStorage existing
+            if (dataID) {
+                // console.log(dataID);
+
+                // json decode localStorage
+                var array = jQuery.parseJSON( dataID );
+
+                // Clean all default atrr "checked"
+                $('.tgl').removeAttr('checked');
+
+                for (var i = array.length - 1; i >= 0; i--) {
+                    $('.tgl[data-id="'+array[i]+'"]').prop("checked","checked");
+                }
+            } 
+        }
+
+        $('.check').click(function(){
+            
+            // create array
+            var array = [];
+            $('.tgl').each(function() {
+                if ($(this).is(":checked")) {
+                    array.push($(this).attr("data-id"));
+                }
+            })
+
+            // json encode
+            var json = JSON.stringify(array);
+
+            // store in localStorage
+            localStorage.setItem("visibility", json);
+
+        })
     })
     </script>
 @endsection

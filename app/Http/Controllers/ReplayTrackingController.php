@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use App\ReplayTracking_Model as ReplayTracking_Model;
+use App\DeviceMapping_Model as DeviceMapping_Model;
+
 
 class ReplayTrackingController extends Controller {
 
@@ -18,7 +20,9 @@ class ReplayTrackingController extends Controller {
         $jsonData = json_encode($array);
         $timestamp_from = strtotime($event->datetime_from." HKT");
         $timestamp_to = strtotime($event->datetime_to." HKT");
-        return view('replay-tracking')->with(array('data' => $jsonData, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $event->route));
+
+        $profile = DeviceMapping_Model::getAthletesProfile($event_id);
+        return view('replay-tracking')->with(array('data' => $jsonData, 'profile' => $profile, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $event->route));
     }
 
 }

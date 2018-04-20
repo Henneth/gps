@@ -227,6 +227,7 @@
                     var location = {lat: parseFloat(data[i]['latitude_final']), lng: parseFloat(data[i]['longitude_final'])};
 
                     console.log(data[i]['device_id']);
+                    // localStorage is not empty
                     if (temp !== null) {
                         if (jQuery.inArray(data[i]['device_id'], array) !== -1) {
                             markers[data[i]['device_id']] = (addMarker(location, map, data[i]));

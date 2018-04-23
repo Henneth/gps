@@ -13,6 +13,8 @@ class TRKParser {
   var $date        = "";
   var $sql         = "";
   var $event_id    = "";
+  var $array       = [];
+  var $temp        = [];
  
   function startElement($parser, $tagName, $attrs) {
     if ($this->insideitem) {
@@ -24,8 +26,7 @@ class TRKParser {
       $lon = $attrs['LON'];
  
       # This will write the first part of INSERT statment
-      $this->sql .= "INSERT IGNORE INTO `routes` (`event_id`, `latitude`, `longitude`, `elevation`, `date`, `time`) VALUES ('$this->event_id', '$lat', '$lon', ";
- 
+      $this->temp = ['lat' => $lat, 'lon' => $lon];
     }
   }
  
@@ -38,15 +39,20 @@ class TRKParser {
         # This will split date-time into date & time
         list($date,$mytime) = explode("T", $datetime);
         list($time,$null)   = explode("Z", $mytime);
-        echo $date;
-        echo $time;
-        $this->sql .= "'$ele', '$date', '$time');\n";
+        // echo $date;
+        // echo $time;
+        $this->temp['ele'] = $ele;
+        $this->temp['date'] = $date;
+        $this->temp['time'] = $time;
       } else{
-        $this->sql .= "'$ele', NULL, NULL);\n";
+        // $this->temp['ele'] = "'$ele', NULL, NULL);\n";
+        $this->temp['ele'] = $ele;
+        $this->temp['date'] = NULL;
+        $this->temp['time'] = NULL;
       }
+      $this->array[] = $this->temp;
       # This will write the last part of INSERT statment
-      // $this->sql .= "'$ele', '$date', '$time');\n";
- 
+      // $this->sql .= "'$ele', '$date', '$time');\n";\
       $this->ele         = "";
       $this->lat         = "";
       $this->lon         = "";

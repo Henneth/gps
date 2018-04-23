@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use App\Classes\TRKParser;
+use App\DrawRoute_Model as DrawRoute_Model;
 
 class GPXController extends Controller {
     public function index($event_id) {
@@ -57,19 +58,26 @@ class GPXController extends Controller {
          
         xml_parser_free($xml_parser);
 
-        // echo $rss_parser->sql;
-        DB::unprepared($rss_parser->sql);
-        return redirect('event/'.$event_id.'/edit-event')->with('success', 'Excel file imported.');
+        // echo $rss_parser->array;
+        $route = json_encode($rss_parser->array);
+
+        DrawRoute_Model::drawRouteUpdate($event_id, $route);
+        // print_r($route);
+        // DB::table('routes')->insert(
+        //     ['event_id'=> $event_id, 'route' =>$route]
+        // );
+        // DB::unprepared($rss_parser->sql);
+        return redirect('event/'.$event_id.'/draw-route')->with('success', 'Excel file imported.');
     }
 
 
-    public function gpxRoute($event_id){
-        $gpxData = DB::table('routes') 
-            ->where('event_id', $event_id)
-            ->select('latitude','longitude')
-            ->get();
-        $gpxData = json_encode($gpxData);
-        // print_r($gpxData);
-        return view('gpx-route')->with(array('event_id' => $event_id, 'gpxData'=>$gpxData));
-    }
+    // public function gpxRoute($event_id){
+    //     $gpxData = DB::table('routes') 
+    //         ->where('event_id', $event_id)
+    //         ->select('latitude','longitude')
+    //         ->get();
+    //     $gpxData = json_encode($gpxData);
+    //     // print_r($gpxData);
+    //     return view('gpx-route')->with(array('event_id' => $event_id, 'gpxData'=>$gpxData));
+    // }
 }

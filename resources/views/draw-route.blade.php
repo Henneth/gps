@@ -32,13 +32,45 @@
 				<input type="hidden" id="route" name="route">
 				<button type="sumbit" class="btn btn-primary" id="save"><i class="far fa-save"></i> Save Route</button>
 			</form>
-		</div>
+		</div>{{-- 
         <div class="switchBtn">
             <label>Use GPX</label>
             <input class="tgl tgl-ios" id="cb1" type="checkbox"/>
             <label class="tgl-btn" for="cb1"></label>
+        </div> --}}
+        <div class="pull-right">
+            <button class="btn btn-primary" onclick="toggleExcelImport();return false;"><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
         </div>
+
 	</div>
+
+    <div id="excelImportBox" class="box box-primary" style="display: none;">
+        <div class="box-header with-border">
+            <h3 class="box-title">Import GPX File</h3>
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-remove"></i></button>
+            </div>
+        </div>
+        <!-- /.box-header -->
+        <!-- form start -->
+        <form role="form" action="{{url('/')}}/event/{{$event_id}}/edit-event/gpx-file-upload" method="post" enctype="multipart/form-data">
+            {{ csrf_field() }}
+            <div class="box-body">
+                <div class="form-group">
+                    <label for="excelFile">GPX file upload</label>
+                    <input type="file" id="excelFile" name="fileToUpload">
+
+                    <p class="help-block">.gpx file only.</p>
+                </div>
+            </div>
+            <!-- /.box-body -->
+
+            <div class="box-footer">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+    </div>
 	<div class="container-flex">
 	    <div id="map"></div>
 	</div>
@@ -57,7 +89,7 @@
     var gpxLat;
     var gpxLng;
 
-    @if(!$data->route)
+    @if(!$data)
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 12,
@@ -83,7 +115,7 @@
                 center: {lat: 22.3016616, lng: 114.1577151}  // Center the map on Hong Kong.
             });
 
-            if ( $('.tgl-btn').click(function(){
+            // if ( $('.tgl-btn').click(function(){
 
                 poly = new google.maps.Polyline({
                     strokeColor: '#3d00f7',
@@ -95,43 +127,45 @@
                 //Mirrors the path array to find index to delete and such
                 mirrorCoordinates = [];
                 markers = [];
-                encodeString =[];
+                // encodeString =[];
                 // path;
 
                 // useGPX();
                 // location.replace("{{ url('/') }}/event/{{$event_id}}/gpx-route");
-                $('#undo').hide();
-                $('#save').hide();
+                // $('#undo').hide();
+                // $('#save').hide();
 
-                var gpxData = {!!$gpxData!!};
-                for(var key in gpxData){
-                    gpxLat = parseFloat(gpxData[key]["latitude"]);
-                    gpxLng = parseFloat(gpxData[key]["longitude"]);
+                var data = {!!$data->route!!};
+                // console.log(data);
+                for(var key in data){
+                    gpxLat = parseFloat(data[key]["lat"]);
+                    gpxLng = parseFloat(data[key]["lon"]);
                     addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                 }
-                var bounds = new google.maps.LatLngBounds();
-                for (var i = 0; i < markers.length; i++) {
-                    bounds.extend(markers[i].getPosition());
-                }
-                map.fitBounds(bounds);
+                // var bounds = new google.maps.LatLngBounds();
+                // for (var i = 0; i < markers.length; i++) {
+                //     bounds.extend(markers[i].getPosition());
+                // }
+                // map.fitBounds(bounds);
 
-                google.maps.event.clearListeners(map, 'click');
-            }));
+                // google.maps.event.clearListeners(map, 'click');
+            // }));
 
-            var decodedPath = google.maps.geometry.encoding.decodePath('{{$data->route}}');
-            // var decodedLevels = decodeLevels("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+            // var decodedPath = google.maps.geometry.encoding.decodePath('{{$data->route}}');
+            // // var decodedLevels = decodeLevels("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+            // console.log(decodedPath);
 
-            poly = new google.maps.Polyline({
-                strokeColor: '#3d00f7',
-                strokeOpacity: 1,
-                strokeWeight: 3
-            });
-            poly.setMap(map);
+            // poly = new google.maps.Polyline({
+            //     strokeColor: '#3d00f7',
+            //     strokeOpacity: 1,
+            //     strokeWeight: 3
+            // });
+            // poly.setMap(map);
 
-            for (var key in decodedPath) {
-                addLatLngInit(decodedPath[key]);
+            // for (var key in decodedPath) {
+            //     addLatLngInit(decodedPath[key]);
 
-             }
+            //  }
 
             var bounds = new google.maps.LatLngBounds();
             for (var i = 0; i < markers.length; i++) {
@@ -197,45 +231,44 @@
         // console.log(markers);
     }
 
+    // function useGPX(){
+    //         // var myLatlng = new google.maps.LatLng(22.3016616, 114.1577151);
+    //         map = new google.maps.Map(document.getElementById('map'), {
+    //             zoom: 12,
+    //             center: {lat: 22.3016616, lng: 114.1577151}  // Center the map on Hong Kong.
+    //         });
 
-    function useGPX(){
-            // var myLatlng = new google.maps.LatLng(22.3016616, 114.1577151);
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 12,
-                center: {lat: 22.3016616, lng: 114.1577151}  // Center the map on Hong Kong.
-            });
+
+    //         poly = new google.maps.Polyline({
+    //             strokeColor: '#3d00f7',
+    //             strokeOpacity: 1,
+    //             strokeWeight: 3
+    //         });
+    //         poly.setMap(map);
 
 
-            poly = new google.maps.Polyline({
-                strokeColor: '#3d00f7',
-                strokeOpacity: 1,
-                strokeWeight: 3
-            });
-            poly.setMap(map);
-
-            var gpxData = {!!$gpxData!!};
-            for(var key in gpxData){
-                gpxLat = parseFloat(gpxData[key]["latitude"]);
-                gpxLng = parseFloat(gpxData[key]["longitude"]);
-                // test.push(new google.maps.LatLng(gpxLat, gpxLng));
-                // test.push = ({lat: gpxLat, lng:gpxLng});
-                addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
+    //         for(var key in gpxData){
+    //             gpxLat = parseFloat(gpxData[key]["latitude"]);
+    //             gpxLng = parseFloat(gpxData[key]["longitude"]);
+    //             // test.push(new google.maps.LatLng(gpxLat, gpxLng));
+    //             // test.push = ({lat: gpxLat, lng:gpxLng});
+    //             addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                
-            }
+    //         }
 
 
-            var bounds = new google.maps.LatLngBounds();
-            for (var i = 0; i < markers.length; i++) {
-                bounds.extend(markers[i].getPosition());
-            }
-            map.fitBounds(bounds);
+    //         var bounds = new google.maps.LatLngBounds();
+    //         for (var i = 0; i < markers.length; i++) {
+    //             bounds.extend(markers[i].getPosition());
+    //         }
+    //         map.fitBounds(bounds);
 
-            map.addListener('click', addLatLng);
-    }
+    //         map.addListener('click', addLatLng);
+    // }
 
     // $('.tgl-btn').click(function(){
     //     // useGPX();
-    //     // location.replace("{{ url('/') }}/event/{{$event_id}}/gpx-route");
+
     //     $('#undo').hide();
     //     $('#save').hide();
     // });
@@ -256,10 +289,26 @@
 
     $('#save').click(function(e){
         e.preventDefault();
-        encodeString = google.maps.geometry.encoding.encodePath(path);
+        var array = [];
+        for (var i = path.length - 1; i >= 0; i--) {
+            path[i];
+            var temp = {'lat': path.b[i].lat(), 'lon': path.b[i].lng()};
+            array.push(temp);
+        }
+
+            encodeString = JSON.stringify(array);
+        console.log(encodeString);
+        
+        // encodeString = google.maps.geometry.encoding.encodePath(path);
         $('#route').val(encodeString);
+        // console.log(path.b[0].lat());
         document.getElementById('save-route').submit();
     });
+
+    // gpx file upload btn
+    function toggleExcelImport() {
+        $('#excelImportBox').toggle();
+    }
     </script>
 
     <!-- Google Maps -->

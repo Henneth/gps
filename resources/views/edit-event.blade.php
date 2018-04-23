@@ -12,14 +12,14 @@
     display-inline-block
 @endsection
 
-@section('contentheader_right')
+{{-- @section('contentheader_right')
 <div class="pull-right"><button class="btn btn-primary" onclick="toggleExcelImport();return false;"><i class="fas fa-upload"></i>&nbsp; Import GPX File</button></div>
-@endsection
+@endsection --}}
 
 @section('main-content')
     @include('partials/alerts')
     <div class="container-flex">
-        <div id="excelImportBox" class="box box-primary" style="display: none;">
+        {{-- <div id="excelImportBox" class="box box-primary" style="display: none;">
             <div class="box-header with-border">
                 <h3 class="box-title">Import GPX File</h3>
                 <div class="box-tools pull-right">
@@ -45,7 +45,7 @@
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </form>
-        </div>
+        </div> --}}
         <div class="box box-primary">
             <form method="post" action="{{url('/')}}/event/{{$event->event_id}}/edit-event/post">
                 {{ csrf_field() }}
@@ -86,9 +86,9 @@
 
 @section('js')
     <script>
-        function toggleExcelImport() {
-            $('#excelImportBox').toggle();
-        }
+        // function toggleExcelImport() {
+        //     $('#excelImportBox').toggle();
+        // }
         $('#start-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
         $('#end-time').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
     </script>

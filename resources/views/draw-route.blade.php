@@ -14,9 +14,9 @@
             height:80vh;
             width: 100%;
         }
-        
+
         .switchBtn {
-            display: inline-block; 
+            display: inline-block;
             float: right;
         }
     </style>
@@ -32,7 +32,7 @@
 				<input type="hidden" id="route" name="route">
 				<button type="sumbit" class="btn btn-primary" id="save"><i class="far fa-save"></i> Save Route</button>
 			</form>
-		</div>{{-- 
+		</div>{{--
         <div class="switchBtn">
             <label>Use GPX</label>
             <input class="tgl tgl-ios" id="cb1" type="checkbox"/>
@@ -49,7 +49,7 @@
             <h3 class="box-title">Import GPX File</h3>
             <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-remove"></i></button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
             </div>
         </div>
         <!-- /.box-header -->
@@ -253,7 +253,7 @@
     //             // test.push(new google.maps.LatLng(gpxLat, gpxLng));
     //             // test.push = ({lat: gpxLat, lng:gpxLng});
     //             addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
-               
+
     //         }
 
 
@@ -298,7 +298,7 @@
 
             encodeString = JSON.stringify(array);
         console.log(encodeString);
-        
+
         // encodeString = google.maps.geometry.encoding.encodePath(path);
         $('#route').val(encodeString);
         // console.log(path.b[0].lat());

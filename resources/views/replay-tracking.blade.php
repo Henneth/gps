@@ -189,9 +189,9 @@
                 // Add Markers
                 markers = [];
 
-                // check device_id in localStorage 
+                // check device_id in localStorage
                 var temp = localStorage.getItem("visibility");
-                var array = jQuery.parseJSON( temp ); 
+                var array = jQuery.parseJSON( temp );
                 // console.log(" array: " + array );
 
 
@@ -353,7 +353,7 @@
             $('.profile-section').removeClass('active');
             initMap();
         })
-        
+
         $(document).ready(function() {
             $('#profile-table').DataTable({
                 'columnDefs': [
@@ -384,11 +384,11 @@
                 for (var i = array.length - 1; i >= 0; i--) {
                     $('.tgl[data-id="'+array[i]+'"]').prop("checked","checked");
                 }
-            } 
+            }
         }
 
         $('.check').click(function(){
-            
+
             // create array
             var array = [];
             $('.tgl').each(function() {

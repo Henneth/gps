@@ -59,7 +59,7 @@
                             <th>Last Name</th> --}}
                             <th>Start Time</th>
                             <th>End Time</th>
-                            <th>Status</th>
+                            <th>Default Visibility</th>
                             <th style="width: 64px;">&nbsp;</th>
                             {{-- <th style="width: 40px">Label</th> --}}
                         </tr>

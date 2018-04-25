@@ -25,6 +25,7 @@ class AthletesController extends Controller {
         }
 
         DB::table('athletes')->insert([
+            'event_id' => $event_id,
             'bib_number' => $_POST['bib_number'],
             'first_name' => $_POST['first_name'],
             'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
@@ -93,7 +94,7 @@ class AthletesController extends Controller {
 
 	        }
         	DB::table('athletes')->insert($array);
-        	
+
             return redirect('event/'.$event_id.'/athletes')->with('success', 'Excel file imported.');
 
 	    } else {

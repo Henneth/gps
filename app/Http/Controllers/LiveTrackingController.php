@@ -19,7 +19,7 @@ class LiveTrackingController extends Controller {
             ->select('route')
             ->first();
 
-        print_r(route);
+        print_r($route);
 
         $profile = DeviceMapping_Model::getAthletesProfile($event_id);
         $jsonProfile = json_encode($profile);

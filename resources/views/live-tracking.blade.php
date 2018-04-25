@@ -198,11 +198,20 @@
                         map: map
                     });
 
-                    var decodedPath = google.maps.geometry.encoding.decodePath('{{$route}}');
+                    var data = {!!$data->route!!};
+                    // console.log(data);
                     tempmarkers = [];
-                    for (var key in decodedPath) {
-                        addLatLngInit(decodedPath[key]);
+                    for(var key in data){
+                        gpxLat = parseFloat(data[key]["lat"]);
+                        gpxLng = parseFloat(data[key]["lon"]);
+                        addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                     }
+
+                    // var decodedPath = google.maps.geometry.encoding.decodePath('{{$route}}');
+                    // tempmarkers = [];
+                    // for (var key in decodedPath) {
+                    //     addLatLngInit(decodedPath[key]);
+                    // }
 
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < tempmarkers.length; i++) {
@@ -218,9 +227,9 @@
 
                 // Add Markers
                 var markers = [];
-                // check device_id in localStorage 
+                // check device_id in localStorage
                 var temp = localStorage.getItem("visibility");
-                var array = jQuery.parseJSON( temp ); 
+                var array = jQuery.parseJSON( temp );
                 console.log(" array: " + array );
 
                 for (var i = 0; i < data.length; i++) {
@@ -324,11 +333,11 @@
                 for (var i = array.length - 1; i >= 0; i--) {
                     $('.tgl[data-id="'+array[i]+'"]').prop("checked","checked");
                 }
-            } 
+            }
         }
 
         $('.check').click(function(){
-            
+
             // create array
             var array = [];
             $('.tgl').each(function() {

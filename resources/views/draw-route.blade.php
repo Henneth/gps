@@ -130,11 +130,6 @@
                 // encodeString =[];
                 // path;
 
-                // useGPX();
-                // location.replace("{{ url('/') }}/event/{{$event_id}}/gpx-route");
-                // $('#undo').hide();
-                // $('#save').hide();
-
                 var data = {!!$data->route!!};
                 // console.log(data);
                 for(var key in data){

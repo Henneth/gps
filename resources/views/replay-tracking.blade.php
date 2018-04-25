@@ -209,7 +209,7 @@
                             }
                         } else {
                             if (data[key][0]['status'] == "visible"){
-                                markers[data[key][0]['device_id']] = (addMarker(location, map, data[0]));
+                                markers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
                             }
                         }
                     }

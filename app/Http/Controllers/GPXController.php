@@ -16,24 +16,20 @@ class GPXController extends Controller {
 
         // Check if file already exists
         if (file_exists($target_file)) {
-            return redirect('event/'.$event_id.'/edit-event')->with('error', 'GPX file with the same name has been uploaded.');
-        } 
-
-
-
+            return redirect('event/'.$event_id.'/draw-route')->with('error', 'GPX file with the same name has been uploaded.');
+        }
 
         // Allow certain file formats
         if ($gpxFileType != "gpx") {
-            return redirect('event/'.$event_id.'/edit-event')->with('error', 'Sorry, only gpx file is allowed.');
+            return redirect('event/'.$event_id.'/draw-route')->with('error', 'Sorry, only gpx file is allowed.');
         }
-
 
         // if everything is ok, try to upload file
         if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
 
         } else {
             $error_msg = "Sorry, there was an error uploading your file.";
-            return redirect('event/'.$event_id.'/edit-event')->with('error', $error_msg);
+            return redirect('event/'.$event_id.'/draw-route')->with('error', $error_msg);
         }
 
 
@@ -44,7 +40,7 @@ class GPXController extends Controller {
         xml_set_object($xml_parser, $rss_parser);
         xml_set_element_handler($xml_parser, "startElement", "endElement");
         xml_set_character_data_handler($xml_parser, "characterData");
-         
+
         $fp = fopen($target_file,"r")
               or die("Error reading Track Point data.");
 
@@ -53,9 +49,9 @@ class GPXController extends Controller {
             or die(sprintf("XML error: %s at line %d",
               xml_error_string(xml_get_error_code($xml_parser)),
               xml_get_current_line_number($xml_parser)));
-         
+
         fclose($fp);
-         
+
         xml_parser_free($xml_parser);
 
         // echo $rss_parser->array;
@@ -72,7 +68,7 @@ class GPXController extends Controller {
 
 
     // public function gpxRoute($event_id){
-    //     $gpxData = DB::table('routes') 
+    //     $gpxData = DB::table('routes')
     //         ->where('event_id', $event_id)
     //         ->select('latitude','longitude')
     //         ->get();

@@ -57,8 +57,8 @@
 @section('js')
     <script>
     {{-- {{ $data->route }} --}}
-      var poly;
-      var map;
+    var poly;
+    var map;
 	  var polyIndex = 0;
 	  var mirrorCoordinates = []; //Mirrors the path array to find index to delete and such
 	  var markers = [];
@@ -156,7 +156,6 @@
       markers.push(marker);
     }
 
-
 	  //<---- Add label on map ---->
       // Each marker is labeled with a single alphabetical character.
       var labelIndex = 1;
@@ -164,56 +163,99 @@
       var num = 1; // point number
       var pointPosition = []; // array for longitude & latitude
       var uniqueId = 1;
-      var myJSON
+      var myJSON; 
+
     window.onload = function () {
- 		labelIndex = 1; 
+
+ 		  labelIndex = 1; 
 	    //Attach click event handler to the map.
 	    google.maps.event.addListener(map, 'click', function (e) {
 
 
-	        labelIndex = pointPosition.length + 1;
+        labelIndex = pointPosition.length + 1;
 
-	        //Determine the location where the user has clicked.
-	        var location = e.latLng;
+        //Determine the location where the user has clicked.
+        var location = e.latLng;
 
-	        var marker = new google.maps.Marker({
-	          position: location,
-	          label: String(labelIndex++),
-	          map: map,
-	          // title:'#point-' + [num++]
-	        }); 
+        var marker = new google.maps.Marker({
+          position: location,
+          label: String(labelIndex++),
+          map: map,
+          // title:'#point-' + [num++]
+        }); 
 
-	        //Set unique id
-	        marker.id = uniqueId;
-	        uniqueId++;
+        //Set unique id
+        marker.id = uniqueId;
+        uniqueId++;
 
-	        //Attach click event handler to the marker.
-	        google.maps.event.addListener(marker, "click", function (e) {
-	            var content = 'Latitude: ' + location.lat() + '<br />Longitude: ' + location.lng();
-	            content += "<br /><input type = 'button' va;ue = 'Delete' onclick = 'DeleteMarker(" + marker.id + ");' value = 'Delete' />";
-	            var infoWindow = new google.maps.InfoWindow({
-	                content: content
-	            });
-	            infoWindow.open(map, marker);
-	        });
+        //Attach click event handler to the marker.
+        google.maps.event.addListener(marker, "click", function (e) {
+            var content = 'Latitude: ' + location.lat() + '<br />Longitude: ' + location.lng();
+            content += "<br /><input type = 'button' va;ue = 'Delete' onclick = 'DeleteMarker(" + marker.id + ");' value = 'Delete' />";
+            var infoWindow = new google.maps.InfoWindow({
+                content: content
+            });
+            infoWindow.open(map, marker);
+        });
 
-	        // Get the current location of marker 
-	        var mLat = location.lat(marker);
-	        var mLng = location.lng(marker);
-	        var mPosition = {latitude: mLat, longitude: mLng};
-	        pointPosition.push(mPosition);
+        // Get the current location of label to store into an array
+        var mLat = location.lat(marker);
+        var mLng = location.lng(marker);
+        var mPosition = {latitude: mLat, longitude: mLng};
+        pointPosition.push(mPosition);  
 
-
-	        console.log(pointPosition);
-
-	        //Add marker to the array.
-	        markerList.push(marker);
-	        // console.log(markerList);
-
-
-
+        //Add marker to the array.
+        markerList.push(marker);
 	    });
+
+      // ------  show label from DB on map.  ------
+      // console.log({!!$allCheckpoints!!});
+      var checkpoints = {!! $allCheckpoints !!};
+      markerList= []; // empty the list bf for loop
+
+      for(var key in checkpoints ){
+
+        var CPlat = parseFloat(checkpoints[key]['latitude']); 
+        var CPlng = parseFloat(checkpoints[key]['longitude']); 
+        var location = new google.maps.LatLng({'lat': CPlat, 'lng': CPlng});
+
+        // show labels on map
+        var marker = new google.maps.Marker({
+          position: location,
+          // label: String(labelIndex++),
+          label: {text: String(labelIndex++), color: "white"},
+          map: map,
+        }); 
+
+        // //Set unique id
+        // marker.id = uniqueId;
+        // uniqueId++;
+
+        // console.log(marker);
+        // // Attach click event handler to the marker.
+        // google.maps.event.addListener(marker, "click", function (e) {
+        //     var content = 'Latitude: ' + location.lat() + '<br />Longitude: ' + location.lng();
+        //     console.log(marker.id);
+        //     content += "<br /><input type = 'button' va;ue = 'Delete' onclick = 'DeleteMarker(" + marker.id + ");' value = 'Delete' />";
+        //     var infoWindow = new google.maps.InfoWindow({
+        //         content: content
+        //     });
+        //     infoWindow.open(map, marker);
+        // }); 
+
+        // // Get current label and store into an array
+        // var mLat = location.lat(marker);
+        // var mLng = location.lng(marker);
+        // var mPosition = {latitude: mLat, longitude: mLng};
+        // pointPosition.push(mPosition); // DEBUG PointPosition list is correct
+
+        // //Add marker to the array.
+        // markerList.push(marker);
+
+      }
     };
+
+
     function DeleteMarker(id) {
         //Find and remove the marker from the Array
         for (var i = 0; i < markerList.length; i++) {
@@ -225,14 +267,12 @@
                 markerList.splice(i, 1);
 
                 pointPosition.splice(i, 1);
-		        console.log(pointPosition);
 
                 myJSON = JSON.stringify(pointPosition);
 
-                // console.log(myJSON);
+                // console.log(makerList);
                 for (var j = i; j < markerList.length; j++) {
-                	console.log('www');
-					markerList[j].setLabel(String(j+1));
+        				  markerList[j].setLabel(String(j+1));
                 }
                 return;
             }
@@ -242,7 +282,7 @@
 
 	$('#save').click(function(e){
 	  	e.preventDefault();
-		myJSON = JSON.stringify(pointPosition);
+		  myJSON = JSON.stringify(pointPosition);
 	  	$('#checkpoint').val(myJSON);
 	  	document.getElementById('save-checkpoint').submit();
 	});

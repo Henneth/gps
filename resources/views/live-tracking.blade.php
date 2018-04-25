@@ -207,12 +207,6 @@
                         addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
-                    // var decodedPath = google.maps.geometry.encoding.decodePath('{{$route}}');
-                    // tempmarkers = [];
-                    // for (var key in decodedPath) {
-                    //     addLatLngInit(decodedPath[key]);
-                    // }
-
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < tempmarkers.length; i++) {
                         bounds.extend(tempmarkers[i].getPosition());

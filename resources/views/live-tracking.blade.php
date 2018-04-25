@@ -198,12 +198,12 @@
                         map: map
                     });
 
-                    var data = {!!$route->route!!};
+                    var route = {!!$route->route!!};
                     // console.log(data);
                     tempmarkers = [];
-                    for(var key in data){
-                        gpxLat = parseFloat(data[key]["lat"]);
-                        gpxLng = parseFloat(data[key]["lon"]);
+                    for(var key in route){
+                        gpxLat = parseFloat(route[key]["lat"]);
+                        gpxLng = parseFloat(route[key]["lon"]);
                         addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                     }
 

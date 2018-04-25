@@ -198,7 +198,7 @@
                         map: map
                     });
 
-                    var data = {!!$data->route!!};
+                    var data = {!!$route->route!!};
                     // console.log(data);
                     tempmarkers = [];
                     for(var key in data){

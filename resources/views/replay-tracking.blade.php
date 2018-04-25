@@ -195,9 +195,9 @@
                 // check device_id in localStorage
                 var temp = localStorage.getItem("visibility");
                 var array = jQuery.parseJSON( temp );
-                // console.log(" array: " + array );
+                console.log(" array: " + array );
 
-
+                console.log(data);
                 for (var key in data) {
                     // console.log(data[key]);
                     if (typeof data[key][0] != "undefined") {

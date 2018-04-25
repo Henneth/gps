@@ -168,10 +168,13 @@
                         map: map
                     });
 
-                    var decodedPath = google.maps.geometry.encoding.decodePath('{{$route}}');
+                    var data = {!!$route->route!!};
+                    // console.log(data);
                     tempmarkers = [];
-                    for (var key in decodedPath) {
-                        addLatLngInit(decodedPath[key]);
+                    for(var key in data){
+                        gpxLat = parseFloat(data[key]["lat"]);
+                        gpxLng = parseFloat(data[key]["lon"]);
+                        addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
                     var bounds = new google.maps.LatLngBounds();

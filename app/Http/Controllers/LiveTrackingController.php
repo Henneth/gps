@@ -19,11 +19,9 @@ class LiveTrackingController extends Controller {
             ->select('route')
             ->first();
 
-        print_r($route);
-
         $profile = DeviceMapping_Model::getAthletesProfile($event_id);
         $jsonProfile = json_encode($profile);
-        // return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile));
+        return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile));
     }
     public function poll($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();

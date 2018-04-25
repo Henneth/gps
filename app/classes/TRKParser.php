@@ -19,7 +19,7 @@ class TRKParser {
   function startElement($parser, $tagName, $attrs) {
     if ($this->insideitem) {
       $this->tag = $tagName;
-    } elseif ($tagName == "TRKPT") {
+    } elseif ($tagName == "TRKPT" || $tagName == "WPT" || $tagName == "RTEPT") {
       $this->insideitem = true;
 
       $lat = $attrs['LAT'];

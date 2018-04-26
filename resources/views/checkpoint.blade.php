@@ -152,7 +152,7 @@
 
         //<---- Add label on map ---->
         // Each marker is labeled with a single alphabetical character.
-        var labelIndex = 1;
+        // var labelIndex = 1;
         var markerList = []; //array to store marker
         var num = 1; // point number
         var pointPosition = []; // array for longitude & latitude
@@ -208,6 +208,7 @@
 
             //Add marker to the array.
             markerList.push(marker);
+            console.log(markerList);
         }
 
 

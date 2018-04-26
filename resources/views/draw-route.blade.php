@@ -88,8 +88,15 @@
     var path;
     var gpxLat;
     var gpxLng;
+    var IsCP;
+    // set info window
+    var marker;
+    var uniqueId = 1;
+    var infoWindow;
+    var markerList = []; //array to store marker
 
-    @if(!$data)
+
+    @if(!$data->route)
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 12,
@@ -135,6 +142,7 @@
                 for(var key in data){
                     gpxLat = parseFloat(data[key]["lat"]);
                     gpxLng = parseFloat(data[key]["lon"]);
+                    IsCP = data[key]["isCheckpoint"];
                     addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                 }
                 // var bounds = new google.maps.LatLngBounds();
@@ -199,14 +207,28 @@
         var marker = new google.maps.Marker({
             position: event.latLng,
             title: '#' + path.getLength(),
-            map: map
+            map: map,
+            isCheckpoint: 0
         });
+
+        //Set unique id
+        marker.id = uniqueId;
+        uniqueId++;
+
+        showInfoWindow(marker);
+
         markers.push(marker);
         // console.log(markers);
+
     }
+
 
     // Handles click events on a map, and adds a new point to the Polyline.
     function addLatLngInit(position) {
+
+
+        infoWindow = new google.maps.InfoWindow();
+
         path = poly.getPath();
 
         // Because path is an MVCArray, we can simply append a new coordinate
@@ -220,11 +242,76 @@
         var marker = new google.maps.Marker({
             position: position,
             title: '#' + path.getLength(),
-            map: map
+            map: map,
+            isCheckpoint: IsCP
         });
+
+        if (IsCP ==1 ){
+            marker.setIcon('{{ url('/') }}/img/icons/spotlight-poi3.png');
+        }
+        //Set unique id
+        marker.id = uniqueId;
+        uniqueId++;
+
+        showInfoWindow(marker);
         markers.push(marker);
-        // console.log(markers);
+        console.log(marker.id);
+
+
+
     }
+
+    function showInfoWindow(marker){
+        if ( IsCP == 1 ){
+            //Attach click event handler to the marker.
+            google.maps.event.addListener(marker, "click", function (e) {
+                var content = 'Latitude: ' + parseFloat(gpxLat).toFixed(2) + '&ensp;Longitude: ' + parseFloat(gpxLng).toFixed(2);
+                content += "<br /><b> Remove this checkpoint? </b>";
+                content += "<br /><input type = 'button' onclick = 'removeCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+                infoWindow.setContent(content);
+                infoWindow.open(map, this);
+            });
+        }else{
+            //Attach click event handler to the marker.
+            google.maps.event.addListener(marker, "click", function (e) {
+                var content = 'Latitude: ' + parseFloat(gpxLat).toFixed(2) + '&ensp;Longitude: ' + parseFloat(gpxLng).toFixed(2);
+                content += "<br /><b> Set it as checkpoint? </b>";
+                content += "<br /><input type = 'button' onclick = 'setAsCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+                infoWindow.setContent(content);
+                infoWindow.open(map, this);
+            });
+        }
+        // google.maps.event.trigger(marker, 'click');
+        // console.log(markers);
+        markerList.push(marker);
+        // console.log(markerList);
+
+    }
+    // google.maps.event.addDomListener(window, "load", initialize);
+    function setAsCheckpoint(id){
+        for (var i = 0; i < markerList.length; i++) {
+            if ( markerList[i].id == id ){
+                infoWindow.setContent('<div style="color: green">' + infoWindow.getContent() + "</div>");
+                markerList[i]['isCheckpoint'] = 1;
+                markerList[i].setIcon('{{ url('/') }}/img/icons/spotlight-poi3.png');
+                infoWindow.close(map, this);
+            }
+            // console.log(markerList[i]);
+        }
+    }
+
+    function removeCheckpoint(id){
+        for (var i = 0; i < markerList.length; i++) {
+            if ( markerList[i].id == id ){
+                infoWindow.setContent('<div style="color: red">' + infoWindow.getContent() + "</div>");
+                markerList[i]['isCheckpoint'] = 0;
+                markerList[i].setIcon('{{ url('/') }}/img/icons/spotlight-poi2.png');
+                infoWindow.close(map, this);
+            }
+            // console.log(markerList[i]);
+        }
+    }
+
 
     // function useGPX(){
     //         // var myLatlng = new google.maps.LatLng(22.3016616, 114.1577151);
@@ -277,21 +364,25 @@
 
         // console.log(markers.length);
 
-        var markerIndex = markers.length - 1;
-        markers[markerIndex].setMap(null);
-        markers.pop();
+        var markerIndex = markerList.length - 1;
+        markerList[markerIndex].setMap(null);
+        markerList.pop();
     });
 
     $('#save').click(function(e){
         e.preventDefault();
         var array = [];
-        for (var i = path.length - 1; i >= 0; i--) {
-            path[i];
-            var temp = {'lat': path.b[i].lat(), 'lon': path.b[i].lng()};
+        for (var i = markerList.length - 1; i >= 0; i--) {
+            markerList[i];
+            var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'isCheckpoint': markerList[i].isCheckpoint};
             array.push(temp);
+
         }
 
-            encodeString = JSON.stringify(array);
+        console.log(array);
+        console.log(markerList);
+
+        encodeString = JSON.stringify(array);
         console.log(encodeString);
 
         // encodeString = google.maps.geometry.encoding.encodePath(path);

@@ -13,7 +13,7 @@
         <div class="box">
             <!-- /.box-header -->
             <div class="box-body">
-                <table id="table1" class="table table-bordered table-striped">
+                <table id="table1" class="table table-bordered table-striped display responsive no-wrap" width="100%">
                     <thead>
                         <tr>
                             <th style="width: 36%">
@@ -35,6 +35,7 @@
                                 </div>
                             </th>
                             <th></th>
+                            <th></th>
                             <th>
                                 <select class="device_list form-control" style="width: 100%;">
                                     <option></option>
@@ -45,14 +46,18 @@
                             </th>
                             <th></th>
                             <th></th>
+                            <th></th>
+                        </tr>
                         <tr>
                             <th>Timestamp</th>
                             <th>Received At</th>
+                            <th>Delay</th>
                             <th>
                                 <span style="padding-right: 8px;">Device ID</span>
                             </th>
                             <th>Longitude</th>
                             <th>Latitude</th>
+                            <th>Battery Level</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,10 +65,13 @@
                             <tr>
                                 <td>{{$datum->datetime}}</td>
                                 <td>{{$datum->created_at}}</td>
+                                <td>{{$datum->delay}}</td>
+
                                 {{-- <td>{!! nl2br(e(str_replace(" ", " &nbsp;", $datum->raw))) !!}</td> --}}
                                 <td>{{$datum->device_id}}</td>
                                 <td>{{$datum->longitude_final}}</td>
                                 <td>{{$datum->latitude_final}}</td>
+                                <td>{{$datum->battery_level}}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -93,15 +101,15 @@
                 var tto = new Date( $('#time-to').val());
                 var ttfrom = tfrom instanceof Date && isNaN(tfrom.valueOf());
                 var ttto = tto instanceof Date && isNaN(tto.valueOf());
-                console.log(ttfrom);
-                console.log(ttto);
+                // console.log(ttfrom);
+                // console.log(ttto);
                 var timestamp = new Date( data[0] ) || 0; // use data for the Timestamp column
-         
-                if ( 
+
+                if (
                         (ttfrom && ttto ) ||
                         (ttfrom && timestamp <= tto ) ||
                         ( tfrom <= timestamp  && ttto) ||
-                        ( tfrom <= timestamp   && timestamp <= tto ) 
+                        ( tfrom <= timestamp   && timestamp <= tto )
                     ) {
                     return true;
                 }
@@ -110,6 +118,7 @@
         );
 
         var table = $('#table1').DataTable({
+            'responsive'  : false,
             'paging'      : true,
             'lengthChange': false,
             'searching'   : true,
@@ -118,20 +127,20 @@
             'autoWidth'   : false,
             'pageLength'  : 50,
             'order'       : [
-                [ 0, "desc"], 
+                [ 0, "desc"],
                 [ 1, "desc"]
             ],
             'dom' : "lrtip",
             'columnDefs': [
-                { 'orderable': false, 'targets': 2 },
                 { 'orderable': false, 'targets': 3 },
-                { 'orderable': false, 'targets': 4 }
+                { 'orderable': false, 'targets': 4 },
+                { 'orderable': false, 'targets': 5 },
             ]
         })
 
         $('.device_list').change(function () {
             table
-                .columns( 2 )
+                .columns( 3 )
                 .search( this.value )
                 .draw();
         });
@@ -145,6 +154,7 @@
         $('#time-from, #time-to').change(function () {
             table.draw();
         });
+
     })
 
         // Select2

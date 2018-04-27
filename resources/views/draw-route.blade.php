@@ -372,7 +372,7 @@
     $('#save').click(function(e){
         e.preventDefault();
         var array = [];
-        for (var i = markerList.length - 1; i >= 0; i--) {
+        for (var i = 0; i < markerList.length; i++) {
             markerList[i];
             var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'isCheckpoint': markerList[i].isCheckpoint};
             array.push(temp);

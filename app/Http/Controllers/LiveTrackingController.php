@@ -13,7 +13,7 @@ class LiveTrackingController extends Controller {
         $event = DB::table('events')->where('event_id', $event_id)->first();
         $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to);
         $jsonData = json_encode($data);
-
+        
         $route = DB::table('routes')
             ->where('event_id',$event_id)
             ->select('route')

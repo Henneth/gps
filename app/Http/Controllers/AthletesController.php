@@ -15,8 +15,9 @@ class AthletesController extends Controller {
             ->get();
 
         $countries = DB::table('countries')
-        	->orderby('code')
+        	->orderby('country','ASC')
             ->get();
+        // print_r($countries);
         return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries));
     }
     public function addAthlete($event_id) {

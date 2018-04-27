@@ -9,12 +9,20 @@ class RawDataController extends Controller {
 
     public function index() {
         $data = DB::table('gps_data')->orderby('datetime', 'desc')->limit(1000)->get();
+        // print_r($data);
+        foreach ($data as &$value) {
+            $datetime1 = date_create($value->datetime);
+            $datetime2 = date_create($value->created_at);
+            $interval = date_diff($datetime1, $datetime2);
+            $value->delay = $interval->format("%H:%I:%S");
+        }
         $deviceID = DB::table('gps_data')
                     ->select('device_id')
                     ->orderBy('device_id', 'asc')
                     ->groupBy('device_id')
                     ->get();
                     // print_r($deviceID);
+
         return view('raw-data')->with(array('data' => $data, 'deviceID' => $deviceID));
     }
 

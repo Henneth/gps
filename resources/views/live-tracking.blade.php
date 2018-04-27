@@ -19,8 +19,9 @@
         <div class="tab-content">
             <div class="map-section tab-pane active">
                 <div class="form-group" style="color: #666; float: left;">Athletes' latest locations from <b>{{$event->datetime_from}}</b> to <b>{{$event->datetime_to}}</b></div>
-                {{-- <div style="color: #666; float: right;">Current Time: <b><span id="time"></span></b></div> --}}
+                <div style="color: #666; float: right;">Elapsed Time: <b><span id="time"></span></b></div>
                 <div id="map"></div> {{-- google map here --}}
+                <div id="elevation_chart"></div>
             </div>
             <div class="profile-section tab-pane">
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
@@ -102,7 +103,10 @@
     <!-- RichMarker -->
     <script src="{{ asset('/js/richmarker-compiled.js') }}" type="text/javascript"></script>
 
+    <script src="https://www.google.com/jsapi"></script>
     <script>
+        google.load('visualization', '1', {packages: ['columnchart']});
+
         var map;
         function initMap() {
 
@@ -151,6 +155,8 @@
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
                             html += '<div>First Name: <b>' + content['first_name'] + '</b></div>';
                             html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>';
+                            if (content['zh_full_name']){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
+                            html += '<div>Country: <b>' + content['country'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
                             html += '<div>Location: <b>' + location['lat'] + ', ' + location['lng'] + '</b></div>';
             				infowindow.setContent(html);
@@ -160,7 +166,6 @@
 
                     return marker;
                 }
-
                 // Map style
                 var mapStyle = [
                     {
@@ -197,21 +202,28 @@
                         strokeWeight: 3,
                         map: map
                     });
-
                     var route = {!!$route->route!!};
                     // console.log(data);
                     tempmarkers = [];
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["lat"]);
                         gpxLng = parseFloat(route[key]["lon"]);
-                        addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
-                    }
 
+                        addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
+
+                    }
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < tempmarkers.length; i++) {
                         bounds.extend(tempmarkers[i].getPosition());
                     }
                     map.fitBounds(bounds);
+
+                    // Create an ElevationService.
+                    var elevator = new google.maps.ElevationService;
+
+                    // Draw the path, using the Visualization API and the Elevation service.
+                    displayPathElevation(path, elevator, map);
+
                 @endif
 
                 // set InfoWindow pixelOffset
@@ -224,7 +236,7 @@
                 // check device_id in localStorage
                 var temp = localStorage.getItem("visibility");
                 var array = jQuery.parseJSON( temp );
-                console.log(" array: " + array );
+                // console.log(" array: " + array );
 
                 for (var i = 0; i < data.length; i++) {
                     var location = {lat: parseFloat(data[i]['latitude_final']), lng: parseFloat(data[i]['longitude_final'])};
@@ -288,6 +300,89 @@
             tempmarkers.push(marker);
         }
 
+        function displayPathElevation(path, elevator, map) {
+            var tempArray = [];
+            for (var key in path.b) {
+                tempArray.push({'lat' : path.b[key].lat(), 'lng' : path.b[key].lng()});
+            }
+
+            // Create a PathElevationRequest object using this array.
+            // Ask for 256 samples along that path.
+            // Initiate the path request.
+            elevator.getElevationAlongPath({
+                'path': tempArray,
+                'samples': 256
+            }, plotElevation);
+        }
+
+        // Takes an array of ElevationResult objects, draws the path on the map
+        // and plots the elevation profile on a Visualization API ColumnChart.
+        function plotElevation(elevations, status) {
+          var chartDiv = document.getElementById('elevation_chart');
+          if (status !== 'OK') {
+            // Show the error code inside the chartDiv.
+            chartDiv.innerHTML = 'Cannot show elevation: request failed because ' +
+                status;
+            return;
+          }
+          // Create a new chart in the elevation_chart DIV.
+          var chart = new google.visualization.ColumnChart(chartDiv);
+
+          // Extract the data from which to populate the chart.
+          // Because the samples are equidistant, the 'Sample'
+          // column here does double duty as distance along the
+          // X axis.
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Sample');
+          data.addColumn('number', 'Elevation');
+          for (var i = 0; i < elevations.length; i++) {
+            data.addRow(['', elevations[i].elevation]);
+          }
+
+          // Draw the chart using the data within its DIV.
+          chart.draw(data, {
+            height: 150,
+            legend: 'none',
+            titleY: 'Elevation (m)'
+          });
+        }
+
+
+
+        // Set the date we're counting from
+        var countDateFrom = new Date("{{$event->datetime_from}}").getTime();
+
+        // Set the date we're counting to
+        var countDateTo = new Date("{{$event->datetime_to}}").getTime();
+
+        // Update the count time every 1 second
+        var x = setInterval(function() {
+
+            // Get todays date and time
+            var now = new Date().getTime();
+
+            var elapsed = now - countDateFrom;
+            var expired = countDateTo - now;
+
+            // Time calculations for days, hours, minutes and seconds
+            var days = Math.floor(elapsed / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((elapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+
+            // If the count day is over, write some text
+            if (expired < 0) {
+                clearInterval(x);
+                document.getElementById("time").innerHTML = "Event Ended";
+            } else {
+                // Output the result in an element with id="time"
+                document.getElementById("time").innerHTML = days + "d " + hours + "h "
+                + minutes + "m " + seconds + "s ";
+            }
+        }, 1000);
+
+
+
         $('#profile-tab').click(function(){
             $('.map-section').removeClass('active');
             $('.profile-section').addClass('active');
@@ -316,7 +411,7 @@
 
             // check localStorage existing
             if (dataID) {
-                console.log(dataID);
+                // console.log(dataID);
 
                 // json decode localStorage
                 var array = jQuery.parseJSON( dataID );
@@ -350,4 +445,5 @@
 
 
     </script>
+
 @endsection

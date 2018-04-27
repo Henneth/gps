@@ -15,6 +15,8 @@
 <!-- Datatables -->
 <script src="{{ asset('/js/jquery.dataTables.min.js') }}" type="text/javascript"></script>
 <script src="{{ asset('/js/dataTables.bootstrap.min.js') }}" type="text/javascript"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.1/js/dataTables.responsive.min.js"></script>
+
 <!-- AdminLTE App -->
 <script src="{{ asset('/js/app.min.js') }}" type="text/javascript"></script>
 <!-- Custom -->

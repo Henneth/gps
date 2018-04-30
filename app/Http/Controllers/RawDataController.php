@@ -14,7 +14,11 @@ class RawDataController extends Controller {
             $datetime1 = date_create($value->datetime);
             $datetime2 = date_create($value->created_at);
             $interval = date_diff($datetime1, $datetime2);
-            $value->delay = $interval->format("%H:%I:%S");
+            if ($interval->format("%D")>0) {
+                $value->delay = "> 1 day";
+            }else{
+                $value->delay = $interval->format("%H:%I:%S");
+            }
         }
         $deviceID = DB::table('gps_data')
                     ->select('device_id')

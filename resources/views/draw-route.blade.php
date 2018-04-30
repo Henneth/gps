@@ -96,7 +96,7 @@
     var markerList = []; //array to store marker
 
 
-    @if(!$data->route)
+    @if(!$data)
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 12,

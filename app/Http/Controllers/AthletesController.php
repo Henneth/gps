@@ -17,27 +17,28 @@ class AthletesController extends Controller {
         $countries = DB::table('countries')
         	->orderby('country','ASC')
             ->get();
-        // print_r($countries);
+        // print_r($athletes);
         return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries));
     }
     public function addAthlete($event_id) {
         if (empty($_POST['bib_number']) || empty($_POST['first_name'])) {
             return redirect('event/'.$event_id.'/athletes')->with('error', 'Bib number and first name must not be empty.');
         }
-
+        // echo $_POST['is_public'];
         DB::table('athletes')->insert([
             'event_id' => $event_id,
             'bib_number' => $_POST['bib_number'],
             'first_name' => $_POST['first_name'],
             'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
             'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
+            'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
             'colour_code' => !empty($_POST['colour_code']) ? $_POST['colour_code'] : NULL,
         ]);
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is added.');
     }
     public function editAthlete($event_id) {
-        // print_r($_POST);
+        print_r($_POST);
         if (empty($_POST['athlete_id']) || empty($_POST['bib_number']) || empty($_POST['first_name'])) {
             return redirect('event/'.$event_id.'/athletes')->with('error', 'Athlete ID, bib number and first name must not be empty.');
         }
@@ -49,6 +50,7 @@ class AthletesController extends Controller {
             'first_name' => $_POST['first_name'],
             'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
             'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
+            'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
             'colour_code' => !empty($_POST['colour_code']) ? $_POST['colour_code'] : NULL,
         ]);

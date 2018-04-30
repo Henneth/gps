@@ -57,6 +57,7 @@
                             <th>First Name</th>
                             <th>Last Name</th>
                             <th>Chinese Full Name</th>
+                            <th>Is Public</th>
                             <th>Country</th>
                             <th>Colour Code</th>
                             <th style="width: 64px;">&nbsp;</th>
@@ -74,6 +75,12 @@
                                 {{-- <td>@include('partials/countries-dropdown')</td> --}}
                                 <td><input form="form_add" class="form-control" name="zh_full_name" placeholder="Chinese Full Name"></td>
                                 <td>
+                                    <div>
+                                        <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox"/>
+                                        <label class="tgl-btn" for="1"></label>
+                                    </div>
+                                </td>
+                                <td>
                                     <select name="country_code" class="form-control">
                                         <option disabled selected>---- Select a country ----</option>
                                         @foreach($countries as $country)
@@ -89,6 +96,7 @@
                                 <td><button form="form_add" type="submit" class="btn btn-primary">Add</button></td>
                             </form>
                         </tr>
+                        <?php $count = 2 ?>
                         @foreach ($athletes as $key => $athlete)
                             <tr>
                                 <form id="form_edit_{{$athlete->athlete_id}}" method="post" action="{{url('/')}}/event/{{$event_id}}/athletes/edit">
@@ -99,6 +107,12 @@
                                     <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
                                     <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
                                     <td class="text"><span>{{$athlete->zh_full_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="zh_full_name" value="{{$athlete->zh_full_name}}" placeholder="zh_full_name"></td>
+                                    <td>
+                                        <div>
+                                            <input class="tgl tgl-ios" name="is_public" id="{{$count}}" type="checkbox"  {{($athlete->is_public == 1) ? ' checked="checked" ' :''}}/>
+                                            <label class="tgl-btn" for="{{$count}}"></label>
+                                        </div>
+                                    </td>
                                     <td class="country_code" data-code="{{$athlete->country_code}}"><span>{{$athlete->country}}</span><div style="display: none;">
                                         <select name="country_code" class="form-control">
                                             @foreach($countries as $country)
@@ -119,6 +133,7 @@
                                     <td><button type="button" class="edit-btn btn btn-default">Edit</button><button form="form_edit_{{$athlete->athlete_id}}" type="submit" class="btn btn-default" style="display: none;">Save</button></td>
                                 </form>
                             </tr>
+                        <?php $count++ ?>
                         @endforeach
                     </tbody>
                 </table>

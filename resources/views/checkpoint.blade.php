@@ -58,7 +58,7 @@
 
             poly = new google.maps.Polyline({
                 strokeColor: '#3d00f7',
-                strokeOpacity: 0,
+                strokeOpacity: 0, // hide the ployline, but use it to set the position.
                 strokeWeight: 1
             });
             poly.setMap(map);

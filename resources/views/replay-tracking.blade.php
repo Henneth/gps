@@ -78,7 +78,7 @@
         function initMap() {
 
             data = {!! $data !!};
-            console.log(data);
+            // console.log(data);
 
             @if ($data)
 
@@ -177,6 +177,22 @@
                         addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
+                    // start point and end point marker
+                    // console.log(tempmarkers);
+                    // console.log(tempmarkers[0].position);
+                    // console.log(tempmarkers[tempmarkers.length - 1].position);
+                    var startPointMarker = new google.maps.Marker({
+                      position: tempmarkers[0].position,
+                      label: {text: "Start", color: "white"},
+                      map: map
+                    });
+                    var endPointMarker = new google.maps.Marker({
+                      position: tempmarkers[tempmarkers.length - 1].position,
+                      label: {text: "End", color: "white"},
+                      map: map
+                    });
+
+
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < tempmarkers.length; i++) {
                         bounds.extend(tempmarkers[i].getPosition());
@@ -195,9 +211,9 @@
                 // check device_id in localStorage
                 var temp = localStorage.getItem("visibility");
                 var array = jQuery.parseJSON( temp );
-                console.log(" array: " + array );
+                // console.log(" array: " + array );
 
-                console.log(data);
+                // console.log(data);
                 for (var key in data) {
                     // console.log(data[key]);
                     if (typeof data[key][0] != "undefined") {

@@ -83,23 +83,59 @@ class AthletesController extends Controller {
 			require_once base_path().'/libs/Excel.php';
 			$data = importAsExcel($target_file);
 	        // print_r($data);
+            $countries_sql = DB::table('countries')
+                ->select('code')
+                ->get();
+
+            foreach ($countries_sql as $key => $temp) {
+                $countries[] = $temp->code;
+            }
+
+            $bib_numbers_sql = DB::table('athletes')
+                ->select('bib_number')
+                ->where('event_id', $event_id)
+                ->get();
+
+            foreach ($bib_numbers_sql as $key => $temp) {
+                $bib_numbers[] = $temp->bib_number;
+            }
+            print_r($bib_numbers);
+            $errors = [];
 	        $array = [];
+            $count = 1;
 	        foreach($data as $temp){
+                $hasError = false;
+                if(!empty($temp[0]) && in_array($temp[0], $bib_numbers) ){
+                    $errors[] = "#".$count." - Bib number \"$temp[0]\" already exists!";
+                    $hasError = true;
+                }
+                else if(!empty($temp[4]) && !in_array($temp[4], $countries) ){
+                    $errors[] = "#".$count." - Country code \"$temp[4]\" is not vaild!";
+                    $hasError = true;
+                }
 
-	        	$array[] = array(
-	        		'bib_number' => !empty($temp[0]) ? $temp[0] : NULL,
-	        		'first_name' => !empty($temp[1]) ? $temp[1] : NULL,
-	        		'last_name' => !empty($temp[2]) ? $temp[2] : NULL,
-	        		'zh_full_name' => !empty($temp[3]) ? $temp[3] : NULL,
-	        		'country_code' => !empty($temp[4]) ? $temp[4] : NULL,
-	        		'colour_code' => !empty($temp[5]) ? $temp[5] : NULL
-	        	);
+                else if (!empty($temp[5]) && !preg_match('/^[a-f0-9]{6}$/i', $temp[5])) { //hex color is valid
+                    $errors[] = "#".$count." - Color code \"$temp[5]\" is not vaild!";
+                    $hasError = true;
+                }
 
+                if (!$hasError){
+    	        	$array[] = array(
+                        'event_id' => $event_id,
+    	        		'bib_number' => !empty($temp[0]) ? $temp[0] : NULL,
+    	        		'first_name' => !empty($temp[1]) ? $temp[1] : NULL,
+    	        		'last_name' => !empty($temp[2]) ? $temp[2] : NULL,
+    	        		'zh_full_name' => !empty($temp[3]) ? $temp[3] : NULL,
+    	        		'country_code' => !empty($temp[4]) ? $temp[4] : NULL,
+    	        		'colour_code' => !empty($temp[5]) ? $temp[5] : NULL
+    	        	);
+                }
+
+                $count++;
 	        }
         	DB::table('athletes')->insert($array);
-
-            return redirect('event/'.$event_id.'/athletes')->with('success', 'Excel file imported.');
-
+            return redirect('event/'.$event_id.'/athletes')->with('success', count($array).' '.'records have been imported.')
+            ->with('errors', $errors);
 	    } else {
 	        $error_msg = "Sorry, there was an error uploading your file.";
             return redirect('event/'.$event_id.'/athletes')->with('error', $error_msg);

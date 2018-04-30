@@ -14,7 +14,7 @@ class CheckpointController extends Controller {
             ->where('event_id',$event_id)
             ->select('route')
             ->first();
-        // print_r($data);
+        print_r($data);
 
         $checkpoints = DB::table('checkpoint')
             ->select('checkpoint_id', 'latitude', 'longitude')

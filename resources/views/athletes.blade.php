@@ -107,19 +107,23 @@
                                     <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
                                     <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
                                     <td class="text"><span>{{$athlete->zh_full_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="zh_full_name" value="{{$athlete->zh_full_name}}" placeholder="zh_full_name"></td>
-                                    <td>
-                                        <div>
+                                    <td class="is_public">
+                                        <span>{{($athlete->is_public == 1) ? 'True' :'False'}}</span>
+                                        <div style="display: none;">
                                             <input class="tgl tgl-ios" name="is_public" id="{{$count}}" type="checkbox"  {{($athlete->is_public == 1) ? ' checked="checked" ' :''}}/>
                                             <label class="tgl-btn" for="{{$count}}"></label>
                                         </div>
                                     </td>
-                                    <td class="country_code" data-code="{{$athlete->country_code}}"><span>{{$athlete->country}}</span><div style="display: none;">
-                                        <select name="country_code" class="form-control">
-                                            @foreach($countries as $country)
-                                                <option value="{{$country->code}}">{{$country->country}}</option>
-                                            @endforeach
-                                        </select>
-                                    </div></td>
+                                    <td class="country_code" data-code="{{$athlete->country_code}}">
+                                        <span>{{$athlete->country}}</span>
+                                        <div style="display: none;">
+                                            <select name="country_code" class="form-control">
+                                                @foreach($countries as $country)
+                                                    <option value="{{$country->code}}">{{$country->country}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </td>
                                     <td class="colour_code">
                                         @if ($athlete->colour_code)
                                             <div class="read-only" style="padding-left: 4px; background: #{{$athlete->colour_code}}">#{{$athlete->colour_code}}</div>
@@ -164,6 +168,8 @@
                 $(this).find('span').hide();
                 $(this).find('input').show();
             });
+            form.find('.is_public span').hide();
+            form.find('.is_public div').show();
             var countryCode = form.find('.country_code').attr('data-code');
             form.find('.country_code span').hide();
             form.find('.country_code div').show();

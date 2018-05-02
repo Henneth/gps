@@ -28,7 +28,7 @@
 			<form id="save-checkpoint" action="{{ url('/') }}/event/{{$event_id}}/save-checkpoint" method="POST">
 				{{ csrf_field() }}
 				<input type="hidden" id="checkpoint" name="checkpoint">
-				<button type="sumbit" class="btn btn-primary" id="save"><i class="far fa-save"></i> Save Checkpoint</button>
+				<button type="sumbit" class="btn btn-primary" id="save"><i class="far fa-save"></i> Save Checkpoints</button>
 			</form>
 		</div>
 	</div>
@@ -58,7 +58,7 @@
 
             poly = new google.maps.Polyline({
                 strokeColor: '#3d00f7',
-                strokeOpacity: 0,
+                strokeOpacity: 0, // hide the ployline, but use it to set the position.
                 strokeWeight: 1
             });
             poly.setMap(map);

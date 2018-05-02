@@ -212,6 +212,24 @@
                         addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
 
                     }
+
+                    // start point and end point marker
+                    // console.log(tempmarkers);
+                    // console.log(tempmarkers[0].position);
+                    // console.log(tempmarkers[tempmarkers.length - 1].position);
+                    var startPointMarker = new google.maps.Marker({
+                        position: tempmarkers[0].position,
+                        label: {text: "Start", color: "white", fontSize: "10px"},
+                        map: map
+                    });
+                    var endPointMarker = new google.maps.Marker({
+                        position: tempmarkers[tempmarkers.length - 1].position,
+                        label: {text: "End", color: "white", fontSize: "10px"},
+                        map: map,
+                        // icon: '{{url('/')}}/racing-flag.png',
+                    });
+
+
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < tempmarkers.length; i++) {
                         bounds.extend(tempmarkers[i].getPosition());
@@ -241,7 +259,7 @@
                 for (var i = 0; i < data.length; i++) {
                     var location = {lat: parseFloat(data[i]['latitude_final']), lng: parseFloat(data[i]['longitude_final'])};
 
-                    console.log(data[i]['device_id']);
+                    // console.log(data[i]['device_id']);
                     // localStorage is not empty
                     if (temp !== null) {
                         if (jQuery.inArray(data[i]['device_id'], array) !== -1) {
@@ -351,16 +369,12 @@
 
         // Set the date we're counting from
         var countDateFrom = new Date("{{$event->datetime_from}}").getTime();
-
         // Set the date we're counting to
         var countDateTo = new Date("{{$event->datetime_to}}").getTime();
-
         // Update the count time every 1 second
         var x = setInterval(function() {
-
             // Get todays date and time
             var now = new Date().getTime();
-
             var elapsed = now - countDateFrom;
             var expired = countDateTo - now;
 
@@ -425,8 +439,8 @@
             }
         }
 
+        // ios botton
         $('.check').click(function(){
-
             // create array
             var array = [];
             $('.tgl').each(function() {

@@ -76,7 +76,7 @@
                                 <td><input form="form_add" class="form-control" name="zh_full_name" placeholder="Chinese Full Name"></td>
                                 <td>
                                     <div>
-                                        <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox"/>
+                                        <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox" checked="checked"/>
                                         <label class="tgl-btn" for="1"></label>
                                     </div>
                                 </td>

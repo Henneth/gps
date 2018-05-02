@@ -40,8 +40,18 @@ class DeviceMappingController extends Controller {
             return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Device ID has already mapped.');
         }
 
-        // insert data
+        // check duplicate
         $bib_number = $_POST['athlete_bib_num'];
+        $bib_number_sql = DB::table('device_mapping')
+            ->where('bib_number', $bib_number)
+            ->where('event_id', $event_id)
+            ->first();
+        if (!empty($bib_number_sql)){
+            return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Bib Number has already mapped.');
+        }
+
+
+        // insert data after above go thru checking
         $start_time = $_POST['start_time'];
         $end_time = $_POST['end_time'];
 
@@ -121,9 +131,34 @@ class DeviceMappingController extends Controller {
 
             require_once base_path().'/libs/Excel.php';
             $data = importAsExcel($target_file);
+
+
+            // check duplicate
+            $device_ids_sql = DB::table('device_mapping')
+                ->select('device_id')
+                ->where('event_id', $event_id)
+                ->get();
+            foreach ($device_ids_sql as $temp) {
+                $device_ids[] = $temp->device_id;
+            }
+            $bib_numbers_sql = DB::table('device_mapping')
+                ->select('bib_number')
+                ->where('event_id', $event_id)
+                ->get();
+            foreach ($bib_numbers_sql as $temp) {
+                $bib_numbers[] = $temp->bib_number;
+            }
+
+            // print_r($bib_numbers);
+
             // print_r($data);
+            $errors= [];
             $array = [];
+            $count = 1;
             foreach($data as $temp){
+                $hasError = false;
+                $startTime3 = NULL;
+                $endTime3 = NULL;
 
                 if (!empty($temp[4]) && $temp[4] == '1') {
                     $status = "visible";
@@ -131,27 +166,37 @@ class DeviceMappingController extends Controller {
                     $status = "hidden";
                 }
 
-                
+
                 // create DateTime object from timestamp
-                $sOrigin = $temp[2]; 
-                list($whole, $decimal) = explode('.', $sOrigin);
-                $sInteger = intval($whole); // Integer 
-                $startTime = $this->convertDate($sInteger);
-                $startTime2 = convertTime($sOrigin);
-                $startTime3 = $startTime .' '. $startTime2; 
-                // echo $startTime3;
-                // echo "  <br> ";
-                // echo $startTime2;
-                // echo "  <br> ";
+                if( !empty($temp[2]) ){
+                    $sOrigin = $temp[2];
+                    list($whole, $decimal) = explode('.', $sOrigin);
+                    $sInteger = intval($whole); // Integer
+                    $startTime = $this->convertDate($sInteger);
+                    $startTime2 = convertTime($sOrigin);
+                    $startTime3 = $startTime .' '. $startTime2;
+                }
 
-                $eOrigin = $temp[3]; 
-                list($whole, $decimal) = explode('.', $eOrigin);
-                $eInteger = intval($whole); // Integer 
-                $endTime = $this->convertDate($eInteger);
-                $endTime2 = convertTime($eOrigin);
-                $endTime3 = $endTime .' '. $endTime2; 
+                if( !empty($temp[3]) ){
+                    $eOrigin = $temp[3];
+                    list($whole, $decimal) = explode('.', $eOrigin);
+                    $eInteger = intval($whole); // Integer
+                    $endTime = $this->convertDate($eInteger);
+                    $endTime2 = convertTime($eOrigin);
+                    $endTime3 = $endTime .' '. $endTime2;
+                }
 
-                if (!empty($temp[0]) && !empty($temp[1])) {
+                if( !empty($temp[0]) && in_array($temp[0], $device_ids) ){
+                    $errors[] = "#".$count." - Device ID \"$temp[0]\" already exists!";
+                    $hasError = true;
+                }
+
+                else if( !empty($temp[1]) && in_array($temp[1], $bib_numbers) ){
+                    $errors[] = "#".$count." - Bib Number \"$temp[1]\" already exists!";
+                    $hasError = true;
+                }
+
+                if (!$hasError) {
                     $array[] = array(
                         'device_id' => $temp[0],
                         'bib_number' => $temp[1],
@@ -161,12 +206,15 @@ class DeviceMappingController extends Controller {
                         'status' => $status
                     );
                 }
+
+                $count++;
             }
- 
+
             // print_r($array);
             DB::table('device_mapping')->insert($array);
-            
-            return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Excel file imported.');
+
+            return redirect('event/'.$event_id.'/device-mapping')->with('success', count($array).' '.'records have been imported.')
+            ->with('errors', $errors);;
 
         } else {
             $error_msg = "Sorry, there was an error uploading your file.";
@@ -174,7 +222,7 @@ class DeviceMappingController extends Controller {
         }
     }
 
-    private function convertDate($dateValue) {    
+    private function convertDate($dateValue) {
       $unixDate = ($dateValue - 25569) * 86400;
       return gmdate("Y-m-d", $unixDate);
     }

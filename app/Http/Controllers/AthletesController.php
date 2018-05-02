@@ -99,7 +99,7 @@ class AthletesController extends Controller {
             foreach ($bib_numbers_sql as $key => $temp) {
                 $bib_numbers[] = $temp->bib_number;
             }
-            print_r($bib_numbers);
+            // print_r($bib_numbers);
             $errors = [];
 	        $array = [];
             $count = 1;

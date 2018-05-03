@@ -209,7 +209,7 @@
                 markers = [];
 
                 // check device_id in localStorage
-                var temp = localStorage.getItem("visibility");
+                var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
                 // console.log(" array: " + array );
 
@@ -388,7 +388,7 @@
 
         // Loacl Storage checks browser support
         if (typeof(Storage) !== "undefined") {
-            var dataID = localStorage.getItem("visibility");
+            var dataID = localStorage.getItem("visibility{{$event_id}}");
 
             // check localStorage existing
             if (dataID) {
@@ -420,7 +420,7 @@
             var json = JSON.stringify(array);
 
             // store in localStorage
-            localStorage.setItem("visibility", json);
+            localStorage.setItem("visibility{{$event_id}}", json);
 
         })
     })

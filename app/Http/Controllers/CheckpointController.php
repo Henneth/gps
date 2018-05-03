@@ -37,7 +37,7 @@ class CheckpointController extends Controller {
         foreach ($data as &$value) {
             $value['event_id'] = $event_id;
         }
-        print_r($data);
+        // print_r($data);
         DB::table('checkpoint')->insert($data);
         return redirect('event/'.$event_id.'/checkpoint')->with('success', 'Checkpoint saved!');
 

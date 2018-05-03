@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 
+
 class RawDataController extends Controller {
 
     public function index() {
@@ -86,6 +87,46 @@ class RawDataController extends Controller {
         }
 
         return $result;
+    }
+
+
+    public function exportRawData() {
+
+        $data = DB::table('gps_data')
+            ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+            ->orderby('datetime', 'desc')
+            ->orderby('created_at', 'desc')
+            ->limit(3000)
+            ->get();
+
+        $order = array('datetime', 'created_at', 'delay', 'device_id', 'longitude_final', 'latitude_final', 'battery_level');
+        $assoc_array = [];
+        foreach ($data as &$value) {
+            $out = array();
+            $datetime1 = date_create($value->datetime);
+            $datetime2 = date_create($value->created_at);
+            $interval = date_diff($datetime1, $datetime2);
+            if ($interval->format("%D")>0) {
+                $value->delay = "> 1 day";
+            }else{
+                $value->delay = $interval->format("%H:%I:%S");
+            }
+            foreach ($order as $k) {
+                $out[$k] = $value->$k;
+            }
+            $assoc_array[] = $out;
+        }
+        // $array = json_decode(json_encode($data), true);
+
+
+
+        $colNames = ["Timestamp", "Received At", "Delay", "Device ID", "Longitude", "Latitude", "Battery Level"];
+        $sheets[] = ['colNames' => $colNames, 'data' => $assoc_array, 'sheetname' => "testing"];
+
+
+        require_once '../libs/Excel.php';
+        exportAsExcel("test", $sheets);
+        // echo "<pre>".print_r($assoc_array,1)."</pre>";
     }
 
 }

@@ -23,7 +23,13 @@
                     <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
                     <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
                     <div class="slider-wrapper">
-                        <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
+                        <div>
+                            <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
+                        </div>
+                        <div style="block">
+                            <span>{{$event->datetime_from}}</span>
+                            <span style="float:right;">{{$event->datetime_to}}</span>
+                        </div>
                     </div>
                 </div>
                 <div id="map"></div>
@@ -120,8 +126,10 @@
                     google.maps.event.addListener(marker, 'click', function (marker) {
             			return function () {
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
-                            html += '<div>First Name: <b>' + content['first_name'] + '</b></div>';
-                            html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>';
+                            if( content['first_name'] ){ html += '<div>First Name: <b>' + content['first_name'] + '</b></div>'; }
+                            if( content['last_name'] ){ html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>'; }
+                            if( content['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
+                            html += '<div>Country: <b>' + content['country'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
                             html += '<div>Location: <b>' + location['lat'] + ', ' + location['lng'] + '</b></div>';
             				infowindow.setContent(html);
@@ -288,7 +296,12 @@
         var slider = $('.slider')
         slider.slider({
             formatter: function(value) {
-                return value + '%';
+                //value is percentage, need to convent it to time format
+                var offset = (timestamp_to - timestamp_from) * value / 100;
+                var time = offset + timestamp_from;
+                var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
+                // console.log(dateString);
+                return dateString;
             }
         })
         slider.slider().on('change', function (ev) {
@@ -327,7 +340,7 @@
             var time = offset + timestamp_from;
 
             var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
-            console.log(dateString);
+            // console.log(dateString);
 
             for (var device_id in data) {
                 if (markers[device_id]) {

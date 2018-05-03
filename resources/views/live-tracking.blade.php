@@ -153,9 +153,9 @@
                     google.maps.event.addListener(marker, 'click', (function (marker) {
             			return function () {
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
-                            html += '<div>First Name: <b>' + content['first_name'] + '</b></div>';
-                            html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>';
-                            if (content['zh_full_name']){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
+                            if( content['first_name'] ){ html += '<div>First Name: <b>' + content['first_name'] + '</b></div>'; }
+                            if( content['last_name'] ){ html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>'; }
+                            if( content['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
                             html += '<div>Country: <b>' + content['country'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
                             html += '<div>Location: <b>' + location['lat'] + ', ' + location['lng'] + '</b></div>';

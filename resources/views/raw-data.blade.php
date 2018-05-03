@@ -8,6 +8,18 @@
     Raw Data
 @endsection
 
+@section('contentheader_class')
+    display-inline-block
+@endsection
+@section('contentheader_right')
+<div class="pull-right">
+    <form role="form" action="{{url('/')}}/raw-data/export-raw-data" method="post" enctype="multipart/form-data">
+        {{ csrf_field() }}
+        <button type="submit" class="btn btn-success"><i class="fas fa-download"></i>&nbsp; Export to Excel</button>
+    </form>
+</div>
+@endsection
+
 @section('main-content')
     <div class="container-flex">
         <div class="box">

@@ -35,6 +35,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Raw Data
     Route::get('raw-data', 'RawDataController@index');
+    Route::post('raw-data/export-raw-data', 'RawDataController@exportRawData');
 
     // Create New Event
     Route::get('create-new-event', 'EventController@createNewEvent');

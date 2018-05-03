@@ -3,82 +3,82 @@
 require base_path().'/libs/PHPExcel.php';
 // require 'libs/PHPExcel/PHPExcel/IOFactory.php';
 
-// function exportAsExcel($filename, $sheets) {
-// 	$objPHPExcel = new PHPExcel();
-//
-// 	// Set properties
-// 	$objPHPExcel->getProperties()->setCreator("Race Timing Solutions")
-// 		->setLastModifiedBy("Race Timing Solutions");
-// 		// ->setTitle("Registrations List")
-// 		// ->setSubject("Registrations List")
-// 		// ->setDescription("Registrations");
-// 		// ->setKeywords("office 2007 openxml php")
-// 		// ->setCategory("Test result file");
-//
-// 	function insertData($colNames, $data, $objPHPExcel){
-// 		// Insert column names
-// 		$rowNo = 1;
-// 		$columnNo = "A";
-// 		$styleArray = array(
-// 			'borders' => array(
-// 				'allborders' => array(
-// 					'style' => PHPExcel_Style_Border::BORDER_THIN
-// 				)
-// 			)
-// 		);
-// 		foreach ($colNames as $colName){
-// 			$objPHPExcel->getActiveSheet()
-// 				->setCellValue($columnNo.$rowNo, $colName)
-// 				->getStyle($columnNo.$rowNo)->getFont()->setBold(true);
-// 			$objPHPExcel->getActiveSheet()
-// 				->getStyle($columnNo.$rowNo)->applyFromArray($styleArray);
-// 			$objPHPExcel->getActiveSheet()
-// 				->getColumnDimension($columnNo)->setAutoSize(true);
-// 			$columnNo++;
-// 		}
-//
-// 		// Insert data
-// 		$rowNo = 2;
-// 		foreach ($data as $row){
-// 			$columnNo = "A";
-// 			foreach ($row as $cell){
-// 				$objPHPExcel->getActiveSheet()
-// 					->setCellValue($columnNo.$rowNo, $cell)
-// 					->getStyle($columnNo.$rowNo)->applyFromArray($styleArray);
-// 					// ->setCellValueByColumnAndRow($columnNo, $rowNo, $cell);
-// 				$columnNo++;
-// 			}
-// 			$rowNo++;
-// 		}
-// 	}
-//
-// 	$count = 0;
-// 	foreach($sheets as $sheet){
-// 		$colNames = $sheet['colNames'];
-// 		$data = $sheet['data'];
-// 		$sheetname = $sheet['sheetname'];
-//
-// 	    if ($count > 0){
-// 	        $objPHPExcel->createSheet();
-// 	        $sheet = $objPHPExcel->setActiveSheetIndex($count);
-// 	        $sheet->setTitle($sheetname);
-// 			insertData($colNames, $data, $objPHPExcel);
-// 	    }else{
-// 	        $objPHPExcel->setActiveSheetIndex(0)->setTitle($sheetname);
-// 	        insertData($colNames, $data, $objPHPExcel);
-// 	    }
-// 	    $count++;
-// 	}
-//
-// 	header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-// 	header("Content-Disposition: attachment; filename=\"".$filename.".xlsx\"");
-// 	header("Cache-Control: max-age=0");
-//
-// 	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-// 	// If you want to output e.g. a PDF file, simply do:
-// 	//$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'PDF');
-// 	$objWriter->save('php://output');
-// }
+function exportAsExcel($filename, $sheets) {
+	$objPHPExcel = new PHPExcel();
+
+	// Set properties
+	$objPHPExcel->getProperties()->setCreator("Race Timing Solutions")
+		->setLastModifiedBy("Race Timing Solutions");
+		// ->setTitle("Registrations List")
+		// ->setSubject("Registrations List")
+		// ->setDescription("Registrations");
+		// ->setKeywords("office 2007 openxml php")
+		// ->setCategory("Test result file");
+
+	function insertData($colNames, $data, $objPHPExcel){
+		// Insert column names
+		$rowNo = 1;
+		$columnNo = "A";
+		$styleArray = array(
+			'borders' => array(
+				'allborders' => array(
+					'style' => PHPExcel_Style_Border::BORDER_THIN
+				)
+			)
+		);
+		foreach ($colNames as $colName){
+			$objPHPExcel->getActiveSheet()
+				->setCellValue($columnNo.$rowNo, $colName)
+				->getStyle($columnNo.$rowNo)->getFont()->setBold(true);
+			$objPHPExcel->getActiveSheet()
+				->getStyle($columnNo.$rowNo)->applyFromArray($styleArray);
+			$objPHPExcel->getActiveSheet()
+				->getColumnDimension($columnNo)->setAutoSize(true);
+			$columnNo++;
+		}
+
+		// Insert data
+		$rowNo = 2;
+		foreach ($data as $row){
+			$columnNo = "A";
+			foreach ($row as $cell){
+				$objPHPExcel->getActiveSheet()
+					->setCellValue($columnNo.$rowNo, $cell)
+					->getStyle($columnNo.$rowNo)->applyFromArray($styleArray);
+					// ->setCellValueByColumnAndRow($columnNo, $rowNo, $cell);
+				$columnNo++;
+			}
+			$rowNo++;
+		}
+	}
+
+	$count = 0;
+	foreach($sheets as $sheet){
+		$colNames = $sheet['colNames'];
+		$data = $sheet['data'];
+		$sheetname = $sheet['sheetname'];
+
+	    if ($count > 0){
+	        $objPHPExcel->createSheet();
+	        $sheet = $objPHPExcel->setActiveSheetIndex($count);
+	        $sheet->setTitle($sheetname);
+			insertData($colNames, $data, $objPHPExcel);
+	    }else{
+	        $objPHPExcel->setActiveSheetIndex(0)->setTitle($sheetname);
+	        insertData($colNames, $data, $objPHPExcel);
+	    }
+	    $count++;
+	}
+
+	header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	header("Content-Disposition: attachment; filename=\"".$filename.".xlsx\"");
+	header("Cache-Control: max-age=0");
+
+	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+	// If you want to output e.g. a PDF file, simply do:
+	//$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'PDF');
+	$objWriter->save('php://output');
+}
 
 function importAsExcel($filename){
 	$cacheMethod = PHPExcel_CachedObjectStorageFactory:: cache_to_phpTemp;

@@ -83,7 +83,7 @@
     var polyIndex = 0;
     //Mirrors the path array to find index to delete and such
     var mirrorCoordinates = [];
-    var markers = [];
+    // var markers = [];
     var encodeString;
     var path;
     var gpxLat;
@@ -95,102 +95,57 @@
     var infoWindow;
     var markerList = []; //array to store marker
 
+    function initMap() {
 
-    @if(!$data)
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 12,
-                center: {lat: 22.3016616, lng: 114.1577151}  // Center the map on Chicago, USA.
-            });
+        infoWindow = new google.maps.InfoWindow();
+        // var myLatlng = new google.maps.LatLng(22.3016616, 114.1577151);
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: {lat: 22.3016616, lng: 114.1577151}  // Center the map on Hong Kong.
+        });
 
-            poly = new google.maps.Polyline({
-                strokeColor: '#3d00f7',
-                strokeOpacity: 1,
-                strokeWeight: 3
-            });
-            poly.setMap(map);
+        poly = new google.maps.Polyline({
+            strokeColor: '#3d00f7',
+            strokeOpacity: 1,
+            strokeWeight: 2
+        });
+        poly.setMap(map);
+        polyIndex = 0;
+        //Mirrors the path array to find index to delete and such
+        mirrorCoordinates = [];
+        @if($data)
+            var data = {!!$data->route!!};
+            // console.log(data);
+            for(var key in data){
+                gpxLat = parseFloat(data[key]["lat"]);
+                gpxLng = parseFloat(data[key]["lon"]);
+                IsCP = data[key]["isCheckpoint"];
+                addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
+            }
 
-            // Add a listener for the click event
-            map.addListener('click', addLatLng);
-        }
-
-    @else  //http://jsfiddle.net/ukRsp/1397/
-        function initMap() {
-            // var myLatlng = new google.maps.LatLng(22.3016616, 114.1577151);
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 12,
-                center: {lat: 22.3016616, lng: 114.1577151}  // Center the map on Hong Kong.
-            });
-
-            // if ( $('.tgl-btn').click(function(){
-
-                poly = new google.maps.Polyline({
-                    strokeColor: '#3d00f7',
-                    strokeOpacity: 1,
-                    strokeWeight: 3
-                });
-                poly.setMap(map);
-                polyIndex = 0;
-                //Mirrors the path array to find index to delete and such
-                mirrorCoordinates = [];
-                markers = [];
-                // encodeString =[];
-                // path;
-
-                var data = {!!$data->route!!};
-                // console.log(data);
-                for(var key in data){
-                    gpxLat = parseFloat(data[key]["lat"]);
-                    gpxLng = parseFloat(data[key]["lon"]);
-                    IsCP = data[key]["isCheckpoint"];
-                    addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
-                }
-                // var bounds = new google.maps.LatLngBounds();
-                // for (var i = 0; i < markers.length; i++) {
-                //     bounds.extend(markers[i].getPosition());
-                // }
-                // map.fitBounds(bounds);
-
-                // google.maps.event.clearListeners(map, 'click');
-            // }));
-
-            // var decodedPath = google.maps.geometry.encoding.decodePath('{{$data->route}}');
-            // // var decodedLevels = decodeLevels("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
-            // console.log(decodedPath);
-
-            // poly = new google.maps.Polyline({
-            //     strokeColor: '#3d00f7',
-            //     strokeOpacity: 1,
-            //     strokeWeight: 3
-            // });
-            // poly.setMap(map);
-
-            // for (var key in decodedPath) {
-            //     addLatLngInit(decodedPath[key]);
-
-            //  }
+            reOrder();
 
             var bounds = new google.maps.LatLngBounds();
-            for (var i = 0; i < markers.length; i++) {
-                bounds.extend(markers[i].getPosition());
+            for (var i = 0; i < markerList.length; i++) {
+                bounds.extend(markerList[i].getPosition());
             }
             map.fitBounds(bounds);
 
-            map.addListener('click', addLatLng);
-            // console.log(decodedPath);
-        }
+        @endif
 
-        // function decodeLevels(encodedLevelsString) {
-        //     var decodedLevels = [];
+        map.addListener('click', addLatLng);
+        // console.log(decodedPath);
+    }
 
-        //     for (var i = 0; i < encodedLevelsString.length; ++i) {
-        //         var level = encodedLevelsString.charCodeAt(i) - 63;
-        //         decodedLevels.push(level);
-        //     }
-        //     return decodedLevels;
-        // }
+    // function decodeLevels(encodedLevelsString) {
+    //     var decodedLevels = [];
 
-    @endif
+    //     for (var i = 0; i < encodedLevelsString.length; ++i) {
+    //         var level = encodedLevelsString.charCodeAt(i) - 63;
+    //         decodedLevels.push(level);
+    //     }
+    //     return decodedLevels;
+    // }
 
     // Handles click events on a map, and adds a new point to the Polyline.
     function addLatLng(event) {
@@ -211,20 +166,22 @@
             isCheckpoint: 0
         });
 
+
+
         //Set unique id
         marker.id = uniqueId;
         uniqueId++;
 
         showInfoWindow(marker);
 
-        markers.push(marker);
+        // markers.push(marker);
         // console.log(markers);
-
+        reOrder();
     }
 
 
     // Handles click events on a map, and adds a new point to the Polyline.
-    function addLatLngInit(position) {
+    function addLatLngInit(IsCP, position) {
 
 
         infoWindow = new google.maps.InfoWindow();
@@ -238,49 +195,47 @@
         mirrorCoordinates.push(position);
         polyIndex++;
 
+
         // Add a new marker at the new plotted point on the polyline.
         var marker = new google.maps.Marker({
             position: position,
             title: '#' + path.getLength(),
             map: map,
-            isCheckpoint: IsCP
+            // draggable: true,
+            // animation: google.maps.Animation.DROP,
+            isCheckpoint: IsCP,
+            // resize icon https://developers.google.com/maps/documentation/javascript/markers
         });
 
-        if (IsCP ==1 ){
-            marker.setIcon('{{ url('/') }}/img/icons/spotlight-poi3.png');
-        }
         //Set unique id
         marker.id = uniqueId;
         uniqueId++;
 
         showInfoWindow(marker);
-        markers.push(marker);
-        console.log(marker.id);
-
-
-
+        // markers.push(marker);
+        // console.log(markers);
     }
 
+    var event_type = '{{$event_type->event_type}}'; // get event_type from DB
+
     function showInfoWindow(marker){
-        if ( IsCP == 1 ){
-            //Attach click event handler to the marker.
-            google.maps.event.addListener(marker, "click", function (e) {
-                var content = 'Latitude: ' + parseFloat(gpxLat).toFixed(2) + '&ensp;Longitude: ' + parseFloat(gpxLng).toFixed(2);
-                content += "<br /><b> Remove this checkpoint? </b>";
-                content += "<br /><input type = 'button' onclick = 'removeCheckpoint(" + marker.id + ");' value = 'Confirm' />";
-                infoWindow.setContent(content);
-                infoWindow.open(map, this);
-            });
-        }else{
-            //Attach click event handler to the marker.
-            google.maps.event.addListener(marker, "click", function (e) {
-                var content = 'Latitude: ' + parseFloat(gpxLat).toFixed(2) + '&ensp;Longitude: ' + parseFloat(gpxLng).toFixed(2);
-                content += "<br /><b> Set it as checkpoint? </b>";
-                content += "<br /><input type = 'button' onclick = 'setAsCheckpoint(" + marker.id + ");' value = 'Confirm' />";
-                infoWindow.setContent(content);
-                infoWindow.open(map, this);
-            });
-        }
+        //Attach click event handler to the marker.
+        google.maps.event.addListener(marker, "click", function (e) {
+            var content = 'Location: ' + parseFloat(marker.internalPosition.lat()).toFixed(6) + ', ' + parseFloat(marker.internalPosition.lng()).toFixed(6);
+
+            if (!marker.isStartEnd && event_type == "fixed route") {
+                if (marker.isCheckpoint == 1){
+                    content += "<br /><b> Remove this checkpoint? </b>";
+                    content += "<br /><input type = 'button' onclick = 'removeCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+                }else {
+                    content += "<br /><b> Set it as checkpoint? </b>";
+                    content += "<br /><input type = 'button' onclick = 'setAsCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+                }
+            }
+
+            infoWindow.setContent(content);
+            infoWindow.open(map, this);
+        });
         // google.maps.event.trigger(marker, 'click');
         // console.log(markers);
         markerList.push(marker);
@@ -293,11 +248,12 @@
             if ( markerList[i].id == id ){
                 infoWindow.setContent('<div style="color: green">' + infoWindow.getContent() + "</div>");
                 markerList[i]['isCheckpoint'] = 1;
-                markerList[i].setIcon('{{ url('/') }}/img/icons/spotlight-poi3.png');
+                markerList[i].setIcon(null);
                 infoWindow.close(map, this);
             }
             // console.log(markerList[i]);
         }
+        reOrder();
     }
 
     function removeCheckpoint(id){
@@ -305,13 +261,37 @@
             if ( markerList[i].id == id ){
                 infoWindow.setContent('<div style="color: red">' + infoWindow.getContent() + "</div>");
                 markerList[i]['isCheckpoint'] = 0;
-                markerList[i].setIcon('{{ url('/') }}/img/icons/spotlight-poi2.png');
+                markerList[i].setIcon('{{ url('/') }}/img/icons/triangle.png');
                 infoWindow.close(map, this);
             }
             // console.log(markerList[i]);
         }
+        reOrder();
     }
 
+    function reOrder(){
+        var CPIndex = 1;
+        for (var i = 0; i < markerList.length; i++) {
+            markerList[i].setLabel(null);
+            markerList[i].isStartEnd = false;
+            if (markerList[i].isCheckpoint){
+                markerList[i].setLabel({text: ""+CPIndex, color: "white"});
+                CPIndex++;
+            } else {
+                markerList[i].setIcon('{{ url('/') }}/img/icons/triangle.png');
+            }
+        }
+        if ( markerList[markerList.length-1] ){
+            markerList[markerList.length-1].setLabel({text: "End", color: "white", fontSize: "10px"});
+            markerList[markerList.length-1].isStartEnd = true;
+            markerList[markerList.length-1].setIcon(null);
+        }
+        if ( markerList[0] ){
+            markerList[0].setLabel({text: "Start", color: "white", fontSize: "10px"});
+            markerList[0].isStartEnd = true;
+            markerList[0].setIcon(null);
+        }
+    }
 
     // function useGPX(){
     //         // var myLatlng = new google.maps.LatLng(22.3016616, 114.1577151);
@@ -357,16 +337,20 @@
     // console.log(gpxData);
     //Remove the Polyline and the previous marker
     $('#undo').click(function(){
-        mirrorCoordinates.pop();
-        polyIndex--;
-        poly.getPath().setAt(polyIndex, mirrorCoordinates[mirrorCoordinates.length - 1]);
-        poly.getPath().removeAt(polyIndex);
 
-        // console.log(markers.length);
+        if(markerList && markerList.length){
+            mirrorCoordinates.pop();
+            polyIndex--;
+            poly.getPath().setAt(polyIndex, mirrorCoordinates[mirrorCoordinates.length - 1]);
+            poly.getPath().removeAt(polyIndex);
 
-        var markerIndex = markerList.length - 1;
-        markerList[markerIndex].setMap(null);
-        markerList.pop();
+            // console.log(markers.length);
+
+            var markerIndex = markerList.length - 1;
+            markerList[markerIndex].setMap(null);
+            markerList.pop();
+            reOrder();
+        }
     });
 
     $('#save').click(function(e){
@@ -388,6 +372,7 @@
         // encodeString = google.maps.geometry.encoding.encodePath(path);
         $('#route').val(encodeString);
         // console.log(path.b[0].lat());
+        // Set save-route value
         document.getElementById('save-route').submit();
     });
 

@@ -33,10 +33,18 @@
                 <option disabled selected>---- Select an event ----</option>
                 @foreach ($events as $event)
                     <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
+                    <?php
+                    if (!empty($event_id)) {
+                        if ($event->event_id == $event_id) {
+                            $event_type = $event->event_type;
+                        }
+                    } else {
+                        $event_type = "";
+                    }
+                    ?>
                 @endforeach
             </select>
         </div>
-
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
             @if (!Request::is('view-all-events') && !Request::is('create-new-event') && !Request::is('home') && !Request::is('raw-data'))
@@ -47,9 +55,15 @@
                 @endforeach
 
                 @if (Auth::check())
-                    @foreach ([['Draw Route', 'fa-pencil-alt'], ['Checkpoint', 'fa-flag-checkered'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Edit Event', 'fas fa-cog']] as $item)
-                        <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
-                    @endforeach
+                    @if ($event_type == 'fixed route')
+                        @foreach ([['Draw Route', 'fa-pencil-alt'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Edit Event', 'fas fa-cog']] as $item)
+                            <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
+                        @endforeach
+                    @else
+                        @foreach ([['Draw Route', 'fa-pencil-alt'], ['Checkpoint', 'fa-flag-checkered'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Edit Event', 'fas fa-cog']] as $item)
+                            <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
+                        @endforeach
+                    @endif
                 @endif
 
             @endif

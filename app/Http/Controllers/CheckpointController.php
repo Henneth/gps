@@ -21,7 +21,7 @@ class CheckpointController extends Controller {
             ->get();
 
         $allCheckpoints = json_encode($checkpoints);
-        // print_r($allCheckpoints);
+
         return view('checkpoint')->with(array('event_id' => $event_id,
             'data' => $data, 'allCheckpoints' => $allCheckpoints));
     }

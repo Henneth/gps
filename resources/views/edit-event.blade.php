@@ -72,6 +72,27 @@
                             <input type="text" class="form-control pull-right" name="end-time" value="{{$event->datetime_to}}" id="end-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="end-time">Event Type:</label>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="optionsRadios" id="optionsRadios1" value="fixed route">
+                                Fixed route
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="optionsRadios" id="optionsRadios2" value="shortest route">
+                                Shortest route
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="optionsRadios" id="optionsRadios3" value="no route">
+                                No route
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <!-- /.box-body -->
                 <div class="box-footer">

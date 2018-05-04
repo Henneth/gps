@@ -14,10 +14,11 @@ class EditEventController extends Controller {
     public function postEditEvent($event_id) {
         $datetime_from = $_POST['start-time'];
         $datetime_to = $_POST['end-time'];
+        $event_type = $_POST['optionsRadios'];
         DB::table('events')
             ->where('event_id', $event_id)
             ->update(
-                ['datetime_from' => $datetime_from, 'datetime_to' => $datetime_to]
+                ['datetime_from' => $datetime_from, 'datetime_to' => $datetime_to, 'event_type' =>$event_type]
             );
         return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event saved.');
     }

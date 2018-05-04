@@ -15,8 +15,13 @@ class DrawRouteController extends Controller {
         	->where('event_id',$event_id)
         	->select('route')
         	->first();
-        // print_r($data);
-        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data));
+        $event_type = DB::table('events')
+        	->where('event_id',$event_id)
+        	->select('event_type')
+        	->first();
+
+        // echo "<pre>".print_r($event_type,1)."</pre>";
+        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event_type'=>$event_type));
     }
 
     public function saveRoute($event_id) {

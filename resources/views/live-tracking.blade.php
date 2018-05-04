@@ -14,6 +14,7 @@
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="home-tab" class="active"><a href="#" data-toggle="tab">Map</a></li>
+            <li id="chart" ><a href="#" data-toggle="tab">Elevation</a></li>
             <li id="profile-tab" ><a href="#" data-toggle="tab">Athletes</a></li>
         </ul>
         <div class="tab-content">
@@ -350,6 +351,7 @@
           // Because the samples are equidistant, the 'Sample'
           // column here does double duty as distance along the
           // X axis.
+          console.log(elevations);
           var data = new google.visualization.DataTable();
           data.addColumn('string', 'Sample');
           data.addColumn('number', 'Elevation');

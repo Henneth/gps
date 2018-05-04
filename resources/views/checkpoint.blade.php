@@ -170,6 +170,7 @@
                 var location = new google.maps.LatLng({'lat': CPlat, 'lng': CPlng});
                 addMarker(location);
             }
+
             //Attach click event handler to the map.
             google.maps.event.addListener(map, 'click', function (e) {
                 //Determine the location where the user has clicked.

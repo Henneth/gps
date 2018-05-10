@@ -22,8 +22,8 @@
                 <div class="form-group" style="color: #666; float: left;">Athletes' latest locations from <b>{{$event->datetime_from}}</b> to <b>{{$event->datetime_to}}</b></div>
                 <div style="color: #666; float: right;">Elapsed Time: <b><span id="time"></span></b></div>
                 <div id="map"></div> {{-- google map here --}}
-                <div id="elevation_chart"></div>
             </div>
+            <div class="elevation-section tab-pane" id="elevationChart" style="width:100%; height:100%;"></div>
             <div class="profile-section tab-pane">
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
@@ -104,9 +104,17 @@
     <!-- RichMarker -->
     <script src="{{ asset('/js/richmarker-compiled.js') }}" type="text/javascript"></script>
 
-    <script src="https://www.google.com/jsapi"></script>
+    {{-- elevation chart --}}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
     <script>
-        google.load('visualization', '1', {packages: ['columnchart']});
+        // elevation chart
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(initChart);
+        var chart;
+        var chartOptions;
+        var elevationData;
+        var distance = 0;
 
         var map;
         function initMap() {
@@ -237,11 +245,6 @@
                     }
                     map.fitBounds(bounds);
 
-                    // Create an ElevationService.
-                    var elevator = new google.maps.ElevationService;
-
-                    // Draw the path, using the Visualization API and the Elevation service.
-                    displayPathElevation(path, elevator, map);
 
                 @endif
 
@@ -300,7 +303,121 @@
                     }
                 });
             }, 3000);//time in milliseconds
+
         }
+
+        function initChart() {
+
+            // Create an ElevationService.
+            var elevator = new google.maps.ElevationService;
+
+            // Draw the path, using the Visualization API and the Elevation service.
+            displayPathElevation(path, elevator, map);
+        }
+
+        function displayPathElevation(path, elevator, map) {
+            var tempArray = [];
+            for (var key in path.b) {
+                tempArray.push({'lat' : path.b[key].lat(), 'lng' : path.b[key].lng()});
+            }
+
+            // Create a PathElevationRequest object using this array.
+            // Ask for 256 samples along that path.
+            // Initiate the path request.
+            elevator.getElevationAlongPath({
+                'path': tempArray,
+                'samples': 512
+            }, plotElevation);
+
+            // calculate the distance from point to point
+            for (var i = 0; i < tempArray.length -1; i++) {
+                var p1 = new google.maps.LatLng(tempArray[i]);
+                var p2 = new google.maps.LatLng(tempArray[i+1]);
+                distance += parseFloat(google.maps.geometry.spherical.computeDistanceBetween(p1, p2));
+                // console.log(parseFloat(google.maps.geometry.spherical.computeDistanceBetween(p1, p2)));
+            }
+
+
+
+            // console.log(tempArray);
+            //
+            // // var p1 = new google.maps.LatLng(45.463688, 9.18814);
+            // var p2 = new google.maps.LatLng(46.0438317, 9.75936230000002);
+            // console.log("p1 " + p1);
+            // console.log("p2 " + p2);
+            // alert(calcDistance(p1, p2));
+            //
+            // //calculates distance between two points in km's
+            // function calcDistance(p1, p2) {
+            //   return google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
+            // }
+        }
+        // Takes an array of ElevationResult objects, draws the path on the map
+        // and plots the elevation profile on a Visualization API ColumnChart.
+        function plotElevation(elevations, status) {
+            var chartDiv = document.getElementById('elevationChart');
+            if (status !== 'OK') {
+                // Show the error code inside the chartDiv.
+                chartDiv.innerHTML = 'Cannot show elevation: request failed because ' +
+                status;
+                return;
+            }
+            console.log(elevations);
+
+            // Create a new chart in the elevationChart DIV.
+            chart = new google.visualization.AreaChart(chartDiv);
+            // Extract the data from which to populate the chart.
+            // Because the samples are equidistant, the 'Sample'
+            // column here does double duty as distance along the
+            // X axis.
+            elevationData = new google.visualization.DataTable();
+            elevationData.addColumn('string', 'Distance');
+            elevationData.addColumn('number', 'Elevation');
+            elevationData.addColumn({type:'string', role:'tooltip'});
+            elevationData.addColumn({type: 'string', role:'annotation'});
+            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+            for (var i = 0; i < elevations.length; i++) {
+                var dist = distance/elevations.length * i;
+                var nextDist = distance/elevations.length * (i+1);
+                if (dist <= 400 && 400 < nextDist){
+                    console.log(dist);
+                        console.log(nextDist);
+                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, 'Distance: '+String((distance/elevations.length * i).toFixed(0))+'\ntest', '1001', 'Name: XXX<br/>Bib Number: YYY<br/>This is Point A']);
+                }else {
+                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, 'Distance:'+String((distance/elevations.length * i).toFixed(0))+'\ntest', null, null]);
+                }
+
+            }
+
+
+            var chartHeight = $(window).height() * .8;
+
+            // Draw the chart using the data within its DIV.
+            chartOptions = {
+                // title: 'Event Elevation Chart',
+                isStacked: true,
+                height: chartHeight,
+                legend: 'none',
+                titleY: 'Elevation (m)',
+                titleX: 'Distance (m)',
+                chartArea: {
+                    left: 60,
+                    top: 60,
+                    bottom: 120,
+                    right: 12,
+                },
+               hAxis: { showTextEvery: 64,
+               slantedText:true, slantedTextAngle:45},
+               pointShape: { type: 'triangle', rotation: 180 },
+               displayAnnotations: true,
+               tooltip: {
+                   isHtml: true
+               }
+            }
+
+            chart.draw(elevationData, chartOptions);
+        }
+
         initMap();
 
         function addLatLngInit(position) {
@@ -318,55 +435,6 @@
             });
             tempmarkers.push(marker);
         }
-
-        function displayPathElevation(path, elevator, map) {
-            var tempArray = [];
-            for (var key in path.b) {
-                tempArray.push({'lat' : path.b[key].lat(), 'lng' : path.b[key].lng()});
-            }
-
-            // Create a PathElevationRequest object using this array.
-            // Ask for 256 samples along that path.
-            // Initiate the path request.
-            elevator.getElevationAlongPath({
-                'path': tempArray,
-                'samples': 256
-            }, plotElevation);
-        }
-
-        // Takes an array of ElevationResult objects, draws the path on the map
-        // and plots the elevation profile on a Visualization API ColumnChart.
-        function plotElevation(elevations, status) {
-          var chartDiv = document.getElementById('elevation_chart');
-          if (status !== 'OK') {
-            // Show the error code inside the chartDiv.
-            chartDiv.innerHTML = 'Cannot show elevation: request failed because ' +
-                status;
-            return;
-          }
-          // Create a new chart in the elevation_chart DIV.
-          var chart = new google.visualization.ColumnChart(chartDiv);
-
-          // Extract the data from which to populate the chart.
-          // Because the samples are equidistant, the 'Sample'
-          // column here does double duty as distance along the
-          // X axis.
-          console.log(elevations);
-          var data = new google.visualization.DataTable();
-          data.addColumn('string', 'Sample');
-          data.addColumn('number', 'Elevation');
-          for (var i = 0; i < elevations.length; i++) {
-            data.addRow(['', elevations[i].elevation]);
-          }
-
-          // Draw the chart using the data within its DIV.
-          chart.draw(data, {
-            height: 150,
-            legend: 'none',
-            titleY: 'Elevation (m)'
-          });
-        }
-
 
 
         // Set the date we're counting from
@@ -398,13 +466,35 @@
         }, 1000);
 
 
+        function resizeChart () {
+            chart.draw(elevationData, chartOptions);
+        }
+        if (document.addEventListener) {
+            window.addEventListener('resize', resizeChart);
+        }
+        else if (document.attachEvent) {
+            window.attachEvent('onresize', resizeChart);
+        }
+        else {
+            window.resize = resizeChart;
+        }
 
+
+        $('#chart').click(function(){
+            $('.map-section').removeClass('active');
+            $('.profile-section').removeClass('active');
+            $('.elevation-section').addClass('active');
+            resizeChart ();
+        })
         $('#profile-tab').click(function(){
+            $('.elevation-section').removeClass('active');
+
             $('.map-section').removeClass('active');
             $('.profile-section').addClass('active');
         })
         $('#home-tab').click(function(){
             $('.map-section').addClass('active');
+            $('.elevation-section').removeClass('active');
             $('.profile-section').removeClass('active');
             initMap();
         })

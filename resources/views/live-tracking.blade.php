@@ -352,6 +352,8 @@
             //   return google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
             // }
         }
+
+
         // Takes an array of ElevationResult objects, draws the path on the map
         // and plots the elevation profile on a Visualization API ColumnChart.
         function plotElevation(elevations, status) {
@@ -362,7 +364,7 @@
                 status;
                 return;
             }
-            console.log(elevations);
+            // console.log(elevations);
 
             // Create a new chart in the elevationChart DIV.
             chart = new google.visualization.AreaChart(chartDiv);
@@ -376,18 +378,29 @@
             elevationData.addColumn({type:'string', role:'tooltip'});
             elevationData.addColumn({type: 'string', role:'annotation'});
             elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-            for (var i = 0; i < elevations.length; i++) {
-                var dist = distance/elevations.length * i;
-                var nextDist = distance/elevations.length * (i+1);
-                if (dist <= 400 && 400 < nextDist){
-                    console.log(dist);
-                        console.log(nextDist);
-                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, 'Distance: '+String((distance/elevations.length * i).toFixed(0))+'\ntest', '1001', 'Name: XXX<br/>Bib Number: YYY<br/>This is Point A']);
-                }else {
-                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, 'Distance:'+String((distance/elevations.length * i).toFixed(0))+'\ntest', null, null]);
-                }
 
+            // get the current position of athlethe
+            var currentRouteIndex = {!! $currentRouteIndex !!};
+            console.log(currentRouteIndex);
+            for (var i = 0; i < currentRouteIndex.length; i++) {
+                var athletheDist = currentRouteIndex[i]['distance'];
+                var athletheDeviceID = currentRouteIndex[i]['device_id'];
+
+                console.log(athletheDeviceID + " " + athletheDist);
             }
+                for (var i = 0; i < elevations.length; i++) {
+                    var dist = distance/elevations.length * i;
+                    var nextDist = distance/elevations.length * (i+1);
+                    if (dist <= athletheDist && athletheDist < nextDist){
+                        console.log(dist);
+                            console.log(nextDist);
+                        elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, 'Distance: '+String((distance/elevations.length * i).toFixed(0))+'m\nElevation:'+elevations[i].elevation.toFixed(0)+'m', athletheDeviceID, 'Name: XXX<br/>Bib Number: YYY<br/>This is Point A']);
+                    }else {
+                        elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, 'Distance:'+String((distance/elevations.length * i).toFixed(0))+'m\nElevation:'+elevations[i].elevation.toFixed(0)+'m', null, null]);
+                    }
+
+                }
+            // }
 
 
             var chartHeight = $(window).height() * .8;
@@ -435,7 +448,6 @@
             });
             tempmarkers.push(marker);
         }
-
 
         // Set the date we're counting from
         var countDateFrom = new Date("{{$event->datetime_from}}").getTime();

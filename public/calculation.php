@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$db   = 'gps_live';
+$db   = 'gps';
 $user = 'root';
 $pass = 'root';
 $charset = 'utf8mb4';
@@ -21,11 +21,11 @@ if(empty($eventTimeRange)){
 
 // get last ID
 $lastIDArray = $pdo->query('SELECT lastID FROM lastID WHERE event_id = 7 LIMIT 1')->fetchAll();
-// if(!empty($lastIDArray)){
-//     $lastID = $lastIDArray[0]['lastID'];
-// }else{
+if(!empty($lastIDArray)){
+    $lastID = $lastIDArray[0]['lastID'];
+}else{
     $lastID = 0;
-// }
+}
 // echo"<pre>".print_r($lastID,1)."</pre>";
 
 // get route
@@ -65,8 +65,8 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
     } else {
         $lastReachedPoint = -1;
     }
-    // echo"<pre>".print_r($device_id,1)."</pre>";
-
+    echo"<pre>".print_r($gps_row,1)."</pre>";
+    echo "pass";
     foreach ($gps_row as $key2 => $datum) {
         $lat2 = $datum['latitude_final'];
         $lon2 = $datum['longitude_final'];
@@ -90,16 +90,17 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
                 $lastReachedPoint = $key;
                 $cpArray[] = $tempArray;
 
-                echo"<pre>".print_r($tempArray['device_id'],1)."</pre>";
+                // echo"<pre>".print_r($tempArray['device_id'],1)."</pre>";
 
             }
         }
     }
-    // echo"<pre>".print_r($cpArray,1)."</pre>";
+    echo"<pre>".print_r($cpArray,1)."</pre>";
     // insert into DB
     if ($cpArray){
         pdoMultiInsert('route_progress', $cpArray, $pdo);
     }
+    $cpArray = [];
     // echo"<pre>".print_r($test,1)."</pre>";
 }
 

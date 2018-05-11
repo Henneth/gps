@@ -29,8 +29,14 @@ class LiveTrackingController extends Controller {
             $profile = DeviceMapping_Model::getAthletesProfile2($event_id);
         }
 
+
+        $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
+
+        // echo "<pre>".print_r($currentRouteIndex,1)."</pre>";
+        $currentRouteIndex = json_encode($currentRouteIndex);
+
         $jsonProfile = json_encode($profile);
-        return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile));
+        return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile, 'currentRouteIndex'=>$currentRouteIndex ));
     }
     public function poll($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();

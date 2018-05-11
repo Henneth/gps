@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class LiveTracking_Model extends Model
 {
-	// admin 
+	// admin
 	public static function getLatestLocations($event_id, $datetime_from, $datetime_to) {
 		$data = DB::select("SELECT * FROM (
 				SELECT gps_data.device_id AS device_id, datetime, id, latitude_final, longitude_final, athletes.athlete_id, athletes.bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, colour_code, status FROM gps_data
@@ -54,6 +54,18 @@ class LiveTracking_Model extends Model
 				"datetime_from"=>$datetime_from,
 				"datetime_to"=>$datetime_to
 			]);
+		return $data;
+	}
+
+	// get data from route_distances & route_progress table, get the largest route_index
+	public static function getRouteDistance($event_id){
+		$data = DB::select("SELECT * FROM (SELECT distance, device_mapping.device_id, athletes.bib_number, route_distances.route_index FROM route_distances
+			INNER JOIN route_progress ON route_distances.event_id = route_progress.event_id AND route_distances.route_index = route_progress.route_index
+			INNER JOIN device_mapping ON route_progress.event_id = device_mapping.event_id AND route_progress.device_id = device_mapping.device_id
+			INNER JOIN athletes ON athletes.event_id = device_mapping.event_id AND athletes.bib_number = device_mapping.bib_number
+			WHERE route_distances.event_id = :event_id
+			ORDER BY route_distances.route_index DESC) t
+			GROUP BY device_id", ['event_id' => $event_id] );
 		return $data;
 	}
 

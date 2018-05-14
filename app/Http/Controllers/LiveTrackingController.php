@@ -20,20 +20,28 @@ class LiveTrackingController extends Controller {
             ->first();
 
         if (Auth::check()) {
-            $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to);
+            $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, true);
+            foreach ($data as $value) {
+                $progressData = LiveTracking_Model::getRouteDistanceByDevice($event_id, $value->device_id);
+                $value->distance = !empty($progressData) ? $progressData[0]->distance : 0;
+            }
             $jsonData = json_encode($data);
             $profile = DeviceMapping_Model::getAthletesProfile($event_id);
         }else{
-            $data = LiveTracking_Model::getLatestLocations2($event_id, $event->datetime_from, $event->datetime_to);
+            $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, false);
+            foreach ($data as $value) {
+                $progressData = LiveTracking_Model::getRouteDistanceByDevice($event_id, $value->device_id);
+                $value->distance = !empty($progressData) ? $progressData[0]->distance : 0;
+            }
             $jsonData = json_encode($data);
             $profile = DeviceMapping_Model::getAthletesProfile2($event_id);
         }
 
 
-        $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
 
-        // echo "<pre>".print_r($currentRouteIndex,1)."</pre>";
+        $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
         $currentRouteIndex = json_encode($currentRouteIndex);
+        // echo "<pre>".print_r($route,1)."</pre>";
 
         $jsonProfile = json_encode($profile);
         return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile, 'currentRouteIndex'=>$currentRouteIndex ));

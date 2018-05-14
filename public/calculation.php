@@ -21,11 +21,11 @@ if(empty($eventTimeRange)){
 
 // get last ID
 $lastIDArray = $pdo->query('SELECT lastID FROM lastID WHERE event_id = 7 LIMIT 1')->fetchAll();
-if(!empty($lastIDArray)){
-    $lastID = $lastIDArray[0]['lastID'];
-}else{
+// if(!empty($lastIDArray)){
+//     $lastID = $lastIDArray[0]['lastID'];
+// }else{
     $lastID = 0;
-}
+// }
 // echo"<pre>".print_r($lastID,1)."</pre>";
 
 // get route
@@ -82,7 +82,7 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
             // echo '<br/>';
             // echo"<pre>".print_r($result,1)."</pre>";
 
-            if ($result <= 100 && ($key > $lastReachedPoint && $key < $lastReachedPoint + 3)){
+            if ($result <= 100 && ($key > $lastReachedPoint && $key < $lastReachedPoint + 80)){
                 $tempArray['event_id'] = 7;
                 $tempArray['route_index'] = $key;
                 $tempArray['device_id'] = $device_id;
@@ -90,7 +90,7 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
                 $lastReachedPoint = $key;
                 $cpArray[] = $tempArray;
 
-                // echo"<pre>".print_r($tempArray['device_id'],1)."</pre>";
+                echo"<pre>".print_r($tempArray['device_id'],1)."</pre>";
 
             }
         }

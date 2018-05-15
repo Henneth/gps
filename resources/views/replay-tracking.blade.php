@@ -132,7 +132,7 @@
                             if( content['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
                             html += '<div>Country: <b>' + content['country'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
-                            html += '<div>Location: <b>' + location['lat'] + ', ' + location['lng'] + '</b></div>';
+                            html += '<div>Location: <b>' + parseFloat(location['lat']).toFixed(6) + ', ' + parseFloat(location['lng']).toFixed(6) + '</b></div>';
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}

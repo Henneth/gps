@@ -121,8 +121,7 @@ class RawDataController extends Controller {
         $sheets[] = ['colNames' => $colNames, 'data' => $assoc_array, 'sheetname' => "raw-gps-data"];
 
         require_once '../libs/Excel.php';
-        $date = new \DateTime()->format('Y-m-d H:i:s');
-        exportAsExcel("raw-gps-data_".$date, $sheets);
+        exportAsExcel("raw-gps-data_".date("Y-m-d H:i:s"), $sheets);
         // echo "<pre>".print_r($assoc_array,1)."</pre>";
     }
 

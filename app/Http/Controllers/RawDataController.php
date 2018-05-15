@@ -89,7 +89,6 @@ class RawDataController extends Controller {
         return $result;
     }
 
-
     public function exportRawData() {
 
         $data = DB::table('gps_data')
@@ -118,14 +117,12 @@ class RawDataController extends Controller {
         }
         // $array = json_decode(json_encode($data), true);
 
-
-
         $colNames = ["Timestamp", "Received At", "Delay", "Device ID", "Longitude", "Latitude", "Battery Level"];
-        $sheets[] = ['colNames' => $colNames, 'data' => $assoc_array, 'sheetname' => "testing"];
-
+        $sheets[] = ['colNames' => $colNames, 'data' => $assoc_array, 'sheetname' => "raw-gps-data"];
 
         require_once '../libs/Excel.php';
-        exportAsExcel("test", $sheets);
+        $date = new \DateTime()->format('Y-m-d H:i:s');
+        exportAsExcel("raw-gps-data_".$date, $sheets);
         // echo "<pre>".print_r($assoc_array,1)."</pre>";
     }
 

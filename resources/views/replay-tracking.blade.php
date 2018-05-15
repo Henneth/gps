@@ -176,37 +176,52 @@
                         strokeWeight: 3,
                         map: map
                     });
-
                     var route = {!!$route->route!!};
                     // console.log(data);
                     tempmarkers = [];
+                    var CPIndex = [];
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["lat"]);
                         gpxLng = parseFloat(route[key]["lon"]);
+                        IsCP = route[key]["isCheckpoint"];
+                        if(IsCP){
+                            CPIndex.push(key);
+                        }
                         addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                     }
+                    // console.log(CPIndex);
 
                     // start point and end point marker
                     // console.log(tempmarkers);
                     // console.log(tempmarkers[0].position);
                     // console.log(tempmarkers[tempmarkers.length - 1].position);
                     var startPointMarker = new google.maps.Marker({
-                      position: tempmarkers[0].position,
-                      label: {text: "Start", color: "white", fontSize: "10px"},
-                      map: map
-                    });
-                    var endPointMarker = new google.maps.Marker({
-                      position: tempmarkers[tempmarkers.length - 1].position,
-                      label: {text: "End", color: "white", fontSize: "10px"},
-                      map: map
+                        position: tempmarkers[0].position,
+                        label: {text: "Start", color: "white", fontSize: "10px"},
+                        map: map
                     });
 
+                    var endPointMarker = new google.maps.Marker({
+                        position: tempmarkers[tempmarkers.length - 1].position,
+                        label: {text: "End", color: "white", fontSize: "10px"},
+                        map: map
+                    });
+
+                    for (var i = 0; i < CPIndex.length; i++) {
+                        var index = CPIndex[i];
+                        var checkpointMarker = new google.maps.Marker({
+                            position: tempmarkers[index].position,
+                            label: {text: ""+(i+1)+"", color: "white"},
+                            map: map
+                        });
+                    }
 
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < tempmarkers.length; i++) {
                         bounds.extend(tempmarkers[i].getPosition());
                     }
                     map.fitBounds(bounds);
+                    
                 @endif
 
                 // set InfoWindow pixelOffset

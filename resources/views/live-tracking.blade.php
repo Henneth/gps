@@ -216,7 +216,6 @@
                 // set style
                 map.set('styles', mapStyle);
 
-
                 @if ($route)
                     // set route
                     poly = new google.maps.Polyline({
@@ -238,7 +237,7 @@
                         }
                         addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
                     }
-                    console.log(CPIndex);
+                    // console.log(CPIndex);
 
                     // start point and end point marker
                     // console.log(tempmarkers);
@@ -266,16 +265,11 @@
                         });
                     }
 
-
-
-
-
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < tempmarkers.length; i++) {
                         bounds.extend(tempmarkers[i].getPosition());
                     }
                     map.fitBounds(bounds);
-
 
                 @endif
 
@@ -406,8 +400,8 @@
             elevationData = new google.visualization.DataTable();
             elevationData.addColumn('string', 'Distance');
             elevationData.addColumn('number', 'Elevation');
-            elevationData.addColumn({type:'string', role:'tooltip', p: {html: true}});
-            elevationData.addColumn({type: 'string', role:'annotation'});
+            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation', p: {html: true}});
             elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
 
             // get athlethe relavant
@@ -419,10 +413,10 @@
                 var dist = distance/elevations.length * i;
                 var nextDist = distance/elevations.length * (i+1);
 
-
-                var strDist= "";
-                var athleteStr= "";
-                var str = '';
+                var annotationStr = "";
+                var athleteCount = 0;
+                var str = "";
+                str += 'Distance: <b>' + String((distance/elevations.length * i).toFixed(0)) + ' m</b><br/>Elevation: <b>' + elevations[i].elevation.toFixed(0) + ' m</b><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
                 for (var j = 0; j < currentRouteIndex.length; j++) {
                     var athletheDist = currentRouteIndex[j]['distance'];
                     var athletheDeviceID = currentRouteIndex[j]['device_id'];
@@ -431,29 +425,28 @@
                     var athleteLastName = currentRouteIndex[j]['last_name'];
                     var athleteChineseName = currentRouteIndex[j]['zh_full_name'];
 
-
                     if (dist <= athletheDist && athletheDist < nextDist){
                         str += 'Bib Number: <b>' + athleteBibNumber + '</b><br/>';
                         str += 'First Name: <b>' + athleteFirstName + '</b><br/>';
                         str += 'Last Name: <b>' + athleteLastName + '</b><br/><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
 
-                        strDist = strDist.concat(athleteBibNumber+ ",");
-
-
+                        athleteCount++;
+                        if (athleteCount == 1) {
+                            annotationStr = athleteBibNumber;
+                        } else {
+                            annotationStr = '(' + athleteCount + ')';
+                        }
                     }
 
                 }
-                strDist = strDist.slice(0, -1);
+                // strDist = strDist.slice(0, -1);
 
-
-                if (strDist.length>0){
-                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+'m</b><br/>Elevation:<b>'+elevations[i].elevation.toFixed(0)+' m</b></div>', strDist, '<div class="chart-info-window">'+str+'</div>']);
-                }else {
-                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+' m</b><br/>Elevation: <b>'+elevations[i].elevation.toFixed(0)+' m', null, null+'</b></div>']);
+                if (annotationStr.length>0){
+                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+'m</b><br/>Elevation:<b>'+elevations[i].elevation.toFixed(0)+' m</b></div>', annotationStr, '<div class="chart-info-window">'+str+'</div>']);
+                } else {
+                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+' m</b><br/>Elevation: <b>'+elevations[i].elevation.toFixed(0)+' m</b></div>', null, null]);
                 }
-
             }
-
 
             var chartHeight = $(window).height() * .8;
 
@@ -468,12 +461,12 @@
                 chartArea: {
                     left: 60,
                     top: 60,
-                    bottom: 120,
-                    right: 12,
+                    bottom: 80,
+                    right: 36,
                 },
                hAxis: { showTextEvery: 64,
                slantedText:true, slantedTextAngle:45},
-               pointShape: { type: 'triangle', rotation: 180 },
+               // pointShape: { type: 'triangle', rotation: 180 },
                displayAnnotations: true,
                tooltip: {
                    isHtml: true

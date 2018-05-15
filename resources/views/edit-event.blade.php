@@ -76,19 +76,19 @@
                         <label for="end-time">Event Type:</label>
                         <div class="radio">
                             <label>
-                                <input type="radio" name="optionsRadios" id="optionsRadios1" value="fixed route" {{$event->event_type == "fixed route" ? "selected" : ""}}>
+                                <input type="radio" name="optionsRadios" id="optionsRadios1" value="fixed route" {{$event->event_type == "fixed route" ? "checked" : ""}}>
                                 Fixed route
                             </label>
                         </div>
                         <div class="radio">
                             <label>
-                                <input type="radio" name="optionsRadios" id="optionsRadios2" value="shortest route" {{$event->event_type == "shortest route" ? "selected" : ""}}>
+                                <input type="radio" name="optionsRadios" id="optionsRadios2" value="shortest route" {{$event->event_type == "shortest route" ? "checked" : ""}}>
                                 Shortest route
                             </label>
                         </div>
                         <div class="radio">
                             <label>
-                                <input type="radio" name="optionsRadios" id="optionsRadios3" value="no route" {{$event->event_type == "no route" ? "selected" : ""}}>
+                                <input type="radio" name="optionsRadios" id="optionsRadios3" value="no route" {{$event->event_type == "no route" ? "checked" : ""}}>
                                 No route
                             </label>
                         </div>

@@ -2,7 +2,7 @@
 $host = 'localhost';
 $db   = 'gps';
 $user = 'root';
-$pass = 'root';
+$pass = 'rts123';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -20,11 +20,11 @@ if(empty($eventTimeRange)){
 }
 
 // get last ID
-$lastIDArray = $pdo->query('SELECT lastID FROM lastID WHERE event_id = 7 LIMIT 1')->fetchAll();
+// $lastIDArray = $pdo->query('SELECT lastID FROM lastID WHERE event_id = 7 LIMIT 1')->fetchAll();
 // if(!empty($lastIDArray)){
 //     $lastID = $lastIDArray[0]['lastID'];
 // }else{
-    $lastID = 0;
+$lastID = 0;
 // }
 // echo"<pre>".print_r($lastID,1)."</pre>";
 
@@ -49,11 +49,8 @@ $gps_data_by_device_id = group_by($gps_data, "device_id");
 // echo"<pre>".print_r($gps_data_by_device_id,1)."</pre>";
 
 
-
-
 $cpArray = [];
-
-
+// looping by each device
 foreach ($gps_data_by_device_id as $device_id => $gps_row) {
     // get the largest route progress's index
     $getRouteIndex = $pdo->prepare('SELECT MAX(route_index) FROM route_progress WHERE route_progress.event_id = 7 AND route_progress.device_id = :device_id GROUP BY route_progress.device_id');
@@ -65,13 +62,14 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
     } else {
         $lastReachedPoint = -1;
     }
-    echo"<pre>".print_r($gps_row,1)."</pre>";
-    echo "pass";
+    // echo"<pre>".print_r($gps_row,1)."</pre>";
+
+    // looping by each gps data row
     foreach ($gps_row as $key2 => $datum) {
         $lat2 = $datum['latitude_final'];
         $lon2 = $datum['longitude_final'];
 
-
+        // looping by each route point
         foreach ($array as $key => $routePoint) {
             // echo $key.'<br/>';
             $lat1 = $routePoint['lat'];
@@ -144,32 +142,32 @@ function group_by($array, $key) {
 //https://www.geodatasource.com/developers/php
 function distance($lat1, $lon1, $lat2, $lon2, $unit) {
 
-  $theta = $lon1 - $lon2;
-  $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-  $dist = acos($dist);
-  $dist = rad2deg($dist);
-  $miles = $dist * 60 * 1.1515;
-  $unit = strtoupper($unit);
+    $theta = $lon1 - $lon2;
+    $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+    $dist = acos($dist);
+    $dist = rad2deg($dist);
+    $miles = $dist * 60 * 1.1515;
+    $unit = strtoupper($unit);
 
-  if ($unit == "K") {
-    return ($miles * 1.609344);
-  } else if ($unit == "N") {
-      return ($miles * 0.8684);
+    if ($unit == "K") {
+        return ($miles * 1.609344);
+    } else if ($unit == "N") {
+        return ($miles * 0.8684);
     } else {
         return $miles;
-      }
+    }
 }
 
 
 
 /**
- * A custom function that automatically constructs a multi insert statement.
- *
- * @param string $tableName Name of the table we are inserting into.
- * @param array $data An "array of arrays" containing our row data.
- * @param PDO $pdoObject Our PDO object.
- * @return boolean TRUE on success. FALSE on failure.
- */
+* A custom function that automatically constructs a multi insert statement.
+*
+* @param string $tableName Name of the table we are inserting into.
+* @param array $data An "array of arrays" containing our row data.
+* @param PDO $pdoObject Our PDO object.
+* @return boolean TRUE on success. FALSE on failure.
+*/
 function pdoMultiInsert($tableName, $data, $pdoObject){
 
     //Will contain SQL snippets.

@@ -42,7 +42,7 @@ $gps_data_stmt->execute(array(':datetime_from' => $eventTimeRange[0]['datetime_f
 $gps_data = $gps_data_stmt->fetchAll();
 
 // copy the last ID from gps_data to lastID
-$importLastID = $pdo->prepare('REPLACE INTO lastID (lastID, event_id) SELECT MAX(id), device_mapping.event_id FROM gps_data INNER JOIN device_mapping ON device_mapping.device_id = gps_data.device_id WHERE device_mapping.event_id = :event_id GROUP BY device_mapping.event_id ');
+$importLastID = $pdo->prepare('REPLACE INTO last_id (last_id, event_id) SELECT MAX(id), device_mapping.event_id FROM gps_data INNER JOIN device_mapping ON device_mapping.device_id = gps_data.device_id WHERE device_mapping.event_id = :event_id GROUP BY device_mapping.event_id ');
 $importLastID ->execute(array(':event_id' => 7 ));
 
 $gps_data_by_device_id = group_by($gps_data, "device_id");

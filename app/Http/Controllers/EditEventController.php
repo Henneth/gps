@@ -12,6 +12,9 @@ class EditEventController extends Controller {
         return view('edit-event')->with(array('event' => $event, 'event_id' => $event_id));
     }
     public function postEditEvent($event_id) {
+        if (empty($_POST['optionsRadios'])) {
+            return redirect('edit-event')->with('error', 'Event type must not be empty.');
+        }
         $datetime_from = $_POST['start-time'];
         $datetime_to = $_POST['end-time'];
         $event_type = $_POST['optionsRadios'];

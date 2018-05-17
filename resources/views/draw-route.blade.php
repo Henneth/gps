@@ -282,7 +282,7 @@
             }
         }
         if ( markerList[markerList.length-1] ){
-            markerList[markerList.length-1].setLabel({text: "End", color: "white", fontSize: "10px"});
+            markerList[markerList.length-1].setLabel({text: "Fin.", color: "white", fontSize: "10px"});
             markerList[markerList.length-1].isStartEnd = true;
             markerList[markerList.length-1].setIcon(null);
         }

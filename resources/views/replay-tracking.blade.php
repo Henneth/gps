@@ -203,7 +203,7 @@
 
                     var endPointMarker = new google.maps.Marker({
                         position: tempmarkers[tempmarkers.length - 1].position,
-                        label: {text: "End", color: "white", fontSize: "10px"},
+                        label: {text: "Fin.", color: "white", fontSize: "10px"},
                         map: map
                     });
 
@@ -221,7 +221,7 @@
                         bounds.extend(tempmarkers[i].getPosition());
                     }
                     map.fitBounds(bounds);
-                    
+
                 @endif
 
                 // set InfoWindow pixelOffset

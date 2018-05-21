@@ -398,10 +398,10 @@
             // column here does double duty as distance along the
             // X axis.
             elevationData = new google.visualization.DataTable();
-            elevationData.addColumn('string', 'Distance');
+            elevationData.addColumn('number', 'Distance');
             elevationData.addColumn('number', 'Elevation');
             elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
-            elevationData.addColumn({type: 'string', role:'annotation', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation'});
             elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
 
             // get athlethe relavant
@@ -442,9 +442,9 @@
                 // strDist = strDist.slice(0, -1);
 
                 if (annotationStr.length>0){
-                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+'m</b><br/>Elevation:<b>'+elevations[i].elevation.toFixed(0)+' m</b></div>', annotationStr, '<div class="chart-info-window">'+str+'</div>']);
+                    elevationData.addRow([parseInt(distance/elevations.length * i), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+'m</b><br/>Elevation:<b>'+elevations[i].elevation.toFixed(0)+' m</b></div>', annotationStr, '<div class="chart-info-window">'+str+'</div>']);
                 } else {
-                    elevationData.addRow([String((distance/elevations.length * i).toFixed(0)), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+' m</b><br/>Elevation: <b>'+elevations[i].elevation.toFixed(0)+' m</b></div>', null, null]);
+                    elevationData.addRow([parseInt(distance/elevations.length * i), elevations[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations.length * i).toFixed(0))+' m</b><br/>Elevation: <b>'+elevations[i].elevation.toFixed(0)+' m</b></div>', null, null]);
                 }
             }
 
@@ -464,8 +464,13 @@
                     bottom: 80,
                     right: 36,
                 },
-               hAxis: { showTextEvery: 64,
-               slantedText:true, slantedTextAngle:45},
+                hAxis: {
+                    gridlines: {
+                        color: 'transparent'
+                    }
+                },
+               // hAxis: { showTextEvery: 64,
+               // slantedText:true, slantedTextAngle:45},
                // pointShape: { type: 'triangle', rotation: 180 },
                displayAnnotations: true,
                tooltip: {

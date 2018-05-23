@@ -18,22 +18,25 @@
             <li id="profile-tab" ><a href="#" data-toggle="tab">Athletes</a></li>
         </ul>
         <div class="tab-content">
-            <div class="map-section tab-pane active">
-                <div class="flex-container form-group">
-                    <button type="button" class="replay-controls play btn btn-primary">Play</button>
-                    <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
-                    <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
-                    <div class="slider-wrapper">
-                        <div>
-                            <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
-                        </div>
-                        <div style="block">
-                            <span>{{$event->datetime_from}}</span>
-                            <span style="float:right;">{{$event->datetime_to}}</span>
-                        </div>
+            <div class="flex-container form-group replay-controls-wrapper">
+                <button type="button" class="replay-controls play btn btn-primary">Play</button>
+                <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
+                <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
+                <div class="slider-wrapper">
+                    <div>
+                        <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
+                    </div>
+                    <div style="block">
+                        <span>{{$event->datetime_from}}</span>
+                        <span style="float:right;">{{$event->datetime_to}}</span>
                     </div>
                 </div>
+            </div>
+            <div class="map-section tab-pane active">
                 <div id="map"></div>
+            </div>
+            <div  class="elevation-section tab-pane">
+                <div id="elevationChart" style="width:100%; height:100%;"></div>
             </div>
             <div class="profile-section tab-pane">
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
@@ -81,7 +84,19 @@
     <!-- RichMarker -->
     <script src="{{ asset('/js/richmarker-compiled.js') }}" type="text/javascript"></script>
 
+    {{-- elevation chart --}}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
     <script>
+    // elevation chart
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(initChart);
+    var chart;
+    var chartOptions;
+    var elevationData;
+    var distance = 0;
+    var elevations_global;
+
         function initMap() {
 
             data = {!! $data !!};
@@ -282,7 +297,217 @@
             //     });
             // }, 3000);//time in milliseconds
         }
+
+
+
+        function initChart() {
+
+            // Create an ElevationService.
+            var elevator = new google.maps.ElevationService;
+
+            // Draw the path, using the Visualization API and the Elevation service.
+            displayPathElevation(path, elevator, map);
+        }
+
+        function displayPathElevation(path, elevator, map) {
+            var tempArray = [];
+            for (var key in path.b) {
+                tempArray.push({'lat' : path.b[key].lat(), 'lng' : path.b[key].lng()});
+            }
+
+            // Create a PathElevationRequest object using this array.
+            // Ask for 256 samples along that path.
+            // Initiate the path request.
+            elevator.getElevationAlongPath({
+                'path': tempArray,
+                'samples': 216
+            }, plotElevation);
+
+            // calculate the distance from point to point
+            for (var i = 0; i < tempArray.length -1; i++) {
+                var p1 = new google.maps.LatLng(tempArray[i]);
+                var p2 = new google.maps.LatLng(tempArray[i+1]);
+                distance += parseFloat(google.maps.geometry.spherical.computeDistanceBetween(p1, p2));
+                // console.log(parseFloat(google.maps.geometry.spherical.computeDistanceBetween(p1, p2)));
+            }
+
+
+
+            // console.log(tempArray);
+            //
+            // // var p1 = new google.maps.LatLng(45.463688, 9.18814);
+            // var p2 = new google.maps.LatLng(46.0438317, 9.75936230000002);
+            // console.log("p1 " + p1);
+            // console.log("p2 " + p2);
+            // alert(calcDistance(p1, p2));
+            //
+            // //calculates distance between two points in km's
+            // function calcDistance(p1, p2) {
+            //   return google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
+            // }
+        }
+
+        var routeIndexesByDevice;
+        // Takes an array of ElevationResult objects, draws the path on the map
+        // and plots the elevation profile on a Visualization API ColumnChart.
+        function plotElevation(elevations, status) {
+            elevations_global = elevations;
+            var chartDiv = document.getElementById('elevationChart');
+            if (status !== 'OK') {
+                // Show the error code inside the chartDiv.
+                chartDiv.innerHTML = 'Cannot show elevation: request failed because ' +
+                status;
+                return;
+            }
+            // console.log(elevations);
+
+            // Create a new chart in the elevationChart DIV.
+            chart = new google.visualization.AreaChart(chartDiv);
+            // Extract the data from which to populate the chart.
+            // Because the samples are equidistant, the 'Sample'
+            // column here does double duty as distance along the
+            // X axis.
+            elevationData = new google.visualization.DataTable();
+            elevationData.addColumn('string', 'Distance');
+            elevationData.addColumn('number', 'Elevation');
+            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation'});
+            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+
+            // get athlethe relavant
+            routeIndexesByDevice = {!! $routeIndexesByDevice !!};
+
+            var chartHeight = $(window).height() * .8;
+
+            // Draw the chart using the data within its DIV.
+            chartOptions = {
+                // title: 'Event Elevation Chart',
+                isStacked: true,
+                height: chartHeight,
+                legend: 'none',
+                titleY: 'Elevation (m)',
+                titleX: 'Distance (m)',
+                chartArea: {
+                    left: 60,
+                    top: 60,
+                    bottom: 80,
+                    right: 36,
+                },
+               hAxis: { showTextEvery: 64,
+               slantedText:true, slantedTextAngle:45},
+               // pointShape: { type: 'triangle', rotation: 180 },
+               displayAnnotations: true,
+               tooltip: {
+                   isHtml: true
+               }
+            }
+            var currentRouteIndex = lastPositionData();
+            drawChart(currentRouteIndex);
+        }
+
+        function drawChart(currentRouteIndex) {
+
+            for (var i = 0; i < elevations_global.length; i++) {
+                // the current athlete's distance between
+                var dist = distance/elevations_global.length * i;
+                var nextDist = distance/elevations_global.length * (i+1);
+
+                var annotationStr = "";
+                var athleteCount = 0;
+                var str = "";
+                str += 'Distance: <b>' + String((distance/elevations_global.length * i).toFixed(0)) + ' m</b><br/>Elevation: <b>' + elevations_global[i].elevation.toFixed(0) + ' m</b><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
+                for (var j = 0; j < currentRouteIndex.length; j++) {
+                    var athletheDist = currentRouteIndex[j]['distance'];
+                    var athletheDeviceID = currentRouteIndex[j]['device_id'];
+                    var athleteBibNumber = currentRouteIndex[j]['bib_number'];
+                    var athleteFirstName = currentRouteIndex[j]['first_name'];
+                    var athleteLastName = currentRouteIndex[j]['last_name'];
+                    var athleteChineseName = currentRouteIndex[j]['zh_full_name'];
+
+                    // console.log(currentRouteIndex[j]);
+
+                    if (dist <= athletheDist && athletheDist < nextDist){
+                        str += 'Bib Number: <b>' + athleteBibNumber + '</b><br/>';
+                        str += 'First Name: <b>' + athleteFirstName + '</b><br/>';
+                        str += 'Last Name: <b>' + athleteLastName + '</b><br/><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
+
+                        athleteCount++;
+                        if (athleteCount == 1) {
+                            annotationStr = athleteBibNumber;
+                        } else {
+                            annotationStr = '(' + athleteCount + ')';
+                        }
+                    }
+
+                }
+                // strDist = strDist.slice(0, -1);
+
+                if (annotationStr.length>0){
+                    elevationData.addRow([String((distance/elevations_global.length * i).toFixed(0)), elevations_global[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0))+'m</b><br/>Elevation:<b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', annotationStr, '<div class="chart-info-window">'+str+'</div>']);
+                } else {
+                    elevationData.addRow([String((distance/elevations_global.length * i).toFixed(0)), elevations_global[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0))+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', null, null]);
+                }
+            }
+            chart.draw(elevationData, chartOptions);
+
+        }
+
+        //On button click, load new data
+        function dataFilterByTime (datetime) {
+            var athleteArray = [];
+            // console.log(routeIndexesByDevice[0]);
+            for (var key in routeIndexesByDevice) {
+                var routeIndexByDevice = routeIndexesByDevice[key];
+                // console.log(routeIndexByDevice);
+                for (var j = 0; j < routeIndexByDevice.length; j++) {
+                    getTimeByDevice = routeIndexByDevice[j]['reached_at'];
+                    getTimeByDevice = new Date(getTimeByDevice).getTime() / 1000;
+                    // console.log(getTimeByDevice);
+
+                    // console.log(datetime);
+                    if (datetime <= getTimeByDevice){
+                        if (j == 0) {
+                            athleteArray.push(routeIndexByDevice[0]);
+                            break;
+                        }
+                        // console.log(routeIndexByDevice[j]);
+                        athleteArray.push(routeIndexByDevice[j-1]);
+                        break;
+                    }
+                }
+            }
+            console.log(athleteArray);
+            return athleteArray;
+        };
+
+        function lastPositionData() {
+            var athleteArray = [];
+            // console.log(routeIndexesByDevice[0]);
+            for (var key in routeIndexesByDevice) {
+                var routeIndexByDevice = routeIndexesByDevice[key];
+                // console.log(routeIndexByDevice);
+                athleteArray.push(routeIndexByDevice[routeIndexByDevice.length-1]);
+            }
+            // console.log(athleteArray);
+            return athleteArray;
+        };
+
+
         initMap();
+
+        function resizeChart () {
+            chart.draw(elevationData, chartOptions);
+        }
+        if (document.addEventListener) {
+            window.addEventListener('resize', resizeChart);
+        }
+        else if (document.attachEvent) {
+            window.attachEvent('onresize', resizeChart);
+        }
+        else {
+            window.resize = resizeChart;
+        }
+
 
         function addLatLngInit(position) {
             path = poly.getPath();
@@ -356,16 +581,16 @@
             var time = offset + timestamp_from;
 
             var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
-            // console.log(dateString);
+            console.log(dateString);
 
             for (var device_id in data) {
                 if (markers[device_id]) {
-                    console.log(device_id);
+                    // console.log(device_id);
                     var markerHasData = false;
                     markers[device_id].setVisible(true);
                     for (var i in data[device_id]) {
                         if (data[device_id][i]['timestamp'] <= time) {
-                            console.log(data[device_id][i]['timestamp']);
+                            // console.log(data[device_id][i]['timestamp']);
                             markers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id][i]['latitude_final']), parseFloat(data[device_id][i]['longitude_final'])) );
                             markerHasData = true;
                             break;
@@ -376,6 +601,16 @@
                     }
                 }
             }
+            //
+            // console.log('in');
+            elevationData = new google.visualization.DataTable();
+            elevationData.addColumn('string', 'Distance');
+            elevationData.addColumn('number', 'Elevation');
+            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation'});
+            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+            var currentRouteIndex = dataFilterByTime(time);
+            drawChart(currentRouteIndex);
         }
         $('.replay-controls.pause').click(function() {
             $(this).prop('disabled', 'disabled').removeClass('btn-primary').addClass('btn-default');
@@ -392,15 +627,27 @@
         });
 
         // Flip tags
+        $('#chart').click(function(){
+            $('.map-section').removeClass('active');
+            $('.replay-controls-wrapper').show();
+            $('.profile-section').removeClass('active');
+            $('.elevation-section').addClass('active');
+            resizeChart ();
+        })
         $('#profile-tab').click(function(){
+            $('.elevation-section').removeClass('active');
+            $('.replay-controls-wrapper').hide();
             $('.map-section').removeClass('active');
             $('.profile-section').addClass('active');
         })
         $('#home-tab').click(function(){
             $('.map-section').addClass('active');
+            $('.replay-controls-wrapper').show();
+            $('.elevation-section').removeClass('active');
             $('.profile-section').removeClass('active');
             initMap();
         })
+
 
         $(document).ready(function() {
             $('#profile-table').DataTable({
@@ -542,6 +789,17 @@
 
     #purple .slider-selection {
         background: #932ab6;
+    }
+    .chart-info-window {
+        padding: 16px;
+        width: 160px;
+        /* font-family="Arial"; */
+        font-size: 14px;
+        stroke-width:1;
+        stroke:#3366cc;
+    }
+    .chart-info-window hr.end:last-child {
+        display: none;
     }
     </style>
 @endsection

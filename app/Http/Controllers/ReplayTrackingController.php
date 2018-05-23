@@ -6,6 +6,8 @@ use DB;
 use App\Http\Controllers\Controller;
 use App\ReplayTracking_Model as ReplayTracking_Model;
 use App\DeviceMapping_Model as DeviceMapping_Model;
+
+
 use Auth;
 
 class ReplayTrackingController extends Controller {
@@ -34,9 +36,23 @@ class ReplayTrackingController extends Controller {
             ->where('event_id',$event_id)
             ->select('route')
             ->first();
-        // echo "<pre>".print_r($event,1)."</pre>";
-        // $profile = DeviceMapping_Model::getAthletesProfile($event_id);
-        return view('replay-tracking')->with(array('data' => $jsonData, 'profile' => $profile, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $route, 'event'=>$event));
+
+        $routeIndexes = (array) ReplayTracking_Model::getRouteDistance($event_id);
+        $routeIndexesByDevice = $this->group_by($routeIndexes, "device_id");
+        // echo "<pre>".print_r($routeIndexesByDevice,1)."</pre>";
+
+
+        $routeIndexesByDevice = json_encode($routeIndexesByDevice);
+        $profile = DeviceMapping_Model::getAthletesProfile($event_id);
+        return view('replay-tracking')->with(array('data' => $jsonData, 'profile' => $profile, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $route, 'event'=>$event, 'routeIndexesByDevice' => $routeIndexesByDevice ));
+    }
+
+    private function group_by($array, $key) {
+        $return = array();
+        foreach($array as $val) {
+            $return[$val->$key][] = $val;
+        }
+        return $return;
     }
 
 }

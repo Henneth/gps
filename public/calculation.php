@@ -2,7 +2,7 @@
 $host = 'localhost';
 $db   = 'gps';
 $user = 'root';
-$pass = 'rts123';
+$pass = 'root';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -36,6 +36,11 @@ if ($route){
     return;
 }
 
+// get checkpoint data relevant
+$checkpointData = $pdo->query('SELECT route_index FROM route_distances WHERE event_id = 7 AND is_checkpoint = 1 ORDER BY route_index')->fetchAll();
+array_unshift($checkpointData, array("route_index" => 0));
+echo"<pre>".print_r($checkpointData,1)."</pre>";
+
 // get gps data
 $gps_data_stmt = $pdo->prepare('SELECT * FROM gps_data WHERE :datetime_from <= gps_data.datetime AND gps_data.datetime <= :datetime_to AND id > :lastID');
 $gps_data_stmt->execute(array(':datetime_from' => $eventTimeRange[0]['datetime_from'], ':datetime_to' => $eventTimeRange[0]['datetime_to'], ':lastID' => $lastID));
@@ -56,6 +61,8 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
     $getRouteIndex = $pdo->prepare('SELECT MAX(route_index) FROM route_progress WHERE route_progress.event_id = 7 AND route_progress.device_id = :device_id GROUP BY route_progress.device_id');
     $getRouteIndex -> execute(array(':device_id' => $device_id ));
     $getRouteIndex = $getRouteIndex->fetchAll();
+
+    $reachedCheckpoint = 0;
 
     if ($getRouteIndex){
         $lastReachedPoint = $getRouteIndex[0]['MAX(route_index)'];
@@ -80,7 +87,7 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
             // echo '<br/>';
             // echo"<pre>".print_r($result,1)."</pre>";
 
-            if ($result <= 100 && ($key > $lastReachedPoint && $key < $lastReachedPoint + 80)){
+            if ($result <= 100 && ($key > $lastReachedPoint) && $checkpointData[$reachedCheckpoint]['route_index'] < $key && $checkpointData[$reachedCheckpoint+1]['route_index'] >= $key){
                 $tempArray['event_id'] = 7;
                 $tempArray['route_index'] = $key;
                 $tempArray['device_id'] = $device_id;
@@ -88,18 +95,22 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
                 $lastReachedPoint = $key;
                 $cpArray[] = $tempArray;
 
+                if ($key >= $checkpointData[$reachedCheckpoint+1]['route_index']) {
+                    $reachedCheckpoint++;
+                }
+
                 echo"<pre>".print_r($tempArray['device_id'],1)."</pre>";
 
             }
         }
     }
     echo"<pre>".print_r($cpArray,1)."</pre>";
-    // insert into DB
-    if ($cpArray){
-        pdoMultiInsert('route_progress', $cpArray, $pdo);
-    }
-    $cpArray = [];
-    // echo"<pre>".print_r($test,1)."</pre>";
+    // // insert into DB
+    // if ($cpArray){
+    //     pdoMultiInsert('route_progress', $cpArray, $pdo);
+    // }
+    // $cpArray = [];
+    // // echo"<pre>".print_r($test,1)."</pre>";
 }
 
 
@@ -190,17 +201,17 @@ function pdoMultiInsert($tableName, $data, $pdoObject){
         $rowsSQL[] = "(" . implode(", ", $params) . ")";
     }
 
-    //Construct our SQL statement
-    $sql = "INSERT INTO `$tableName` (" . implode(", ", $columnNames) . ") VALUES " . implode(", ", $rowsSQL);
+    // //Construct our SQL statement
+    // $sql = "INSERT INTO `$tableName` (" . implode(", ", $columnNames) . ") VALUES " . implode(", ", $rowsSQL);
 
-    //Prepare our PDO statement.
-    $pdoStatement = $pdoObject->prepare($sql);
+    // //Prepare our PDO statement.
+    // $pdoStatement = $pdoObject->prepare($sql);
 
-    //Bind our values.
-    foreach($toBind as $param => $val){
-        $pdoStatement->bindValue($param, $val);
-    }
+    // //Bind our values.
+    // foreach($toBind as $param => $val){
+    //     $pdoStatement->bindValue($param, $val);
+    // }
 
-    //Execute our statement (i.e. insert the data).
-    return $pdoStatement->execute();
+    // //Execute our statement (i.e. insert the data).
+    // return $pdoStatement->execute();
 }

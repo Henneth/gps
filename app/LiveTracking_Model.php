@@ -82,4 +82,9 @@ class LiveTracking_Model extends Model
 		return $data;
 	}
 
+	public static function getCheckpointData($event_id) {
+		$data = DB::select("SELECT * FROM route_distances INNER JOIN route_progress ON route_progress.event_id = route_distances.event_id AND 	route_progress.route_index = route_distances.route_index WHERE route_distances.event_id = :event_id AND route_distances.is_checkpoint = 1 ORDER BY device_id, route_distances.route_index ", ['event_id' => $event_id] );
+		return $data;
+	}
+
 }

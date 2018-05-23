@@ -40,14 +40,18 @@ class DrawRouteController extends Controller {
                 $lon2 = $routeDecode[$index]->lon;
                 $currentDistance = round($this->distance($lat1, $lon1, $lat2, $lon2, "K") * 1000);
                 $totalDistance += $currentDistance;
+
                 $tempArray ['route_index'] = $key;
                 $tempArray ['distance'] = $totalDistance;
+                $tempArray ['is_checkpoint'] = property_exists($value, 'isCheckpoint') ? $value->isCheckpoint : 0;
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
 
             } else {
                 $currentDistance = 0;
                 $tempArray ['route_index'] = $key;
                 $tempArray ['distance'] = $currentDistance;
+                $tempArray ['is_checkpoint'] = property_exists($value, 'isCheckpoint') ? $value->isCheckpoint : 0;
+  
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
             }
             $tempArray ['event_id'] = $event_id;
@@ -56,7 +60,7 @@ class DrawRouteController extends Controller {
 
             $index++;
             // echo $key;
-            // echo "<pre>".print_r($routeDecode[$key])."</pre>";
+            // echo "<pre>".print_r($routeDecode[$key],1)."</pre>";
             // echo "<pre>".print_r($routeDecode[$key]->lon,1)."</pre>";
         }
             // echo "<pre>".print_r($distanceArray,1)."</pre>";

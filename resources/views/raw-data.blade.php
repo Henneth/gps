@@ -15,7 +15,10 @@
 <div class="pull-right">
     <form role="form" action="{{url('/')}}/raw-data/export-raw-data" method="post" enctype="multipart/form-data">
         {{ csrf_field() }}
-        <button type="submit" class="btn btn-success"><i class="fas fa-download"></i>&nbsp; Export to Excel</button>
+        <button type="submit" class="btn btn-success exportToExcel disabled"><i class="fas fa-download"></i>&nbsp; Export to Excel</button>
+        <input type="hidden" id="time-from-value" name="time-from">
+        <input type="hidden" id="time-to-value" name="time-to">
+        <input type="hidden" id="deviceID-value" name="deviceID">
     </form>
 </div>
 @endsection
@@ -58,7 +61,10 @@
                             </th>
                             <th></th>
                             <th></th>
-                            <th></th>
+                            <th>
+                                <button style="font-size:14px;" class="btn btn-default low-battery-devices "><i class="fa fa-battery-quarter" style="color:#666"></i> <span style="color: #666; font-weight: bold"><20%</span></button>
+                                <button style="font-size:14px; border-color: #8a8787; display:none;" class="btn btn-default close-low-battery-devices"><span>⨉</span>&nbsp;&nbsp;&nbsp;<i class="fa fa-battery-quarter" style="color:#666"></i> <span style="color: #666;font-weight: bold"><20%</span></button>
+                            </th>
                         </tr>
                         <tr>
                             <th>Timestamp</th>
@@ -148,36 +154,112 @@
                 { 'orderable': false, 'targets': 3 },
                 { 'orderable': false, 'targets': 4 },
                 { 'orderable': false, 'targets': 5 },
-                { 'orderable': false, 'targets': 6 }
+                { 'orderable': false, 'targets': 6 },
+
             ]
         })
+
 
         $('.device_list').change(function () {
             table
                 .columns( 3 )
                 .search( this.value )
                 .draw();
+                // set or remove hidden input tags values
+                if($('.device_list').val()) {
+                    $('#deviceID-value').val($('.device_list').val());
+                }else{
+                    $('#deviceID-value').removeAttr('value');
+                }
+                // active Export to Excel btn
+                if($('.device_list').val()) {
+                    $('.exportToExcel').removeClass('disabled');
+                }else{
+                    $('.exportToExcel').addClass('disabled');
+                }
         });
 
 
         $('#time-from').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
         $('#time-to').datetimepicker({format: 'yyyy-mm-dd hh:ii'});
 
-
-
         $('#time-from, #time-to').change(function () {
             table.draw();
+            // set or remove hidden input tags values
+            if($('#time-from').val() && $('#time-to').val()) {
+                $('#time-from-value').val($('#time-from').val());
+                $('#time-to-value').val($('#time-to').val());
+            }else{
+                $('#time-from-value').removeAttr('value');
+                $('#time-to-value').removeAttr('value');
+            }
+            // active Export to Excel btn
+            if($('#time-from').val() && $('#time-to').val()) {
+                $('.exportToExcel').removeClass('disabled');
+            }else{
+                $('.exportToExcel').addClass('disabled');
+            }
+        });
+
+
+        // get the low battery level of device
+        var dataArray = [];
+        var data = table.rows( { filter : 'applied'} ).data(); // get exsited date from table
+        $('.low-battery-devices').click(function(){
+            $('.close-low-battery-devices').css('display','block');
+            $('.low-battery-devices').css('display','none');
+            // get data after sorting from table
+            // data = table.rows( { filter : 'applied'} ).data();
+            for (var i = 0; i < data.length; i++) {
+                if (data[i][6] == '20%' || data[i][6] == '10%') {
+                    var check = false;
+
+                    for (var j = 0; j < dataArray.length; j++) {
+                        if (dataArray[j]['device_id'] == data[i][3] && dataArray[j]['battery_level'] == data[i][6]){
+                            check = true;
+                            // convert the format, replace the older one to the newer after comparison.
+                            var arrayDateTime = new Date( dataArray[j]['data'][0] );
+                            var dataDateTime= new Date( data[i][0] );
+                            if (arrayDateTime < dataDateTime){
+                                dataArray[j]['data'] = data[i];
+                            }
+                            break; // terminate
+                        }
+                    }
+                    // if value is not exsited, add it into array
+                    if (check == false) {
+                        var tempArray = [];
+                        tempArray['device_id'] = data[i][3];
+                        tempArray['battery_level'] = data[i][6];
+                        tempArray['data'] = data[i];
+                        dataArray.push(tempArray);
+                    }
+                }
+            }
+
+            //https://stackoverflow.com/questions/27778389/how-to-manually-update-datatables-table-with-new-json-data
+            table.clear(); // clean table
+            for (var i = 0; i < dataArray.length; i++) {
+                table.row.add(dataArray[i]['data']); // add data to rows
+            }
+            table.draw(); // Draw once all updates are done
+
+        });
+
+        $('.close-low-battery-devices').click(function(){
+            $('.close-low-battery-devices').css('display','none');
+            $('.low-battery-devices').css('display','block');
+            table.clear(); // clean table
+            table.rows.add(data); // add data to rows
+            table.draw(); // draw table
+        });
+
+        // Select2
+        $('.device_list').select2({
+            placeholder: "Select device ID",
+            allowClear: true
         });
 
     })
-
-        // Select2
-        // In your Javascript (external .js resource or <script> tag)
-        $(document).ready(function() {
-            $('.device_list').select2({
-                placeholder: "Select device ID",
-                allowClear: true
-            });
-        });
     </script>
 @endsection

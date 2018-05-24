@@ -91,12 +91,48 @@ class RawDataController extends Controller {
 
     public function exportRawData() {
 
-        $data = DB::table('gps_data')
-            ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
-            ->orderby('datetime', 'desc')
-            ->orderby('created_at', 'desc')
-            ->limit(3000)
-            ->get();
+        $timeFrom =  $_POST['time-from'];
+        $timeTo =  $_POST['time-to'];
+        $deviceID =  $_POST['deviceID'];
+
+        if (!empty($timeFrom) && !empty($timeTo) && empty($deviceID)){
+            $data = DB::table('gps_data')
+                ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->where('datetime', '>=', $timeFrom)
+                ->where('datetime', '<=', $timeTo)
+                ->orderby('datetime', 'desc')
+                ->orderby('created_at', 'desc')
+                ->get();
+        }
+        if (!empty($timeFrom) && !empty($timeTo) && !empty($deviceID)){
+            $data = DB::table('gps_data')
+                ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->where('datetime', '>=', $timeFrom)
+                ->where('datetime', '<=', $timeTo)
+                ->where('device_id', $deviceID)
+                ->orderby('datetime', 'desc')
+                ->orderby('created_at', 'desc')
+                ->get();
+        }
+        if (empty($timeFrom) && empty($timeTo) && !empty($deviceID)){
+            $data = DB::table('gps_data')
+                ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->where('device_id', $deviceID)
+                ->orderby('datetime', 'desc')
+                ->orderby('created_at', 'desc')
+                ->get();
+        }
+
+
+        // echo "<pre>".print_r($timeFrom)."<pre>";
+        // echo "<pre>".print_r($timeTo)."<pre>";
+        // echo "<pre>".print_r($deviceID)."<pre>";
+        // $data = DB::table('gps_data')
+        //     ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+        //     ->orderby('datetime', 'desc')
+        //     ->orderby('created_at', 'desc')
+        //     ->limit(3000)
+        //     ->get();
 
         $order = array('datetime', 'created_at', 'delay', 'device_id', 'longitude_final', 'latitude_final', 'battery_level');
         $assoc_array = [];

@@ -282,7 +282,7 @@
             }
         }
         if ( markerList[markerList.length-1] ){
-            markerList[markerList.length-1].setLabel({text: "End", color: "white", fontSize: "10px"});
+            markerList[markerList.length-1].setLabel({text: "Fin.", color: "white", fontSize: "10px"});
             markerList[markerList.length-1].isStartEnd = true;
             markerList[markerList.length-1].setIcon(null);
         }
@@ -358,9 +358,13 @@
         var array = [];
         for (var i = 0; i < markerList.length; i++) {
             markerList[i];
-            var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'isCheckpoint': markerList[i].isCheckpoint};
-            array.push(temp);
-
+            if (i == markerList.length - 1) {
+                var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'isCheckpoint': 1};
+                array.push(temp);
+            } else {
+                var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'isCheckpoint': markerList[i].isCheckpoint};
+                array.push(temp);
+            }
         }
 
         console.log(array);

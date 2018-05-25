@@ -352,9 +352,9 @@
                         var currentRouteIndex = data['currentRouteIndex'];
                         drawChart(currentRouteIndex);
 
-                        console.log(currentRouteIndex);
+                        // console.log(currentRouteIndex);
                         for (var key in array) {
-                            // console.log(array[key]['device_id']);
+                            console.log(array);
                             if (markers[array[key]['device_id']]) {
                                 markers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
                                 markers[array[key]['device_id']].profile = array[key];

@@ -96,6 +96,8 @@
     var elevationData;
     var distance = 0;
     var elevations_global;
+    var infowindow;
+    var checkpointData; 
 
         function initMap() {
 
@@ -139,15 +141,31 @@
                         + '</div></div>'
                     });
 
+                    // get checkpoint distance relevant
+                    checkpointData = {!! $checkpointData !!};
+
+
                     google.maps.event.addListener(marker, 'click', function (marker) {
             			return function () {
+                            console.log(marker);
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
                             if( content['first_name'] ){ html += '<div>First Name: <b>' + content['first_name'] + '</b></div>'; }
                             if( content['last_name'] ){ html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>'; }
                             if( content['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
                             html += '<div>Country: <b>' + content['country'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
-                            html += '<div>Location: <b>' + parseFloat(location['lat']).toFixed(6) + ', ' + parseFloat(location['lng']).toFixed(6) + '</b></div>';
+
+                            html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
+
+                            if (checkpointData[content['device_id']]) {
+                                html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
+                                // show athlete reaches at checkpoint time
+                                var checkpointTimes = checkpointData[content['device_id']];
+                                for (var j = 0; j < checkpointTimes.length; j++) {
+                                    html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
+                                }
+                            }
+
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -240,7 +258,7 @@
                 @endif
 
                 // set InfoWindow pixelOffset
-                var infowindow = new google.maps.InfoWindow({
+                infowindow = new google.maps.InfoWindow({
                     pixelOffset: new google.maps.Size(0, -36),
                 });
 
@@ -545,13 +563,14 @@
                 var offset = (timestamp_to - timestamp_from) * value / 100;
                 var time = offset + timestamp_from;
                 var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
-                // console.log(dateString);
+                // console.log(time);
                 return dateString;
             }
         })
         slider.slider().on('change', function (ev) {
             var pc = ev.value.newValue;
             updateMapMarkers(pc);
+            infowindow.close(map);
         });
 
         // Replay controls
@@ -585,7 +604,7 @@
             var time = offset + timestamp_from;
 
             var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
-            console.log(dateString);
+            // console.log(dateString);
 
             for (var device_id in data) {
                 if (markers[device_id]) {
@@ -605,7 +624,20 @@
                     }
                 }
             }
-            //
+var routeIndexesByDevice = {!! $routeIndexesByDevice !!};
+console.log(routeIndexesByDevice);
+var routeData;
+if ( routeIndexesByDevice[content['device_id']] ) {
+    for (var key in routeIndexesByDevice[content['device_id']]) {
+        routeIndexesByDevice[content['device_id']][key];
+        console.log(routeIndexesByDevice[content['device_id']][key]);
+        markers[routeIndexesByDevice[content['device_id']][key]].routeData = routeIndexesByDevice[content['device_id']][key];
+    }
+    
+    // console.log(routeIndexesByDevice[content['device_id']]);
+}
+
+
             // console.log('in');
             elevationData = new google.visualization.DataTable();
             elevationData.addColumn('number', 'Distance');

@@ -86,14 +86,14 @@
                                 <input type="radio" name="optionsRadios" id="optionsRadios2" value="shortest route" {{$event->event_type == "shortest route" ? "checked" : ""}}>
                                 Shortest route
                             </label>
-                            <div style="color: #999;">Several checkpoints in sequence without interim locations, map displayed with straight lines between checkpoints, and no elevation but full track for each device.</div>
+                            <div style="color: #999;">Several checkpoints in sequence without interim locations, map displayed with straight lines between checkpoints, and no elevation chart but full track for each device.</div>
                         </div>
                         <div class="radio">
                             <label>
                                 <input type="radio" name="optionsRadios" id="optionsRadios3" value="no route" {{$event->event_type == "no route" ? "checked" : ""}}>
                                 No route
                             </label>
-                            <div style="color: #999;">Several checkpoints not in sequence, no map displayed, and no elevation but full track for each device.</div>
+                            <div style="color: #999;">Several checkpoints not in sequence, no map displayed, and no elevation chart but full track for each device.</div>
                         </div>
                     </div>
                 </div>

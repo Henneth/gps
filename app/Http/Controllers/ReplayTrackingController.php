@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use App\ReplayTracking_Model as ReplayTracking_Model;
+use App\LiveTracking_Model as LiveTracking_Model;
 use App\DeviceMapping_Model as DeviceMapping_Model;
 
 
@@ -39,12 +40,18 @@ class ReplayTrackingController extends Controller {
 
         $routeIndexes = (array) ReplayTracking_Model::getRouteDistance($event_id);
         $routeIndexesByDevice = $this->group_by($routeIndexes, "device_id");
-        // echo "<pre>".print_r($routeIndexesByDevice,1)."</pre>";
+
+        // get checkpoint distance relevant
+        $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
+        $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
+        $checkpointData = json_encode($tempCheckpointData);
+        // echo "<pre>".print_r($data,1)."</pre>";
+        
 
 
         $routeIndexesByDevice = json_encode($routeIndexesByDevice);
         $profile = DeviceMapping_Model::getAthletesProfile($event_id);
-        return view('replay-tracking')->with(array('data' => $jsonData, 'profile' => $profile, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $route, 'event'=>$event, 'routeIndexesByDevice' => $routeIndexesByDevice ));
+        return view('replay-tracking')->with(array('data' => $jsonData, 'profile' => $profile, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $route, 'event'=>$event, 'routeIndexesByDevice' => $routeIndexesByDevice, 'checkpointData'=>$checkpointData ));
     }
 
     private function group_by($array, $key) {

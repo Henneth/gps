@@ -17,6 +17,7 @@ class LiveTrackingController extends Controller {
             ->select('route')
             ->first();
 
+        // data for drawing map
         if (Auth::check()) {
             $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, true);
             foreach ($data as $value) {
@@ -39,23 +40,27 @@ class LiveTrackingController extends Controller {
 
         $jsonProfile = json_encode($profile);
 
-        // get checkpoint distance relevant
+        // get checkpoint times
         $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
         $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
         $checkpointData = json_encode($tempCheckpointData);
-        // echo "<pre>".print_r($tempCheckpointData,1)."</pre>";
 
-        // get athlete's distance relevant
+        // get checkpoint distances
+        $tempCheckpointDistances = DB::table('route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();
+        $checkpointDistances = json_encode($tempCheckpointDistances);
+
+        // get athlete's distances for elevation chart
         $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
         $currentRouteIndex = json_encode($currentRouteIndex);
 
-        return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData ));
+        return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances));
     }
 
     // automatically update data from server
     public function poll($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
+        // data for drawing map
         if (Auth::check()) {
             $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, true);
             foreach ($data as $value) {
@@ -74,11 +79,11 @@ class LiveTrackingController extends Controller {
             $profile = DeviceMapping_Model::getAthletesProfile2($event_id);
         }
 
-        // get checkpoint distance relevant
+        // get checkpoint times
         $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
         $checkpointData = $this->group_by($getCheckpointData, 'device_id');
 
-        // get athlete's distance relevant
+        // get athlete's distances for elevation chart
         $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
 
         $array = [];

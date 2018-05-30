@@ -2,7 +2,7 @@
 $host = 'localhost';
 $db   = 'gps';
 $user = 'root';
-$pass = 'rts123';
+$pass = 'root';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -37,7 +37,7 @@ if ($route){
 }
 
 // get checkpoint data relevant
-$checkpointData = $pdo->query('SELECT route_index FROM route_distances WHERE event_id = 7 AND is_checkpoint = 1 ORDER BY route_index')->fetchAll();
+$checkpointData = $pdo->query('SELECT route_index, min_time FROM route_distances WHERE event_id = 7 AND is_checkpoint = 1 ORDER BY route_index')->fetchAll();
 array_unshift($checkpointData, array("route_index" => 0));
 echo"<pre>".print_r($checkpointData,1)."</pre>";
 
@@ -66,6 +66,7 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
     $reachedCheckpoint = -1;
     $lastCheckpointLeft = false;
     $finished = false;
+    $checkpointTimes[0] = $eventTimeRange[0]['datetime_from'];
 
     if ($getRouteIndex){
         $lastReachedPoint = $getRouteIndex[0]['MAX(route_index)'];
@@ -93,29 +94,30 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
             if ($result <= 100 && !$finished) {
                 if ($lastCheckpointLeft) {
                     if ($key > $lastReachedPoint && $key <= $checkpointData[$reachedCheckpoint+1]['route_index']){
+                        if ($key == $checkpointData[$reachedCheckpoint+1]['route_index']) {
+                            if (!empty($checkpointData[$reachedCheckpoint+1]['min_time']) && !checkMinTime($checkpointData[$reachedCheckpoint+1]['min_time'], $checkpointTimes[$reachedCheckpoint], $datum['datetime'])) {
+                                $finished = true;
+                                break;
+                            }
+                            $reachedCheckpoint++;
+                            echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
+                            $finished = true;
+                        }
+
                         $tempArray['event_id'] = 7;
                         $tempArray['route_index'] = $key;
                         $tempArray['device_id'] = $device_id;
                         $tempArray['reached_at'] = $datum['datetime'];
                         $lastReachedPoint = $key;
                         $cpArray[] = $tempArray;
-
-                        if ($key == $checkpointData[$reachedCheckpoint+1]['route_index']) {
-                            $reachedCheckpoint++;
-                            echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
-                            // $finished = true;
-                        }
                     }
                 } else {
                     if ($key > $lastReachedPoint && $key < $checkpointData[$reachedCheckpoint+2]['route_index']){
-                        $tempArray['event_id'] = 7;
-                        $tempArray['route_index'] = $key;
-                        $tempArray['device_id'] = $device_id;
-                        $tempArray['reached_at'] = $datum['datetime'];
-                        $lastReachedPoint = $key;
-                        $cpArray[] = $tempArray;
-
                         if ($key >= $checkpointData[$reachedCheckpoint+1]['route_index']) {
+                            if (!empty($checkpointData[$reachedCheckpoint+1]['min_time']) && !checkMinTime($checkpointData[$reachedCheckpoint+1]['min_time'], $checkpointTimes[$reachedCheckpoint], $datum['datetime'])) {
+                                $finished = true;
+                                break;
+                            }
                             $reachedCheckpoint++;
                             echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
                             if ($reachedCheckpoint == sizeof($checkpointData)-2) {
@@ -123,8 +125,18 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
                             }
                         }
 
-                        // echo"<pre>".print_r($tempArray['device_id'],1)."</pre>";
+                        if ($key == $checkpointData[$reachedCheckpoint]['route_index']) {
+                            $checkpointTimes[$reachedCheckpoint] = $datum['datetime'];
+                        } else {
+                            $checkpointTimes[$reachedCheckpoint+1] = $datum['datetime'];
+                        }
 
+                        $tempArray['event_id'] = 7;
+                        $tempArray['route_index'] = $key;
+                        $tempArray['device_id'] = $device_id;
+                        $tempArray['reached_at'] = $datum['datetime'];
+                        $lastReachedPoint = $key;
+                        $cpArray[] = $tempArray;
                     }
                 }
             }
@@ -136,7 +148,23 @@ foreach ($gps_data_by_device_id as $device_id => $gps_row) {
     if ($cpArray){
         pdoMultiInsert('route_progress', $cpArray, $pdo);
     }
+
     $cpArray = [];
+}
+
+function checkMinTime($min_time, $prev_time, $current_time) {
+    $timeFirst  = strtotime($prev_time);
+    $timeSecond = strtotime($current_time);
+    $differenceInSeconds = $timeSecond - $timeFirst;
+    echo $differenceInSeconds.' ';
+
+    $str_time = $min_time;
+    $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", $str_time);
+    sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
+    $time_seconds = $hours * 3600 + $minutes * 60 + $seconds;
+    echo $time_seconds;
+
+    return $differenceInSeconds >= $time_seconds;
 }
 
 

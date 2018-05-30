@@ -17,9 +17,9 @@
 <script src="{{ asset('/js/dataTables.bootstrap.min.js') }}" type="text/javascript"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.1/js/dataTables.responsive.min.js"></script>
 
-<!-- AdminLTE App -->
+{{-- AdminLTE App --}}
 <script src="{{ asset('/js/app.min.js') }}" type="text/javascript"></script>
-<!-- Custom -->
+{{-- Custom --}}
 <script src="{{ asset('/js/custom.js') }}" type="text/javascript"></script>
 {{-- select2 --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>

@@ -24,56 +24,83 @@
 
 @section('main-content')
     @include('partials/alerts')
-	<div class="form-group">
-		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;"><i class="fa fa-undo"></i> Undo</button>
-		<div class="data-form display-inline-block">
-			<form id="save-route" action="{{ url('/') }}/event/{{$event_id}}/save-route" method="POST">
-				{{ csrf_field() }}
-				<input type="hidden" id="route" name="route">
-				<button type="sumbit" class="btn btn-primary" id="save"><i class="far fa-save"></i> Save Route</button>
-			</form>
-		</div>{{--
-        <div class="switchBtn">
-            <label>Use GPX</label>
-            <input class="tgl tgl-ios" id="cb1" type="checkbox"/>
-            <label class="tgl-btn" for="cb1"></label>
-        </div> --}}
-        <div class="pull-right">
-            <button class="btn btn-primary" onclick="toggleExcelImport();return false;"><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
-        </div>
-
-	</div>
-
-    <div id="excelImportBox" class="box box-primary" style="display: none;">
-        <div class="box-header with-border">
-            <h3 class="box-title">Import GPX File</h3>
-            <div class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-            </div>
-        </div>
-        <!-- /.box-header -->
-        <!-- form start -->
-        <form role="form" action="{{url('/')}}/event/{{$event_id}}/edit-event/gpx-file-upload" method="post" enctype="multipart/form-data">
-            {{ csrf_field() }}
-            <div class="box-body">
+    <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs">
+            <li id="map-tab" class="active"><a href="#tab_1" data-toggle="tab">Draw Route</a></li>
+            <li id="min-time-tab"><a href="#tab_2" data-toggle="tab">Set Minimum Times</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="map-section tab-pane active" id="tab_1">
                 <div class="form-group">
-                    <label for="excelFile">GPX file upload</label>
-                    <input type="file" id="excelFile" name="fileToUpload">
+            		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;"><i class="fa fa-undo"></i> Undo</button>
+            		<div class="data-form display-inline-block">
+            			<form id="save-route" action="{{ url('/') }}/event/{{$event_id}}/save-route" method="POST">
+            				{{ csrf_field() }}
+            				<input type="hidden" id="route" name="route">
+            				<button type="sumbit" class="btn btn-primary" id="save"><i class="far fa-save"></i> Save Route</button>
+            			</form>
+            		</div>{{--
+                    <div class="switchBtn">
+                        <label>Use GPX</label>
+                        <input class="tgl tgl-ios" id="cb1" type="checkbox"/>
+                        <label class="tgl-btn" for="cb1"></label>
+                    </div> --}}
+                    <div class="pull-right">
+                        <button class="btn btn-primary" onclick="toggleExcelImport();return false;"><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
+                    </div>
+            	</div>
 
-                    <p class="help-block">.gpx file only.</p>
+                <div id="excelImportBox" class="box box-primary" style="display: none;">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Import GPX File</h3>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form" action="{{url('/')}}/event/{{$event_id}}/edit-event/gpx-file-upload" method="post" enctype="multipart/form-data">
+                        {{ csrf_field() }}
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="excelFile">GPX file upload</label>
+                                <input type="file" id="excelFile" name="fileToUpload">
+
+                                <p class="help-block">.gpx file only.</p>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
                 </div>
+            	<div class="container-flex">
+            	    <div id="map"></div>
+            	</div>
             </div>
-            <!-- /.box-body -->
-
-            <div class="box-footer">
-                <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="min-time-section tab-pane" id="tab_2">
+                @if ($checkpointMinTimes && $checkpointMinTimes[sizeof($checkpointMinTimes)-1]->checkpoint != 0)
+                <form action="{{url('/')}}/event/{{$event_id}}/save-minimum-times" method="post">
+                    {{ csrf_field() }}
+                    @for ($i=0; $i < sizeof($checkpointMinTimes); $i++)
+                        <div class="form-group min-times-row">
+                            <label>From {{($i == 0) ? 'Start' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint - 1)}} to {{($checkpointMinTimes[$i]->checkpoint == sizeof($checkpointMinTimes)) ? 'Finish' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint)}}</label>
+                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->min_time}}">
+                        </div>
+                    @endfor
+                    <div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+                @else
+                <div>No checkpoints yet. Please draw the route first.</div>
+                @endif
             </div>
-        </form>
+        </div>
     </div>
-	<div class="container-flex">
-	    <div id="map"></div>
-	</div>
 @endsection
 
 @section('js')
@@ -81,14 +108,16 @@
     var poly;
     var map;
     var polyIndex = 0;
+
     //Mirrors the path array to find index to delete and such
     var mirrorCoordinates = [];
-    // var markers = [];
+
     var encodeString;
     var path;
     var gpxLat;
     var gpxLng;
     var IsCP;
+
     // set info window
     var marker;
     var uniqueId = 1;
@@ -134,18 +163,7 @@
         @endif
 
         map.addListener('click', addLatLng);
-        // console.log(decodedPath);
     }
-
-    // function decodeLevels(encodedLevelsString) {
-    //     var decodedLevels = [];
-
-    //     for (var i = 0; i < encodedLevelsString.length; ++i) {
-    //         var level = encodedLevelsString.charCodeAt(i) - 63;
-    //         decodedLevels.push(level);
-    //     }
-    //     return decodedLevels;
-    // }
 
     // Handles click events on a map, and adds a new point to the Polyline.
     function addLatLng(event) {
@@ -166,25 +184,17 @@
             isCheckpoint: 0
         });
 
-
-
         //Set unique id
         marker.id = uniqueId;
         uniqueId++;
 
         showInfoWindow(marker);
 
-        // markers.push(marker);
-        // console.log(markers);
         reOrder();
     }
 
-
     // Handles click events on a map, and adds a new point to the Polyline.
     function addLatLngInit(IsCP, position) {
-
-
-        infoWindow = new google.maps.InfoWindow();
 
         path = poly.getPath();
 
@@ -195,14 +205,11 @@
         mirrorCoordinates.push(position);
         polyIndex++;
 
-
         // Add a new marker at the new plotted point on the polyline.
         var marker = new google.maps.Marker({
             position: position,
             title: '#' + path.getLength(),
             map: map,
-            // draggable: true,
-            // animation: google.maps.Animation.DROP,
             isCheckpoint: IsCP,
             // resize icon https://developers.google.com/maps/documentation/javascript/markers
         });
@@ -212,8 +219,6 @@
         uniqueId++;
 
         showInfoWindow(marker);
-        // markers.push(marker);
-        // console.log(markers);
     }
 
     var event_type = '{{$event_type->event_type}}'; // get event_type from DB
@@ -237,10 +242,7 @@
             infoWindow.open(map, this);
         });
         // google.maps.event.trigger(marker, 'click');
-        // console.log(markers);
         markerList.push(marker);
-        // console.log(markerList);
-
     }
     // google.maps.event.addDomListener(window, "load", initialize);
     function setAsCheckpoint(id){
@@ -290,6 +292,7 @@
             markerList[0].setLabel({text: "Start", color: "white", fontSize: "10px"});
             markerList[0].isStartEnd = true;
             markerList[0].setIcon(null);
+            markerList[0].isCheckpoint = 0;
         }
     }
 
@@ -337,7 +340,6 @@
     // console.log(gpxData);
     //Remove the Polyline and the previous marker
     $('#undo').click(function(){
-
         if(markerList && markerList.length){
             mirrorCoordinates.pop();
             polyIndex--;

@@ -57,11 +57,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('event/{event_id}/draw-route', 'DrawRouteController@index')->name('draw-route');
     Route::post('event/{event_id}/save-route', 'DrawRouteController@saveRoute');
     Route::get('event/{event_id}/gpx-route', 'GPXController@gpxRoute');
+    Route::post('event/{event_id}/save-minimum-times', 'DrawRouteController@saveMinimumTimes');
 
     // Checkpoint
     Route::get('event/{event_id}/checkpoint', 'CheckpointController@index')->name('checkpoint');
     Route::post('event/{event_id}/save-checkpoint', 'CheckpointController@saveCheckpoint');
-
 
     // Edit Event
     Route::get('event/{event_id}/edit-event', 'EditEventController@index')->name('edit-event');

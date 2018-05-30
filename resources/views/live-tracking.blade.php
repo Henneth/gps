@@ -131,6 +131,8 @@
         var IsCP;
         var map;
         var elevations_global;
+        var checkpointDistances;
+        var markerList = []; //array to store marker
 
         function initMap() {
 
@@ -177,7 +179,7 @@
 
                     // get checkpoint distance relevant
                     var checkpointData = {!! $checkpointData !!};
-                    // console.log(checkpointData);
+
                     google.maps.event.addListener(marker, 'click', (function (marker) {
             			return function () {
                             // console.log(marker);
@@ -237,7 +239,7 @@
                     }
                 ]
 
-                var map = new google.maps.Map(document.getElementById('map'), {
+                map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 13,
                     // center: {lat: 22.404767, lng: 114.1057550}
                     center: {lat: 22.3016616, lng: 114.1577151}
@@ -256,48 +258,30 @@
                     });
                     var route = {!!$route->route!!};
                     // console.log(data);
-                    tempmarkers = [];
-                    var CPIndex = [];
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["lat"]);
                         gpxLng = parseFloat(route[key]["lon"]);
-                        IsCP = route[key]["isCheckpoint"];
-                        if(IsCP){
-                            CPIndex.push(key);
-                        }
-                        addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
-                    }
-                    // console.log(CPIndex);
-
-                    // start point and end point marker
-                    // console.log(tempmarkers);
-                    // console.log(tempmarkers[0].position);
-                    // console.log(tempmarkers[tempmarkers.length - 1].position);
-                    var startPointMarker = new google.maps.Marker({
-                        position: tempmarkers[0].position,
-                        label: {text: "Start", color: "white", fontSize: "10px"},
-                        map: map
-                    });
-
-                    var endPointMarker = new google.maps.Marker({
-                        position: tempmarkers[tempmarkers.length - 1].position,
-                        label: {text: "Fin.", color: "white", fontSize: "10px"},
-                        map: map,
-                        // icon: '{{url('/')}}/racing-flag.png',
-                    });
-
-                    for (var i = 0; i < CPIndex.length; i++) {
-                        var index = CPIndex[i];
-                        var checkpointMarker = new google.maps.Marker({
-                            position: tempmarkers[index].position,
-                            label: {text: ""+(i+1)+"", color: "white"},
-                            map: map
-                        });
+                        IsCP = route[key]["isCheckpoint"] || key == 0;
+                        addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
+                    // Add labels/icons to route markers
+                    var CPIndex = 1;
+                    for (var i = 1; i < markerList.length; i++) {
+                        markerList[i].setLabel({text: ""+CPIndex, color: "white"});
+                        CPIndex++;
+                    }
+                    if ( markerList[markerList.length-1] ){
+                        markerList[markerList.length-1].setLabel({text: "Fin.", color: "white", fontSize: "10px"});
+                    }
+                    if ( markerList[0] ){
+                        markerList[0].setLabel({text: "Start", color: "white", fontSize: "10px"});
+                    }
+
+                    // map fit bounds
                     var bounds = new google.maps.LatLngBounds();
-                    for (var i = 0; i < tempmarkers.length; i++) {
-                        bounds.extend(tempmarkers[i].getPosition());
+                    for (var i = 0; i < markerList.length; i++) {
+                        bounds.extend(markerList[i].getPosition());
                     }
                     map.fitBounds(bounds);
 
@@ -308,25 +292,26 @@
                     pixelOffset: new google.maps.Size(0, -36),
                 });
 
-                // Add Markers
-                var markers = [];
+                // Add athleteMarkers
+                var athleteMarkers = [];
+
                 // check device_id in localStorage
                 var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
-                // console.log(" array: " + array );
 
                 for (var i = 0; i < data.length; i++) {
                     var location = {lat: parseFloat(data[i]['latitude_final']), lng: parseFloat(data[i]['longitude_final'])};
 
-                    // console.log(data[i]['device_id']);
                     // localStorage is not empty
                     if (temp !== null) {
                         if (jQuery.inArray(data[i]['device_id'], array) !== -1) {
-                            markers[data[i]['device_id']] = (addMarker(location, map, data[i]));
+                            athleteMarkers[data[i]['device_id']] = (addMarker(location, map, data[i]));
                         }
+                    // localStorage empty
                     } else {
+                        // check database visible setting
                         if (data[i]['status'] == "visible"){
-                            markers[data[i]['device_id']] = (addMarker(location, map, data[i]));
+                            athleteMarkers[data[i]['device_id']] = (addMarker(location, map, data[i]));
                         }
                     }
                 }
@@ -352,15 +337,37 @@
                         var currentRouteIndex = data['currentRouteIndex'];
                         drawChart(currentRouteIndex);
 
-                        // console.log(currentRouteIndex);
-                        for (var key in array) {
-                            console.log(array);
-                            if (markers[array[key]['device_id']]) {
-                                markers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
-                                markers[array[key]['device_id']].profile = array[key];
-                                markers[array[key]['device_id']].checkpointData = checkpointData[array[key]['device_id']];
-                                // console.log(markers[array[key]['device_id']]);
 
+                        // check device_id in localStorage
+                        var temp = localStorage.getItem("visibility{{$event_id}}");
+                        var localStorageArray = jQuery.parseJSON( temp );
+
+                        // console.log(currentRouteIndex);
+                        console.log(array);
+                        for (var key in array) {
+                            // marker exists
+                            if (athleteMarkers[array[key]['device_id']]) {
+                                athleteMarkers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
+                                athleteMarkers[array[key]['device_id']].profile = array[key];
+                                athleteMarkers[array[key]['device_id']].checkpointData = checkpointData[array[key]['device_id']];
+                                // console.log(athleteMarkers[array[key]['device_id']]);
+
+                            // marker does not exist
+                            } else {
+                                var location = {lat: parseFloat(array[key]['latitude_final']), lng: parseFloat(array[key]['longitude_final'])};
+
+                                // localStorage is not empty
+                                if (temp !== null) {
+                                    if (jQuery.inArray(array[key]['device_id'], localStorageArray) !== -1) {
+                                        athleteMarkers[array[key]['device_id']] = (addMarker(location, map, array[key]));
+                                    }
+                                // localStorage empty
+                                } else {
+                                    // check database visible setting
+                                    if (array[key]['status'] == "visible"){
+                                        athleteMarkers[array[key]['device_id']] = (addMarker(location, map, array[key]));
+                                    }
+                                }
                             }
                         }
                     }
@@ -400,29 +407,13 @@
                 distance += parseFloat(google.maps.geometry.spherical.computeDistanceBetween(p1, p2));
                 // console.log(parseFloat(google.maps.geometry.spherical.computeDistanceBetween(p1, p2)));
             }
-
-
-
-            // console.log(tempArray);
-            //
-            // // var p1 = new google.maps.LatLng(45.463688, 9.18814);
-            // var p2 = new google.maps.LatLng(46.0438317, 9.75936230000002);
-            // console.log("p1 " + p1);
-            // console.log("p2 " + p2);
-            // alert(calcDistance(p1, p2));
-            //
-            // //calculates distance between two points in km's
-            // function calcDistance(p1, p2) {
-            //   return google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
-            // }
         }
-
 
         // Takes an array of ElevationResult objects, draws the path on the map
         // and plots the elevation profile on a Visualization API ColumnChart.
         function plotElevation(elevations, status) {
             elevations_global = elevations;
-            var chartDiv = document.getElementById('elevationChart');
+            chartDiv = document.getElementById('elevationChart');
             if (status !== 'OK') {
                 // Show the error code inside the chartDiv.
                 chartDiv.innerHTML = 'Cannot show elevation: request failed because ' +
@@ -440,86 +431,24 @@
 
             // get athlethe's distance relevant
             var currentRouteIndex = {!! $currentRouteIndex !!};
-            // console.log(currentRouteIndex);
+            checkpointDistances = {!! $checkpointDistances !!};
+            // console.log(checkpointDistances);
 
             var chartHeight = $(window).height() * .8;
 
-            // Draw the chart using the data within its DIV.
-            chartOptions = {
-                // title: 'Event Elevation Chart',
-                isStacked: true,
-                height: chartHeight,
-                legend: 'none',
-                titleY: 'Elevation (m)',
-                titleX: 'Distance (m)',
-                chartArea: {
-                    left: 60,
-                    top: 60,
-                    bottom: 80,
-                    right: 36,
-                },
-               hAxis: { showTextEvery: 64,
-               slantedText:true, slantedTextAngle:45},
-               // pointShape: { type: 'triangle', rotation: 180 },
-               displayAnnotations: true,
-               tooltip: {
-                   isHtml: true
-               }
+            // ticks calculation
+            var tempNo = Math.round(distance / Math.pow(10,Math.floor(distance).toString().length-1));
+            if (tempNo > 5) {
+                var step = Math.pow(10,Math.floor(distance).toString().length-1);
+            } else {
+                var step = Math.pow(10,Math.floor(distance).toString().length-2)*tempNo;
             }
-            drawChart(currentRouteIndex);
-        }
-
-        function drawChart(currentRouteIndex) {
-
-            elevationData = new google.visualization.DataTable();
-            elevationData.addColumn('number', 'Distance');
-            elevationData.addColumn('number', 'Elevation');
-            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
-            elevationData.addColumn({type: 'string', role:'annotation'});
-            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-
-            for (var i = 0; i < elevations_global.length; i++) {
-                // the current athlete's distance between
-                var dist = distance/elevations_global.length * i;
-                var nextDist = distance/elevations_global.length * (i+1);
-
-                var annotationStr = "";
-                var athleteCount = 0;
-                var str = "";
-                str += 'Distance: <b>' + String((distance/elevations_global.length * i).toFixed(0)) + ' m</b><br/>Elevation: <b>' + elevations_global[i].elevation.toFixed(0) + ' m</b><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
-                for (var j = 0; j < currentRouteIndex.length; j++) {
-                    var athletheDist = currentRouteIndex[j]['distance'];
-                    var athletheDeviceID = currentRouteIndex[j]['device_id'];
-                    var athleteBibNumber = currentRouteIndex[j]['bib_number'];
-                    var athleteFirstName = currentRouteIndex[j]['first_name'];
-                    var athleteLastName = currentRouteIndex[j]['last_name'];
-                    var athleteChineseName = currentRouteIndex[j]['zh_full_name'];
-
-                    if (dist <= athletheDist && athletheDist < nextDist){
-                        str += 'Bib Number: <b>' + athleteBibNumber + '</b><br/>';
-                        str += 'First Name: <b>' + athleteFirstName + '</b><br/>';
-                        str += 'Last Name: <b>' + athleteLastName + '</b><br/><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
-
-                        athleteCount++;
-                        if (athleteCount == 1) {
-                            annotationStr = athleteBibNumber;
-                        } else {
-                            annotationStr = '(' + athleteCount + ')';
-                        }
-                    }
-
-                }
-                // strDist = strDist.slice(0, -1);
-
-                if (annotationStr.length>0){
-                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0))+'m</b><br/>Elevation:<b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', annotationStr, '<div class="chart-info-window">'+str+'</div>']);
-                } else {
-                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0))+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', null, null]);
-                }
+            var ticks = [];
+            var current = step;
+            while (current <= distance) {
+                ticks.push(current);
+                current = current + step;
             }
-
-            var chartHeight = $(window).height() * .8;
-
             // Draw the chart using the data within its DIV.
             chartOptions = {
                 // title: 'Event Elevation Chart',
@@ -535,8 +464,22 @@
                     right: 36,
                 },
                 hAxis: {
+                    ticks: ticks,
                     gridlines: {
-                        color: 'transparent'
+                        color: 'transparent',
+                    }
+                },
+                series: {
+                    1: {
+                        color: 'transparent',
+                        annotations: {
+                            stem: {
+                                length: chartHeight * .1
+                            },
+                            textStyle: {
+                                color: '#666'
+                            }
+                        }
                     }
                 },
                // hAxis: { showTextEvery: 64,
@@ -547,13 +490,91 @@
                    isHtml: true
                }
             }
+            drawChart(currentRouteIndex);
+        }
 
+        function drawChart(currentRouteIndex) {
+
+            elevationData = new google.visualization.DataTable();
+            elevationData.addColumn('number', 'Distance');
+            elevationData.addColumn('number', 'Elevation');
+            elevationData.addColumn({type: 'string', role:'annotation'});
+            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+            elevationData.addColumn('number', 'dummy');
+            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation'});
+
+            for (var i = 0; i < elevations_global.length; i++) {
+                // the current athlete's distance between
+                var dist = distance/elevations_global.length * i;
+                var nextDist = distance/elevations_global.length * (i+1);
+
+                var annotationStr = "";
+                var athleteCount = 0;
+                var str = "";
+                str += 'Distance: <b>' + String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m</b><br/>Elevation: <b>' + elevations_global[i].elevation.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m</b><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
+                for (var j = 0; j < currentRouteIndex.length; j++) {
+                    var athletheDist = currentRouteIndex[j]['distance'];
+                    var athletheDeviceID = currentRouteIndex[j]['device_id'];
+                    var athleteBibNumber = currentRouteIndex[j]['bib_number'];
+                    var athleteFirstName = currentRouteIndex[j]['first_name'];
+                    var athleteLastName = currentRouteIndex[j]['last_name'];
+                    var athleteChineseName = currentRouteIndex[j]['zh_full_name'];
+                    var athleteColour = currentRouteIndex[j]['colour_code'];
+
+                    if (dist <= athletheDist && athletheDist < nextDist){
+                        str += 'Bib Number: <b>' + athleteBibNumber + '</b><br/>';
+                        str += 'First Name: <b>' + athleteFirstName + '</b><br/>';
+                        str += 'Last Name: <b>' + athleteLastName + '</b><br/><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
+
+                        athleteCount++;
+                        if (athleteCount == 1) {
+                            annotationStr = athleteBibNumber;
+                            colour = athleteColour;
+                        } else {
+                            annotationStr = '(' + athleteCount + ')';
+                            colour = '';
+                        }
+                    }
+
+                }
+                // strDist = strDist.slice(0, -1);
+                checkpoint = null;
+                for (var key in checkpointDistances) {
+                    if (dist <= checkpointDistances[key]['distance'] && checkpointDistances[key]['distance'] < nextDist){
+                        var checkpoint = String(checkpointDistances[key]['checkpoint']);
+                        break;
+                    }
+                }
+
+                if (annotationStr.length>0){
+                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, annotationStr+"#"+colour, '<div class="chart-info-window">'+str+'</div>', 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'m</b><br/>Elevation:<b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null]);
+                } else {
+                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, null, null, 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null ]);
+                }
+            }
             chart.draw(elevationData, chartOptions);
+
+            function updateAnnotationColourText() {
+                Array.prototype.forEach.call(chartDiv.getElementsByTagName('text'), function (text, index) {
+                    if (text.getAttribute('text-anchor') === 'middle' && text.getAttribute('fill') === '#3366cc') {
+                        if (text.innerHTML.indexOf('#') >= 0) {
+                            var info = text.innerHTML.split("#");
+                            text.innerHTML = info[0];
+                            text.setAttribute('fill', "#"+info[1]);
+                        }
+                    }
+                });
+            }
+            google.visualization.events.addListener(chart, 'ready', updateAnnotationColourText);
+            google.visualization.events.addListener(chart, 'onmouseover', updateAnnotationColourText);
+            google.visualization.events.addListener(chart, 'onmouseout', updateAnnotationColourText);
+            google.visualization.events.addListener(chart, 'select', updateAnnotationColourText);
         }
 
         initMap();
 
-        function addLatLngInit(position) {
+        function addLatLngInit(IsCP, position) {
 
             path = poly.getPath();
 
@@ -561,15 +582,15 @@
             // and it will automatically appear.
             path.push(position);
 
-            // Add a new marker at the new plotted point on the polyline.
-            var marker = new google.maps.Marker({
-                position: position,
-                title: '#' + path.getLength(),
-                map: map
-            });
-
-            tempmarkers.push(marker);
-
+            if (IsCP) {
+                // Add a new marker at the new plotted point on the polyline.
+                var marker = new google.maps.Marker({
+                    position: position,
+                    title: '#' + path.getLength(),
+                    map: map
+                });
+                markerList.push(marker);
+            }
         }
 
         // Set the date we're counting from

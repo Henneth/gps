@@ -64,7 +64,7 @@ class LiveTracking_Model extends Model
 
 	// get data from route_distances & route_progress table, get the largest route_index
 	public static function getRouteDistance($event_id){
-		$data = DB::select("SELECT * FROM (SELECT distance, device_mapping.device_id, athletes.bib_number, route_distances.route_index, athletes.first_name, athletes.last_name, athletes.zh_full_name FROM route_distances
+		$data = DB::select("SELECT * FROM (SELECT distance, device_mapping.device_id, athletes.bib_number, route_distances.route_index, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.colour_code FROM route_distances
 			INNER JOIN route_progress ON route_distances.event_id = route_progress.event_id AND route_distances.route_index = route_progress.route_index
 			INNER JOIN device_mapping ON route_progress.event_id = device_mapping.event_id AND route_progress.device_id = device_mapping.device_id
 			INNER JOIN athletes ON athletes.event_id = device_mapping.event_id AND athletes.bib_number = device_mapping.bib_number

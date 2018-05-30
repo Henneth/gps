@@ -6,7 +6,7 @@ use DB;
 use Request;
 use App\Http\Controllers\Controller;
 use App\DrawRoute_Model as DrawRoute_Model;
-
+use DateTime;
 
 class DrawRouteController extends Controller {
 
@@ -19,9 +19,13 @@ class DrawRouteController extends Controller {
         	->where('event_id',$event_id)
         	->select('event_type')
         	->first();
+        $checkpointMinTimes = DB::table('route_distances')
+        	->where('event_id',$event_id)
+        	->where('is_checkpoint',1)
+            ->get();
 
-        // echo "<pre>".print_r($event_type,1)."</pre>";
-        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event_type'=>$event_type));
+        // echo "<pre>".print_r($checkpointCount,1)."</pre>";
+        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event_type'=>$event_type, 'checkpointMinTimes'=>$checkpointMinTimes));
     }
 
     public function saveRoute($event_id) {
@@ -77,6 +81,27 @@ class DrawRouteController extends Controller {
 
         DrawRoute_Model::drawRouteUpdate($event_id, $route);
 		return redirect('event/'.$event_id.'/draw-route')->with('success', 'Route updated.');
+    }
+
+    public function saveMinimumTimes($event_id) {
+        foreach ($_POST['min_times'] as $route_distance_id => $min_time) {
+            $min_time = !empty($min_time) ? $min_time : null;
+            if (empty($min_time) || $this->isValidTime($min_time)) {
+                DB::table('route_distances')
+                ->where('route_distance_id', $route_distance_id)
+                ->update(
+                    ['min_time' => $min_time]
+                );
+            } else {
+                return redirect('event/'.$event_id.'/draw-route')->with('error', 'Minimum time is not in correct format.');
+            }
+        }
+        return redirect('event/'.$event_id.'/draw-route')->with('success', 'Minimum times saved.');
+    }
+
+    private function isValidTime($time, $format = 'H:i:s') {
+        $d = DateTime::createFromFormat($format, $time);
+        return $d && $d->format($format) == $time;
     }
 
 /*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/

@@ -91,13 +91,18 @@
     // elevation chart
     google.charts.load('current', {'packages':['corechart']});
     google.charts.setOnLoadCallback(initChart);
+
+    // init global variables
     var chart;
     var chartOptions;
     var elevationData;
     var distance = 0;
     var elevations_global;
     var infowindow;
-    var checkpointData; 
+    var checkpointData;
+    var currentRouteIndex;
+    var checkpointDistances;
+    var markerList = []; //array to store marker
 
         function initMap() {
 
@@ -143,19 +148,20 @@
 
                     // get checkpoint distance relevant
                     checkpointData = {!! $checkpointData !!};
+                    checkpointDistances = {!! $checkpointDistances !!};
 
-
+                    // info window
                     google.maps.event.addListener(marker, 'click', function (marker) {
             			return function () {
-                            console.log(marker);
+                            // console.log(currentRouteIndex);
                             var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
                             if( content['first_name'] ){ html += '<div>First Name: <b>' + content['first_name'] + '</b></div>'; }
                             if( content['last_name'] ){ html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>'; }
                             if( content['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
                             html += '<div>Country: <b>' + content['country'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
-
                             html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
+                            html += '<div>Distance: <b>' + currentRouteIndex[content['device_id']]['distance'].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
 
                             if (checkpointData[content['device_id']]) {
                                 html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
@@ -211,47 +217,31 @@
                     });
                     var route = {!!$route->route!!};
                     // console.log(data);
-                    tempmarkers = [];
-                    var CPIndex = [];
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["lat"]);
                         gpxLng = parseFloat(route[key]["lon"]);
-                        IsCP = route[key]["isCheckpoint"];
-                        if(IsCP){
-                            CPIndex.push(key);
-                        }
-                        addLatLngInit(new google.maps.LatLng(gpxLat, gpxLng));
+                        IsCP = route[key]["isCheckpoint"] || key == 0;
+                        addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
                     }
-                    // console.log(CPIndex);
 
-                    // start point and end point marker
-                    // console.log(tempmarkers);
-                    // console.log(tempmarkers[0].position);
-                    // console.log(tempmarkers[tempmarkers.length - 1].position);
-                    var startPointMarker = new google.maps.Marker({
-                        position: tempmarkers[0].position,
-                        label: {text: "Start", color: "white", fontSize: "10px"},
-                        map: map
-                    });
+                    console.log(markerList);
 
-                    var endPointMarker = new google.maps.Marker({
-                        position: tempmarkers[tempmarkers.length - 1].position,
-                        label: {text: "Fin.", color: "white", fontSize: "10px"},
-                        map: map
-                    });
-
-                    for (var i = 0; i < CPIndex.length; i++) {
-                        var index = CPIndex[i];
-                        var checkpointMarker = new google.maps.Marker({
-                            position: tempmarkers[index].position,
-                            label: {text: ""+(i+1)+"", color: "white"},
-                            map: map
-                        });
+                    // Add labels/icons to route markers
+                    var CPIndex = 1;
+                    for (var i = 1; i < markerList.length; i++) {
+                        markerList[i].setLabel({text: ""+CPIndex, color: "white"});
+                        CPIndex++;
+                    }
+                    if ( markerList[markerList.length-1] ){
+                        markerList[markerList.length-1].setLabel({text: "Fin.", color: "white", fontSize: "10px"});
+                    }
+                    if ( markerList[0] ){
+                        markerList[0].setLabel({text: "Start", color: "white", fontSize: "10px"});
                     }
 
                     var bounds = new google.maps.LatLngBounds();
-                    for (var i = 0; i < tempmarkers.length; i++) {
-                        bounds.extend(tempmarkers[i].getPosition());
+                    for (var i = 0; i < markerList.length; i++) {
+                        bounds.extend(markerList[i].getPosition());
                     }
                     map.fitBounds(bounds);
 
@@ -262,27 +252,27 @@
                     pixelOffset: new google.maps.Size(0, -36),
                 });
 
-                // Add Markers
-                markers = [];
+                // Add athleteMarkers
+                athleteMarkers = [];
 
                 // check device_id in localStorage
                 var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
-                // console.log(" array: " + array );
 
-                // console.log(data);
                 for (var key in data) {
-                    // console.log(data[key]);
                     if (typeof data[key][0] != "undefined") {
                         var location = {lat: parseFloat(data[key][0]['latitude_final']), lng: parseFloat(data[key][0]['longitude_final'])};
 
+                        // localStorage is not empty
                         if (temp !== null) { // localStorage is not empty
                             if (jQuery.inArray(data[key][0]['device_id'], array) !== -1) {
-                                markers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
+                                athleteMarkers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
                             }
+                        // localStorage empty
                         } else {
+                            // check database visible setting
                             if (data[key][0]['status'] == "visible"){
-                                markers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
+                                athleteMarkers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
                             }
                         }
                     }
@@ -297,23 +287,6 @@
                 });
             @endif
 
-            // setInterval(function()
-            // {
-            //     $.ajax({
-            //         type:"get",
-            //         url:"{{url('/')}}/event/{{$event_id}}/live-tracking/poll",
-            //         dataType:"json",
-            //         success:function(data)
-            //         {
-            //             var array = data;
-            //             console.log(array);
-            //             for (var key in array) {
-            //                 console.log(array[key]['device_id']);
-            //                 markers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
-            //             }
-            //         }
-            //     });
-            // }, 3000);//time in milliseconds
         }
 
 
@@ -370,7 +343,7 @@
         // and plots the elevation profile on a Visualization API ColumnChart.
         function plotElevation(elevations, status) {
             elevations_global = elevations;
-            var chartDiv = document.getElementById('elevationChart');
+            chartDiv = document.getElementById('elevationChart');
             if (status !== 'OK') {
                 // Show the error code inside the chartDiv.
                 chartDiv.innerHTML = 'Cannot show elevation: request failed because ' +
@@ -388,15 +361,30 @@
             elevationData = new google.visualization.DataTable();
             elevationData.addColumn('number', 'Distance');
             elevationData.addColumn('number', 'Elevation');
-            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
             elevationData.addColumn({type: 'string', role:'annotation'});
             elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+            elevationData.addColumn('number', 'dummy');
+            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation'});
 
             // get athlethe relavant
             routeIndexesByDevice = {!! $routeIndexesByDevice !!};
 
             var chartHeight = $(window).height() * .8;
 
+            // ticks calculation
+            var tempNo = Math.round(distance / Math.pow(10,Math.floor(distance).toString().length-1));
+            if (tempNo > 5) {
+                var step = Math.pow(10,Math.floor(distance).toString().length-1);
+            } else {
+                var step = Math.pow(10,Math.floor(distance).toString().length-2)*tempNo;
+            }
+            var ticks = [];
+            var current = step;
+            while (current <= distance) {
+                ticks.push(current);
+                current = current + step;
+            }
             // Draw the chart using the data within its DIV.
             chartOptions = {
                 // title: 'Event Elevation Chart',
@@ -412,8 +400,22 @@
                     right: 36,
                 },
                 hAxis: {
+                    ticks: ticks,
                     gridlines: {
-                        color: 'transparent'
+                        color: 'transparent',
+                    }
+                },
+                series: {
+                    1: {
+                        color: 'transparent',
+                        annotations: {
+                            stem: {
+                                length: chartHeight * .1
+                            },
+                            textStyle: {
+                                color: '#666'
+                            }
+                        }
                     }
                 },
                // hAxis: { showTextEvery: 64,
@@ -424,7 +426,7 @@
                    isHtml: true
                }
             }
-            var currentRouteIndex = lastPositionData();
+            currentRouteIndex = lastPositionData();
             drawChart(currentRouteIndex);
         }
 
@@ -438,15 +440,15 @@
                 var annotationStr = "";
                 var athleteCount = 0;
                 var str = "";
-                str += 'Distance: <b>' + String((distance/elevations_global.length * i).toFixed(0)) + ' m</b><br/>Elevation: <b>' + elevations_global[i].elevation.toFixed(0) + ' m</b><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
-                for (var j = 0; j < currentRouteIndex.length; j++) {
+                str += 'Distance: <b>' + String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m</b><br/>Elevation: <b>' + elevations_global[i].elevation.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m</b><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
+                for (var j in currentRouteIndex) {
                     var athletheDist = currentRouteIndex[j]['distance'];
                     var athletheDeviceID = currentRouteIndex[j]['device_id'];
                     var athleteBibNumber = currentRouteIndex[j]['bib_number'];
                     var athleteFirstName = currentRouteIndex[j]['first_name'];
                     var athleteLastName = currentRouteIndex[j]['last_name'];
                     var athleteChineseName = currentRouteIndex[j]['zh_full_name'];
-
+                    var athleteColour = currentRouteIndex[j]['colour_code'];
                     // console.log(athletheDist);
 
                     if (dist <= athletheDist && athletheDist < nextDist){
@@ -457,21 +459,46 @@
                         athleteCount++;
                         if (athleteCount == 1) {
                             annotationStr = athleteBibNumber;
+                            colour = athleteColour;
                         } else {
                             annotationStr = '(' + athleteCount + ')';
+                            colour = '';
                         }
                     }
 
                 }
                 // strDist = strDist.slice(0, -1);
+                checkpoint = null;
+                for (var key in checkpointDistances) {
+                    if (dist <= checkpointDistances[key]['distance'] && checkpointDistances[key]['distance'] < nextDist){
+                        var checkpoint = String(checkpointDistances[key]['checkpoint']);
+                        break;
+                    }
+                }
 
                 if (annotationStr.length>0){
-                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0))+'m</b><br/>Elevation:<b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', annotationStr, '<div class="chart-info-window">'+str+'</div>']);
+                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, annotationStr+"#"+colour, '<div class="chart-info-window">'+str+'</div>', 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'m</b><br/>Elevation:<b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null]);
                 } else {
-                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0))+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', null, null]);
+                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, null, null, 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null ]);
                 }
             }
             chart.draw(elevationData, chartOptions);
+
+            function updateAnnotationColourText() {
+                Array.prototype.forEach.call(chartDiv.getElementsByTagName('text'), function (text, index) {
+                    if (text.getAttribute('text-anchor') === 'middle' && text.getAttribute('fill') === '#3366cc') {
+                        if (text.innerHTML.indexOf('#') >= 0) {
+                            var info = text.innerHTML.split("#");
+                            text.innerHTML = info[0];
+                            text.setAttribute('fill', "#"+info[1]);
+                        }
+                    }
+                });
+            }
+            google.visualization.events.addListener(chart, 'ready', updateAnnotationColourText);
+            google.visualization.events.addListener(chart, 'onmouseover', updateAnnotationColourText);
+            google.visualization.events.addListener(chart, 'onmouseout', updateAnnotationColourText);
+            google.visualization.events.addListener(chart, 'select', updateAnnotationColourText);
 
         }
 
@@ -481,7 +508,6 @@
             // console.log(routeIndexesByDevice[0]);
             for (var key in routeIndexesByDevice) {
                 var routeIndexByDevice = routeIndexesByDevice[key];
-                // console.log(routeIndexByDevice);
                 for (var j = 0; j < routeIndexByDevice.length; j++) {
                     getTimeByDevice = routeIndexByDevice[j]['reached_at'];
                     getTimeByDevice = new Date(getTimeByDevice).getTime() / 1000;
@@ -489,11 +515,11 @@
                     // console.log(datetime);
                     if (datetime <= getTimeByDevice){
                         if (j == 0) {
-                            athleteArray.push(routeIndexByDevice[0]);
+                            athleteArray[key] = routeIndexByDevice[0];
                             break;
                         }
                         // console.log(routeIndexByDevice[j]);
-                        athleteArray.push(routeIndexByDevice[j-1]);
+                        athleteArray[key] = routeIndexByDevice[j-1];
                         break;
                     }
                 }
@@ -508,7 +534,7 @@
             for (var key in routeIndexesByDevice) {
                 var routeIndexByDevice = routeIndexesByDevice[key];
                 // console.log(routeIndexByDevice);
-                athleteArray.push(routeIndexByDevice[routeIndexByDevice.length-1]);
+                athleteArray[key] = routeIndexByDevice[routeIndexByDevice.length-1];
             }
             // console.log(athleteArray);
             return athleteArray;
@@ -531,20 +557,26 @@
         }
 
 
-        function addLatLngInit(position) {
+        function addLatLngInit(IsCP, position) {
+
             path = poly.getPath();
 
             // Because path is an MVCArray, we can simply append a new coordinate
             // and it will automatically appear.
             path.push(position);
 
-            // Add a new marker at the new plotted point on the polyline.
-            var marker = new google.maps.Marker({
-                position: position,
-                title: '#' + path.getLength(),
-                setMap: map
-            });
-            tempmarkers.push(marker);
+            if (IsCP) {
+                console.log("dfawef");
+                // Add a new marker at the new plotted point on the polyline.
+                var marker = new google.maps.Marker({
+                    position: position,
+                    title: '#' + path.getLength(),
+                    setMap: map
+                });
+                markerList.push(marker);
+            }
+
+
         }
     </script>
 
@@ -570,7 +602,6 @@
         slider.slider().on('change', function (ev) {
             var pc = ev.value.newValue;
             updateMapMarkers(pc);
-            infowindow.close(map);
         });
 
         // Replay controls
@@ -600,6 +631,7 @@
         });
 
         function updateMapMarkers(pc) {
+            infowindow.close(map);
             var offset = (timestamp_to - timestamp_from) * pc / 100;
             var time = offset + timestamp_from;
 
@@ -607,45 +639,34 @@
             // console.log(dateString);
 
             for (var device_id in data) {
-                if (markers[device_id]) {
+                if (athleteMarkers[device_id]) {
                     // console.log(device_id);
                     var markerHasData = false;
-                    markers[device_id].setVisible(true);
+                    athleteMarkers[device_id].setVisible(true);
                     for (var i in data[device_id]) {
                         if (data[device_id][i]['timestamp'] <= time) {
                             // console.log(data[device_id][i]['timestamp']);
-                            markers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id][i]['latitude_final']), parseFloat(data[device_id][i]['longitude_final'])) );
+                            athleteMarkers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id][i]['latitude_final']), parseFloat(data[device_id][i]['longitude_final'])) );
                             markerHasData = true;
                             break;
                         }
                     }
                     if (!markerHasData) {
-                        markers[device_id].setVisible(false);
+                        athleteMarkers[device_id].setVisible(false);
                     }
                 }
             }
-var routeIndexesByDevice = {!! $routeIndexesByDevice !!};
-console.log(routeIndexesByDevice);
-var routeData;
-if ( routeIndexesByDevice[content['device_id']] ) {
-    for (var key in routeIndexesByDevice[content['device_id']]) {
-        routeIndexesByDevice[content['device_id']][key];
-        console.log(routeIndexesByDevice[content['device_id']][key]);
-        markers[routeIndexesByDevice[content['device_id']][key]].routeData = routeIndexesByDevice[content['device_id']][key];
-    }
-    
-    // console.log(routeIndexesByDevice[content['device_id']]);
-}
 
-
-            // console.log('in');
+            // clear and redraw elevation chart
             elevationData = new google.visualization.DataTable();
             elevationData.addColumn('number', 'Distance');
             elevationData.addColumn('number', 'Elevation');
-            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
             elevationData.addColumn({type: 'string', role:'annotation'});
             elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-            var currentRouteIndex = dataFilterByTime(time);
+            elevationData.addColumn('number', 'dummy');
+            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation'});
+            currentRouteIndex = dataFilterByTime(time);
             drawChart(currentRouteIndex);
         }
         $('.replay-controls.pause').click(function() {

@@ -84,6 +84,11 @@ class DrawRouteController extends Controller {
     }
 
     public function saveMinimumTimes($event_id) {
+        // clear route progress
+        DB::table('route_progress')
+            ->where('event_id', $event_id)
+            ->delete();
+
         foreach ($_POST['min_times'] as $route_distance_id => $min_time) {
             $min_time = !empty($min_time) ? $min_time : null;
             if (empty($min_time) || $this->isValidTime($min_time)) {

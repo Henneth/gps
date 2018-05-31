@@ -15,6 +15,10 @@ class EditEventController extends Controller {
         if (empty($_POST['optionsRadios'])) {
             return redirect('event/'.$event_id.'/edit-event')->with('error', 'Event type must not be empty.');
         }
+        // clear route progress
+        DB::table('route_progress')
+            ->where('event_id', $event_id)
+            ->delete();
 
         $datetime_from = $_POST['start-time'];
         $datetime_to = $_POST['end-time'];

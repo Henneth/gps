@@ -1,3 +1,4 @@
+<!-- calculate athletes's distance between checkpoint -->
 <?php
 $host = 'localhost';
 $db   = 'gps';

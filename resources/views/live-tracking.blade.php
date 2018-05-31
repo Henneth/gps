@@ -268,8 +268,10 @@
                     // Add labels/icons to route markers
                     var CPIndex = 1;
                     for (var i = 1; i < markerList.length; i++) {
-                        markerList[i].setLabel({text: ""+CPIndex, color: "white"});
-                        CPIndex++;
+                        if (markerList[i].isCheckpoint) {
+                            markerList[i].setLabel({text: ""+CPIndex, color: "white"});
+                            CPIndex++;
+                        }
                     }
                     if ( markerList[markerList.length-1] ){
                         markerList[markerList.length-1].setLabel({text: "Fin.", color: "white", fontSize: "10px"});
@@ -587,10 +589,19 @@
                 var marker = new google.maps.Marker({
                     position: position,
                     title: '#' + path.getLength(),
-                    map: map
+                    map: map,
+                    isCheckpoint: IsCP
                 });
-                markerList.push(marker);
+            } else {
+                // Add a new marker at the new plotted point on the polyline.
+                var marker = new google.maps.Marker({
+                    position: position,
+                    title: '#' + path.getLength(),
+                    map: null,
+                    isCheckpoint: IsCP
+                });
             }
+            markerList.push(marker);
         }
 
         // Set the date we're counting from

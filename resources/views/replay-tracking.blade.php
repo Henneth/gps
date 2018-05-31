@@ -93,6 +93,7 @@
     google.charts.setOnLoadCallback(initChart);
 
     // init global variables
+    var map;
     var chart;
     var chartOptions;
     var elevationData;
@@ -111,32 +112,8 @@
 
             @if ($data)
 
-                // Function for marker symbol and color
-                // function pinSymbol(color) {
-                //     return {
-                //         path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
-                //         fillColor: color,
-                //         fillOpacity: 1,
-                //         strokeColor: '#fff',
-                //         strokeWeight: 1,
-                //         scale: 1.4,
-                //         labelOrigin: new google.maps.Point(0, -29)
-                //     };
-                // }
-
                 // Function to add a marker to the map.
                 function addMarker(location, map, content) {
-                    // Add the marker at the clicked location, and add the next-available label
-                    // from the array of alphabetical characters.
-                    // var marker = new google.maps.Marker({
-                    //     position: new google.maps.LatLng(22.3016616, 114.1577151),
-                    //     label: {
-                    //         text: content['bib_number'],
-                    //         fontSize: "10px"
-                    //     },
-                    //     icon: pinSymbol(content['colour_code']),
-                    //     map: map
-                    // });
                     var borderStyle = '<style>.id' + content['device_id'] + '.label_content:after { border-top: solid 8px #' + content['colour_code'] + '; }</style>';
                     var marker = new RichMarker({
                         map: map,
@@ -198,7 +175,7 @@
                     }
                 ]
 
-                var map = new google.maps.Map(document.getElementById('map'), {
+                map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 13,
                     // center: {lat: 22.404767, lng: 114.1057550}
                     center: {lat: 22.3016616, lng: 114.1577151}
@@ -224,8 +201,6 @@
                         addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
-                    console.log(markerList);
-
                     // Add labels/icons to route markers
                     var CPIndex = 1;
                     for (var i = 1; i < markerList.length; i++) {
@@ -239,6 +214,7 @@
                         markerList[0].setLabel({text: "Start", color: "white", fontSize: "10px"});
                     }
 
+                    // map fit bounds
                     var bounds = new google.maps.LatLngBounds();
                     for (var i = 0; i < markerList.length; i++) {
                         bounds.extend(markerList[i].getPosition());
@@ -258,19 +234,19 @@
                 // check device_id in localStorage
                 var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
+                // console.log(" array: " + array );
 
+                // console.log(data);
                 for (var key in data) {
+                    // console.log(data[key]);
                     if (typeof data[key][0] != "undefined") {
                         var location = {lat: parseFloat(data[key][0]['latitude_final']), lng: parseFloat(data[key][0]['longitude_final'])};
 
-                        // localStorage is not empty
                         if (temp !== null) { // localStorage is not empty
                             if (jQuery.inArray(data[key][0]['device_id'], array) !== -1) {
                                 athleteMarkers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
                             }
-                        // localStorage empty
                         } else {
-                            // check database visible setting
                             if (data[key][0]['status'] == "visible"){
                                 athleteMarkers[data[key][0]['device_id']] = (addMarker(location, map, data[key][0]));
                             }
@@ -558,7 +534,6 @@
 
 
         function addLatLngInit(IsCP, position) {
-
             path = poly.getPath();
 
             // Because path is an MVCArray, we can simply append a new coordinate
@@ -566,17 +541,14 @@
             path.push(position);
 
             if (IsCP) {
-                console.log("dfawef");
                 // Add a new marker at the new plotted point on the polyline.
                 var marker = new google.maps.Marker({
                     position: position,
                     title: '#' + path.getLength(),
-                    setMap: map
+                    map: map
                 });
                 markerList.push(marker);
             }
-
-
         }
     </script>
 

@@ -50,7 +50,7 @@ foreach ($events as $event) {
     $route_stmt = $pdo->prepare('SELECT route FROM routes WHERE event_id = :event_id');
     $route_stmt->execute(array(':event_id' => $event_id));
     $route = $route_stmt->fetchAll();
-    if (!empty($route)){
+    if ($route){
         $array = json_decode($route[0]['route'], 1);
     } else {
         echo "empty route";
@@ -59,7 +59,7 @@ foreach ($events as $event) {
     echo"<pre>".print_r($array,1)."</pre>";
 
     // get checkpoint data relevant
-    $checkpointData_stmt = $pdo->prepare('SELECT route_index, min_time FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1 ORDER BY route_index')->fetchAll();
+    $checkpointData_stmt = $pdo->prepare('SELECT route_index, min_time FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1 ORDER BY route_index');
     $checkpointData_stmt->execute(array(':event_id' => $event_id));
     $checkpointData = $checkpointData_stmt->fetchAll();
     array_unshift($checkpointData, array("route_index" => 0));

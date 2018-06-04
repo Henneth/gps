@@ -17,6 +17,7 @@ $pdo = new PDO($dsn, $user, $pass, $opt);
 // Event IDs
 $events = $pdo->query('SELECT * FROM current_events')->fetchAll();
 if(empty($events)){
+    echo "empty events";
     return;
 }
 

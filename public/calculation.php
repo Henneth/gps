@@ -36,6 +36,7 @@ foreach ($events as $event) {
         continue;
     }
 
+    echo"<pre>".print_r($eventTimeRange,1)."</pre>";
     // get last ID
     // $lastIDArray = $pdo->query('SELECT lastID FROM lastID WHERE event_id = 9 LIMIT 1')->fetchAll();
     // if(!empty($lastIDArray)){
@@ -52,7 +53,7 @@ foreach ($events as $event) {
     if ($route){
         $array = json_decode($route[0]['route'], 1);
     } else {
-        break;
+        continue;
     }
 
     // get checkpoint data relevant

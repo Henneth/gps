@@ -50,7 +50,7 @@ foreach ($events as $event) {
     $route_stmt = $pdo->prepare('SELECT route FROM routes WHERE event_id = :event_id');
     $route_stmt->execute(array(':event_id' => $event_id));
     $route = $route_stmt->fetchAll();
-    if ($route){
+    if (!empty($route)){
         $array = json_decode($route[0]['route'], 1);
     } else {
         echo "empty route";

@@ -56,6 +56,7 @@ foreach ($events as $event) {
         echo "empty route";
         continue;
     }
+    echo"<pre>".print_r($route,1)."</pre>";
 
     // get checkpoint data relevant
     $checkpointData_stmt = $pdo->prepare('SELECT route_index, min_time FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1 ORDER BY route_index')->fetchAll();

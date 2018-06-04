@@ -24,6 +24,7 @@ if(empty($events)){
 foreach ($events as $event) {
     //define event id
     $event_id = $event['event_id'];
+    echo $event_id;
 
     // get route data
     $eventTimeRange_stmt = $pdo->prepare('SELECT datetime_from, datetime_to FROM events WHERE event_id = :event_id');

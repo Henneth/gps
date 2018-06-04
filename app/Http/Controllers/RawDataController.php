@@ -97,8 +97,7 @@ class RawDataController extends Controller {
 
         if (!empty($timeFrom) && !empty($timeTo) && empty($deviceID)){
             $data = DB::table('gps_data')
-                ->distinct('datetime', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
-                // ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
                 ->where('datetime', '>=', $timeFrom)
                 ->where('datetime', '<=', $timeTo)
                 ->orderby('datetime', 'desc')
@@ -158,7 +157,7 @@ class RawDataController extends Controller {
         $sheets[] = ['colNames' => $colNames, 'data' => $assoc_array, 'sheetname' => "raw-gps-data"];
 
         require_once '../libs/Excel.php';
-        exportAsExcel("raw-gps-data ".date("Y-m-d H:i:s"), $sheets);
+        exportAsExcel("raw-gps-data ".date("Y-m-d H:i:s", strtotime('+8 hours')), $sheets);
         // echo "<pre>".print_r($assoc_array,1)."</pre>";
     }
 

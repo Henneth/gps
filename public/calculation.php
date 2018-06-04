@@ -30,7 +30,7 @@ foreach ($events as $event) {
     $eventTimeRange_stmt->execute(array(':event_id' => $event_id));
     $eventTimeRange = $eventTimeRange_stmt->fetchAll();
     if(empty($eventTimeRange)){
-        return;
+        break;
     }
 
     // get last ID
@@ -49,7 +49,7 @@ foreach ($events as $event) {
     if ($route){
         $array = json_decode($route[0]['route'], 1);
     } else {
-        return;
+        break;
     }
 
     // get checkpoint data relevant

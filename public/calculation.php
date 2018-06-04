@@ -20,7 +20,7 @@ if(empty($events)){
     echo "empty events";
     return;
 }
-echo "start2";
+echo "start3";
 
 foreach ($events as $event) {
     //define event id

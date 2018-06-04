@@ -3,7 +3,7 @@
 $host = 'localhost';
 $db   = 'gps';
 $user = 'root';
-$pass = 'rts123';
+$pass = 'root';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -31,7 +31,8 @@ foreach ($events as $event) {
     $eventTimeRange_stmt->execute(array(':event_id' => $event_id));
     $eventTimeRange = $eventTimeRange_stmt->fetchAll();
     if(empty($eventTimeRange)){
-        break;
+        echo "empty event time range";
+        continue;
     }
 
     // get last ID

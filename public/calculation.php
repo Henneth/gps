@@ -53,6 +53,7 @@ foreach ($events as $event) {
     if ($route){
         $array = json_decode($route[0]['route'], 1);
     } else {
+        echo "empty route";
         continue;
     }
 
@@ -165,7 +166,7 @@ foreach ($events as $event) {
 
             }
         }
-        // echo"<pre>".print_r($cpArray,1)."</pre>";
+        echo"<pre>".print_r($cpArray,1)."</pre>";
         // insert into DB
         if ($cpArray){
             pdoMultiInsert('route_progress', $cpArray, $pdo);

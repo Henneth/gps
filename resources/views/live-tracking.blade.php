@@ -437,7 +437,7 @@
             // console.log(checkpointDistances);
 
             var chartHeight = $(window).height() * .8;
-
+            
             // ticks calculation
             var tempNo = Math.round(distance / Math.pow(10,Math.floor(distance).toString().length-1));
             if (tempNo > 5) {

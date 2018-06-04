@@ -97,7 +97,8 @@ class RawDataController extends Controller {
 
         if (!empty($timeFrom) && !empty($timeTo) && empty($deviceID)){
             $data = DB::table('gps_data')
-                ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->distinct('datetime', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                // ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
                 ->where('datetime', '>=', $timeFrom)
                 ->where('datetime', '<=', $timeTo)
                 ->orderby('datetime', 'desc')

@@ -133,6 +133,7 @@
         var elevations_global;
         var checkpointDistances;
         var markerList = []; //array to store marker
+        var firstLoad = true;
 
         function initMap() {
 
@@ -187,7 +188,7 @@
                             if( content['first_name'] ){ html += '<div>First Name: <b>' + content['first_name'] + '</b></div>'; }
                             if( content['last_name'] ){ html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>'; }
                             if( content['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
-                            html += '<div>Country: <b>' + content['country'] + '</b></div>';
+                            if( content['country'] ){ html += '<div>Country: <b>' + content['country'] + '</b></div>'; }
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
 
                             if ( marker.profile ) { // update
@@ -248,7 +249,11 @@
                 // set style
                 map.set('styles', mapStyle);
 
+                // empty markList for re-init map
+                markerList = [];
+
                 @if ($route)
+
                     // set route
                     poly = new google.maps.Polyline({
                         strokeColor: '#3d00f7',
@@ -437,7 +442,7 @@
             // console.log(checkpointDistances);
 
             var chartHeight = $(window).height() * .8;
-            
+
             // ticks calculation
             var tempNo = Math.round(distance / Math.pow(10,Math.floor(distance).toString().length-1));
             if (tempNo > 5) {
@@ -651,11 +656,10 @@
             $('.map-section').removeClass('active');
             $('.profile-section').removeClass('active');
             $('.elevation-section').addClass('active');
-            resizeChart ();
+            resizeChart();
         })
         $('#profile-tab').click(function(){
             $('.elevation-section').removeClass('active');
-
             $('.map-section').removeClass('active');
             $('.profile-section').addClass('active');
         })

@@ -184,6 +184,9 @@
                 // set style
                 map.set('styles', mapStyle);
 
+                // empty markList for re-init map
+                markerList = [];
+
                 @if ($route)
                     // set route
                     poly = new google.maps.Polyline({

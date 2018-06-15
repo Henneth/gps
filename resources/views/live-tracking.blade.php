@@ -134,11 +134,24 @@
         var checkpointDistances;
         var markerList = []; //array to store marker
         var firstLoad = true;
+        var minTime;
+
+
+        function findObjectByKey(array, key, value) {
+            for (var i = 0; i < array.length; i++) {
+                if (array[i][key] === value) {
+                    return array[i];
+                }
+            }
+            return null;
+        }
 
         function initMap() {
 
             data = {!! $data !!};
-            // console.log(data);
+
+            // get min time of checkpoints
+            minTime = {!! $minTime !!};
 
             @if ($data)
 
@@ -200,21 +213,83 @@
                             }
 
                             if ( marker.checkpointData ){ // update
+
                                 html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
+                                // show athletes' checkpoint time -- reache at
+                                var checkpointTimes = checkpointData[content['device_id']];
+
                                 for (var i = 0; i < marker.checkpointData.length; i++) {
                                     html += '<div>Checkpoint '  + marker.checkpointData[i]['checkpoint'] + ': <b>'+ marker.checkpointData[i]['reached_at'] + '</b></div>';
+                                    // console.log(marker.checkpointData[i]);
                                 }
+                                // get the latest checkpoint number
+                                var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
+
+                                // checkpoint number greater than 2 can do time prediction of next checkpooint
+                                if ( checkpointTimes.length >= 2 && currentCheckpoint < minTime.length) {
+                                    // && currentCheckpoint < minTime.length
+
+                                    // get the former latest checkpoint number
+                                    var formerCheckpoint = checkpointTimes[checkpointTimes.length-2]['checkpoint'];
+                                    // get the latest checkpoint reached_at
+                                    var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
+                                    // get the former latest checkpoint reached_at
+                                    var formerCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-2]['reached_at']).getTime();
+
+                                    // match then get min time of checkpoints
+                                    var currentCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint)['min_time'] + 'Z').getTime();
+                                    var formerCheckpointMinTime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', formerCheckpoint)['min_time'] + 'Z').getTime();
+                                    var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', checkpointTimes.length)['min_time'] + 'Z').getTime();
+
+
+                                    var tempPredictTime = (currentCheckpointTime - formerCheckpointTime) / currentCheckpointMinTime * nextCheckpointMinTime + currentCheckpointTime;
+                                    var predictTime= new Date(tempPredictTime).toLocaleTimeString();
+                                    var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+
+                                    // console.log(minTime);
+                                    html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
+                                }
+
                             }else{ // initialize
                                 if (checkpointData[content['device_id']]) {
+                                    // console.log(checkpointData[content['device_id']]);
                                     html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
-                                    // show athlete reaches at checkpoint time
+                                    // show athletes' checkpoint time -- reache at
                                     var checkpointTimes = checkpointData[content['device_id']];
                                     for (var j = 0; j < checkpointTimes.length; j++) {
                                         html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
+
+                                    }
+                                    // get the latest checkpoint number
+                                    var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
+
+                                    // checkpoint number greater than 2 can do time prediction of next checkpooint
+                                    if ( checkpointTimes.length >= 2 && currentCheckpoint < minTime.length) {
+                                        //
+
+                                        // get the former latest checkpoint number
+                                        var formerCheckpoint = checkpointTimes[checkpointTimes.length-2]['checkpoint'];
+                                        // get the latest checkpoint reached_at
+                                        var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
+                                        // get the former latest checkpoint reached_at
+                                        var formerCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-2]['reached_at']).getTime();
+
+                                        // match then get min time of checkpoints
+                                        var currentCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint)['min_time'] + 'Z').getTime();
+                                        var formerCheckpointMinTime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', formerCheckpoint)['min_time'] + 'Z').getTime();
+                                        var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', checkpointTimes.length)['min_time'] + 'Z').getTime();
+
+
+                                        var tempPredictTime = (currentCheckpointTime - formerCheckpointTime) / currentCheckpointMinTime * nextCheckpointMinTime + currentCheckpointTime;
+                                        var predictTime= new Date(tempPredictTime).toLocaleTimeString();
+                                        var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+
+                                        // console.log(minTime);
+                                        html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
+
                                     }
                                 }
                             }
-
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -350,14 +425,14 @@
                         var localStorageArray = jQuery.parseJSON( temp );
 
                         // console.log(currentRouteIndex);
-                        console.log(array);
+                        // console.log(array);
                         for (var key in array) {
                             // marker exists
                             if (athleteMarkers[array[key]['device_id']]) {
                                 athleteMarkers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
                                 athleteMarkers[array[key]['device_id']].profile = array[key];
                                 athleteMarkers[array[key]['device_id']].checkpointData = checkpointData[array[key]['device_id']];
-                                // console.log(athleteMarkers[array[key]['device_id']]);
+                                console.log(athleteMarkers[array[key]['device_id']]);
 
                             // marker does not exist
                             } else {
@@ -702,7 +777,7 @@
             }
         }
 
-        // ios botton
+        // ios style botton
         $('.check').click(function(){
             // create array
             var array = [];

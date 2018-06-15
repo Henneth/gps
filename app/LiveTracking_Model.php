@@ -89,5 +89,10 @@ class LiveTracking_Model extends Model
 			ORDER BY device_id, route_distances.route_index", ['event_id' => $event_id] );
 		return $data;
 	}
+	// get min times of checkpoints
+	public static function getMinTime($event_id) {
+		$data = DB::select("SELECT checkpoint, min_time FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1", ['event_id' => $event_id]);
+		return $data;
+	}
 
 }

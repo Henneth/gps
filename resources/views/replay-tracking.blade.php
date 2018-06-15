@@ -104,6 +104,8 @@
     var currentRouteIndex;
     var checkpointDistances;
     var markerList = []; //array to store marker
+    var showOffKey; // store "ON" device_id, data retrive from localStorage
+
 
         function initMap() {
 
@@ -236,14 +238,15 @@
                 // Add athleteMarkers
                 athleteMarkers = [];
 
-                // check device_id in localStorage
+                // check device_id in localStorage, "ON" data will be save in localStorage
                 var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
-                // console.log(" array: " + array );
+                showOffKey = array;
+                console.log(" array: " + showOffKey );
 
                 // console.log(data);
                 for (var key in data) {
-                    // console.log(data[key]);
+                    // console.log(data[key][0]);
                     if (typeof data[key][0] != "undefined") {
                         var location = {lat: parseFloat(data[key][0]['latitude_final']), lng: parseFloat(data[key][0]['longitude_final'])};
 
@@ -350,6 +353,28 @@
 
             // get athlethe relavant
             routeIndexesByDevice = {!! $routeIndexesByDevice !!};
+
+            // if showOffKey is not null, localStorage will be used
+            var routeIndexesByDevice_filtered = [];
+            if (showOffKey !== null){
+                for (var i = 0; i < showOffKey.length; i++) {
+                    showOffKey[i];
+                    console.log(showOffKey[i]);
+                    if(jQuery.inArray( showOffKey[i], routeIndexesByDevice )){
+                        routeIndexesByDevice_filtered[showOffKey[i]] = routeIndexesByDevice[showOffKey[i]];
+                    }
+                }
+                console.log(routeIndexesByDevice_filtered);
+            }else{
+                for(var i in data ){
+                    if (jQuery.inArray( i, routeIndexesByDevice ) && typeof data[i][0] != "undefined" && data[i][0]['status'] == "visible"){
+                        routeIndexesByDevice_filtered[i] = routeIndexesByDevice[i];
+                    }
+                }
+                console.log(routeIndexesByDevice_filtered);
+            }
+            routeIndexesByDevice = routeIndexesByDevice_filtered;
+
 
             var chartHeight = $(window).height() * .8;
 

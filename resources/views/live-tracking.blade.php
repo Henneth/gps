@@ -13,18 +13,18 @@
 
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
-            <li id="home-tab" class="active"><a href="#" data-toggle="tab">Map</a></li>
-            <li id="chart" ><a href="#" data-toggle="tab">Elevation</a></li>
-            <li id="profile-tab" ><a href="#" data-toggle="tab">Athletes</a></li>
+            <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
+            <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
+            <li id="profile-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Athletes</a></li>
         </ul>
         <div class="tab-content">
-            <div class="map-section tab-pane active">
+            <div class="map-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'active' : '');} else{echo 'active';} ?>">
                 <div class="form-group" style="color: #666; float: left;">Athletes' latest locations from <b>{{$event->datetime_from}}</b> to <b>{{$event->datetime_to}}</b></div>
                 <div style="color: #666; float: right;">Elapsed Time: <b><span id="time"></span></b></div>
                 <div id="map"></div> {{-- google map here --}}
             </div>
-            <div class="elevation-section tab-pane" id="elevationChart" style="width:100%; height:100%;"></div>
-            <div class="profile-section tab-pane">
+            <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>
+            <div class="profile-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'active' : '');} else{} ?>">
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
@@ -134,11 +134,25 @@
         var checkpointDistances;
         var markerList = []; //array to store marker
         var firstLoad = true;
+        var minTime;
+        var showOffKey; // store "ON" device_id, data retrive from localStorage
+
+
+        function findObjectByKey(array, key, value) {
+            for (var i = 0; i < array.length; i++) {
+                if (array[i][key] === value) {
+                    return array[i];
+                }
+            }
+            return null;
+        }
 
         function initMap() {
 
             data = {!! $data !!};
-            // console.log(data);
+
+            // get min time of checkpoints
+            minTime = {!! $minTime !!};
 
             @if ($data)
 
@@ -200,21 +214,83 @@
                             }
 
                             if ( marker.checkpointData ){ // update
+
                                 html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
+                                // show athletes' checkpoint time -- reache at
+                                var checkpointTimes = checkpointData[content['device_id']];
+
                                 for (var i = 0; i < marker.checkpointData.length; i++) {
                                     html += '<div>Checkpoint '  + marker.checkpointData[i]['checkpoint'] + ': <b>'+ marker.checkpointData[i]['reached_at'] + '</b></div>';
+                                    // console.log(marker.checkpointData[i]);
                                 }
+                                // get the latest checkpoint number
+                                var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
+
+                                // checkpoint number greater than 2 can do time prediction of next checkpooint
+                                if ( checkpointTimes.length >= 2 && currentCheckpoint < minTime.length) {
+                                    // && currentCheckpoint < minTime.length
+
+                                    // get the former latest checkpoint number
+                                    var formerCheckpoint = checkpointTimes[checkpointTimes.length-2]['checkpoint'];
+                                    // get the latest checkpoint reached_at
+                                    var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
+                                    // get the former latest checkpoint reached_at
+                                    var formerCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-2]['reached_at']).getTime();
+
+                                    // match then get min time of checkpoints
+                                    var currentCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint)['min_time'] + 'Z').getTime();
+                                    var formerCheckpointMinTime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', formerCheckpoint)['min_time'] + 'Z').getTime();
+                                    var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', checkpointTimes.length)['min_time'] + 'Z').getTime();
+
+
+                                    var tempPredictTime = (currentCheckpointTime - formerCheckpointTime) / currentCheckpointMinTime * nextCheckpointMinTime + currentCheckpointTime;
+                                    var predictTime= new Date(tempPredictTime).toLocaleTimeString();
+                                    var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+
+                                    // console.log(minTime);
+                                    html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
+                                }
+
                             }else{ // initialize
                                 if (checkpointData[content['device_id']]) {
+                                    // console.log(checkpointData[content['device_id']]);
                                     html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
-                                    // show athlete reaches at checkpoint time
+                                    // show athletes' checkpoint time -- reache at
                                     var checkpointTimes = checkpointData[content['device_id']];
                                     for (var j = 0; j < checkpointTimes.length; j++) {
                                         html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
+
+                                    }
+                                    // get the latest checkpoint number
+                                    var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
+
+                                    // checkpoint number greater than 2 can do time prediction of next checkpooint
+                                    if ( checkpointTimes.length >= 2 && currentCheckpoint < minTime.length) {
+                                        //
+
+                                        // get the former latest checkpoint number
+                                        var formerCheckpoint = checkpointTimes[checkpointTimes.length-2]['checkpoint'];
+                                        // get the latest checkpoint reached_at
+                                        var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
+                                        // get the former latest checkpoint reached_at
+                                        var formerCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-2]['reached_at']).getTime();
+
+                                        // match then get min time of checkpoints
+                                        var currentCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint)['min_time'] + 'Z').getTime();
+                                        var formerCheckpointMinTime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', formerCheckpoint)['min_time'] + 'Z').getTime();
+                                        var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', checkpointTimes.length)['min_time'] + 'Z').getTime();
+
+
+                                        var tempPredictTime = (currentCheckpointTime - formerCheckpointTime) / currentCheckpointMinTime * nextCheckpointMinTime + currentCheckpointTime;
+                                        var predictTime= new Date(tempPredictTime).toLocaleTimeString();
+                                        var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+
+                                        // console.log(minTime);
+                                        html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
+
                                     }
                                 }
                             }
-
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -305,6 +381,9 @@
                 // check device_id in localStorage
                 var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
+                showOffKey = array;
+                // console.log(" array: " + showOffKey );
+
 
                 for (var i = 0; i < data.length; i++) {
                     var location = {lat: parseFloat(data[i]['latitude_final']), lng: parseFloat(data[i]['longitude_final'])};
@@ -342,15 +421,48 @@
                         var array = data['data'];
                         var checkpointData = data['checkpointData'];
                         var currentRouteIndex = data['currentRouteIndex'];
+
+                        // console.log(currentRouteIndex);
+
+
+                        // automatically update chart tab --- if showOffKey is not null, localStorage will be used
+                        var currentRouteIndex_filtered = [];
+
+                        if (showOffKey !== null){
+                            for (var i = 0; i < showOffKey.length; i++) {
+                                // console.log("offKey: "+ showOffKey[i]);
+                                for (var j = 0; j < currentRouteIndex.length; j++) {
+                                    if( showOffKey[i] == currentRouteIndex[j]['device_id'] ){
+                                        currentRouteIndex_filtered.push(currentRouteIndex[j]);
+                                    }
+                                }
+                            }
+                            // console.log(currentRouteIndex_filtered);
+                        }else{
+                            for(var i in array ){
+                                // console.log(array);
+                                for (var j = 0; j < currentRouteIndex.length; j++) {
+                                    // console.log(currentRouteIndex[j]);
+
+                                    if ( (array[i]['device_id'] == currentRouteIndex[j]['device_id']) && (array[i]['status'] == "visible") ){
+                                        currentRouteIndex_filtered.push(currentRouteIndex[j]);
+                                    }
+                                }
+                            }
+                            // console.log(currentRouteIndex_filtered);
+                        }
+                        currentRouteIndex = currentRouteIndex_filtered;
+
                         drawChart(currentRouteIndex);
 
 
                         // check device_id in localStorage
                         var temp = localStorage.getItem("visibility{{$event_id}}");
                         var localStorageArray = jQuery.parseJSON( temp );
+                        // console.log("localStorageArray"+localStorageArray);
 
                         // console.log(currentRouteIndex);
-                        console.log(array);
+                        // console.log(array);
                         for (var key in array) {
                             // marker exists
                             if (athleteMarkers[array[key]['device_id']]) {
@@ -439,7 +551,39 @@
             // get athlethe's distance relevant
             var currentRouteIndex = {!! $currentRouteIndex !!};
             checkpointDistances = {!! $checkpointDistances !!};
-            // console.log(checkpointDistances);
+
+            // console.log(currentRouteIndex);
+
+            // chart tab --- if showOffKey is not null, localStorage will be used
+            var currentRouteIndex_filtered = [];
+
+            if (showOffKey !== null){
+                for (var i = 0; i < showOffKey.length; i++) {
+                    // console.log("offKey: "+ showOffKey[i]);
+                    for (var j = 0; j < currentRouteIndex.length; j++) {
+                        if( showOffKey[i] == currentRouteIndex[j]['device_id'] ){
+                            currentRouteIndex_filtered.push(currentRouteIndex[j]);
+                        }
+                    }
+
+                }
+                // console.log(currentRouteIndex_filtered);
+            }else{
+                for(var i in data ){
+                    // console.log(data);
+
+                    for (var j = 0; j < currentRouteIndex.length; j++) {
+                        // console.log(currentRouteIndex[j]);
+
+                        if ( (data[i]['device_id'] == currentRouteIndex[j]['device_id']) && (data[i]['status'] == "visible") ){
+                            currentRouteIndex_filtered.push(currentRouteIndex[j]);
+                        }
+                    }
+                }
+                // console.log(currentRouteIndex_filtered);
+            }
+            currentRouteIndex = currentRouteIndex_filtered;
+
 
             var chartHeight = $(window).height() * .8;
 
@@ -573,7 +717,6 @@
                     elevationData.addRow([parseInt(distance/elevations_global.length * i)/1000, elevations_global[i].elevation, null, null, 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null ]);
                 }
             }
-            chart.draw(elevationData, chartOptions);
 
             function updateAnnotationColourText() {
                 Array.prototype.forEach.call(chartDiv.getElementsByTagName('text'), function (text, index) {
@@ -590,6 +733,8 @@
             google.visualization.events.addListener(chart, 'onmouseover', updateAnnotationColourText);
             google.visualization.events.addListener(chart, 'onmouseout', updateAnnotationColourText);
             google.visualization.events.addListener(chart, 'select', updateAnnotationColourText);
+
+            chart.draw(elevationData, chartOptions);
         }
 
         initMap();
@@ -664,23 +809,36 @@
             window.resize = resizeChart;
         }
 
+        var url_string = window.location.href; //window.location.href
+        var url = new URL(url_string);
+        var tabIndex = url.searchParams.get("tab");
+        if (tabIndex == 2){
+            $('.replay-controls-wrapper').hide();
+        }
+        console.log(url.origin+url.pathname);
 
         $('#chart').click(function(){
-            $('.map-section').removeClass('active');
-            $('.profile-section').removeClass('active');
-            $('.elevation-section').addClass('active');
-            resizeChart();
+            window.location.assign(url.origin+url.pathname+'?tab=1');
+
+            // $('.map-section').removeClass('active');
+            // $('.profile-section').removeClass('active');
+            // $('.elevation-section').addClass('active');
+            // resizeChart();
         })
         $('#profile-tab').click(function(){
-            $('.elevation-section').removeClass('active');
-            $('.map-section').removeClass('active');
-            $('.profile-section').addClass('active');
+            window.location.assign(url.origin+url.pathname+'?tab=2');
+
+            // $('.elevation-section').removeClass('active');
+            // $('.map-section').removeClass('active');
+            // $('.profile-section').addClass('active');
         })
         $('#home-tab').click(function(){
-            $('.map-section').addClass('active');
-            $('.elevation-section').removeClass('active');
-            $('.profile-section').removeClass('active');
-            initMap();
+            window.location.assign(url.origin+url.pathname+'?tab=0');
+
+            // $('.map-section').addClass('active');
+            // $('.elevation-section').removeClass('active');
+            // $('.profile-section').removeClass('active');
+            // initMap();
         })
 
         $(document).ready(function() {
@@ -715,7 +873,7 @@
             }
         }
 
-        // ios botton
+        // ios style botton
         $('.check').click(function(){
             // create array
             var array = [];

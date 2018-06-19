@@ -48,6 +48,11 @@ class LiveTrackingController extends Controller {
         $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
         $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
         $checkpointData = json_encode($tempCheckpointData);
+        // get min time of checkpoints
+        $getMinTime = LiveTracking_Model::getMinTime($event_id);
+        // echo "<pre>".print_r($getMinTime,1)."</pre>";
+
+        $getMinTime = json_encode($getMinTime);
 
         // get checkpoint distances
         $tempCheckpointDistances = DB::table('route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();
@@ -57,7 +62,7 @@ class LiveTrackingController extends Controller {
         $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
         $currentRouteIndex = json_encode($currentRouteIndex);
 
-        return view('live-tracking')->with(array('data' => $jsonData, 'event' => $event, 'event_id' => $event_id, 'route' => $route, 'profile' => $profile, 'jsonProfile' => $jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances));
+        return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime));
     }
 
     // automatically update data from server

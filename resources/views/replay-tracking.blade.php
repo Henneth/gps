@@ -13,9 +13,9 @@
 
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
-            <li id="home-tab" class="active"><a href="#" data-toggle="tab">Map</a></li>
-            <li id="chart" ><a href="#" data-toggle="tab">Elevation</a></li>
-            <li id="profile-tab" ><a href="#" data-toggle="tab">Athletes</a></li>
+            <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
+            <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
+            <li id="profile-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Athletes</a></li>
         </ul>
         <div class="tab-content">
             <div class="flex-container form-group replay-controls-wrapper">
@@ -32,13 +32,13 @@
                     </div>
                 </div>
             </div>
-            <div class="map-section tab-pane active">
+            <div class="map-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'active' : '');} else{echo 'active';} ?>" >
                 <div id="map"></div>
             </div>
-            <div  class="elevation-section tab-pane">
+            <div  class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" >
                 <div id="elevationChart" style="width:100%; height:100%;"></div>
             </div>
-            <div class="profile-section tab-pane">
+            <div class="profile-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'active' : '');} else{} ?>" >
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
@@ -104,6 +104,8 @@
     var currentRouteIndex;
     var checkpointDistances;
     var markerList = []; //array to store marker
+    var showOffKey; // store "ON" device_id, data retrive from localStorage
+
 
         function initMap() {
 
@@ -236,14 +238,15 @@
                 // Add athleteMarkers
                 athleteMarkers = [];
 
-                // check device_id in localStorage
+                // check device_id in localStorage, "ON" data will be save in localStorage
                 var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
-                // console.log(" array: " + array );
+                showOffKey = array;
+                // console.log(" array: " + showOffKey );
 
                 // console.log(data);
                 for (var key in data) {
-                    // console.log(data[key]);
+                    // console.log(data[key][0]);
                     if (typeof data[key][0] != "undefined") {
                         var location = {lat: parseFloat(data[key][0]['latitude_final']), lng: parseFloat(data[key][0]['longitude_final'])};
 
@@ -350,6 +353,28 @@
 
             // get athlethe relavant
             routeIndexesByDevice = {!! $routeIndexesByDevice !!};
+
+            // if showOffKey is not null, localStorage will be used
+            var routeIndexesByDevice_filtered = [];
+            if (showOffKey !== null){
+                for (var i = 0; i < showOffKey.length; i++) {
+                    showOffKey[i];
+                    // console.log(showOffKey[i]);
+                    if(jQuery.inArray( showOffKey[i], routeIndexesByDevice )){
+                        routeIndexesByDevice_filtered[showOffKey[i]] = routeIndexesByDevice[showOffKey[i]];
+                    }
+                }
+                // console.log(routeIndexesByDevice_filtered);
+            }else{
+                for(var i in data ){
+                    if (jQuery.inArray( i, routeIndexesByDevice ) && typeof data[i][0] != "undefined" && data[i][0]['status'] == "visible"){
+                        routeIndexesByDevice_filtered[i] = routeIndexesByDevice[i];
+                    }
+                }
+                // console.log(routeIndexesByDevice_filtered);
+            }
+            routeIndexesByDevice = routeIndexesByDevice_filtered;
+
 
             var chartHeight = $(window).height() * .8;
 
@@ -476,7 +501,6 @@
                     elevationData.addRow([parseInt(distance/elevations_global.length * i)/1000, elevations_global[i].elevation, null, null, 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null ]);
                 }
             }
-            chart.draw(elevationData, chartOptions);
 
             function updateAnnotationColourText() {
                 Array.prototype.forEach.call(chartDiv.getElementsByTagName('text'), function (text, index) {
@@ -493,6 +517,7 @@
             google.visualization.events.addListener(chart, 'onmouseover', updateAnnotationColourText);
             google.visualization.events.addListener(chart, 'onmouseout', updateAnnotationColourText);
             google.visualization.events.addListener(chart, 'select', updateAnnotationColourText);
+            chart.draw(elevationData, chartOptions);
 
         }
 
@@ -522,13 +547,18 @@
             return athleteArray;
         };
 
+        // get last position of athlete
         function lastPositionData() {
             var athleteArray = [];
-            // console.log(routeIndexesByDevice[0]);
-            for (var key in routeIndexesByDevice) {
-                var routeIndexByDevice = routeIndexesByDevice[key];
-                // console.log(routeIndexByDevice);
-                athleteArray[key] = routeIndexByDevice[routeIndexByDevice.length-1];
+            // console.log(routeIndexesByDevice);
+            if(routeIndexesByDevice !== 'undefined' && routeIndexesByDevice){
+                for (var key in routeIndexesByDevice) {
+                    if( routeIndexesByDevice[key] !== 'undefined' && routeIndexesByDevice[key] ){
+                        var routeIndexByDevice = routeIndexesByDevice[key];
+                        // console.log(routeIndexesByDevice[key]);
+                        athleteArray[key] = routeIndexByDevice[routeIndexByDevice.length-1];
+                    }
+                }
             }
             // console.log(athleteArray);
             return athleteArray;
@@ -682,26 +712,38 @@
             updateMapMarkers(0);
         });
 
+        var url_string = window.location.href; //window.location.href
+        var url = new URL(url_string);
+        var tabIndex = url.searchParams.get("tab");
+        if (tabIndex == 2){
+            $('.replay-controls-wrapper').hide();
+        }
+        console.log(url.origin+url.pathname);
+
         // Flip tags
         $('#chart').click(function(){
-            $('.map-section').removeClass('active');
-            $('.replay-controls-wrapper').show();
-            $('.profile-section').removeClass('active');
-            $('.elevation-section').addClass('active');
-            resizeChart ();
+            window.location.assign(url.origin+url.pathname+'?tab=1');
+            // $('.map-section').removeClass('active');
+            // $('.replay-controls-wrapper').show();
+            // $('.profile-section').removeClass('active');
+            // $('.elevation-section').addClass('active');
+            // resizeChart ();
         })
         $('#profile-tab').click(function(){
-            $('.elevation-section').removeClass('active');
-            $('.replay-controls-wrapper').hide();
-            $('.map-section').removeClass('active');
-            $('.profile-section').addClass('active');
+            window.location.assign(url.origin+url.pathname+'?tab=2');
+            // $('.elevation-section').removeClass('active');
+            // $('.replay-controls-wrapper').hide();
+            // $('.map-section').removeClass('active');
+            // $('.profile-section').addClass('active');
+
         })
         $('#home-tab').click(function(){
-            $('.map-section').addClass('active');
-            $('.replay-controls-wrapper').show();
-            $('.elevation-section').removeClass('active');
-            $('.profile-section').removeClass('active');
-            initMap();
+            window.location.assign(url.origin+url.pathname+'?tab=0');
+            // $('.map-section').addClass('active');
+            // $('.replay-controls-wrapper').show();
+            // $('.elevation-section').removeClass('active');
+            // $('.profile-section').removeClass('active');
+            // initMap();
         })
 
 

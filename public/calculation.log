@@ -23356,4 +23356,334 @@
 </pre><pre>Array
 (
 )
+</pre>9empty event time range<br><!-- calculate athletes's distance between checkpoint -->
+8empty event time range<br>7<pre>Array
+(
+    [0] => Array
+        (
+            [datetime_from] => 2018-04-29 09:30:00
+            [datetime_to] => 2018-04-29 13:00:00
+        )
+
+)
+</pre><pre>Array
+(
+    [0] => Array
+        (
+            [route_index] => 0
+        )
+
+    [1] => Array
+        (
+            [route_index] => 38
+            [min_time] => 
+        )
+
+    [2] => Array
+        (
+            [route_index] => 110
+            [min_time] => 
+        )
+
+    [3] => Array
+        (
+            [route_index] => 197
+            [min_time] => 
+        )
+
+    [4] => Array
+        (
+            [route_index] => 337
+            [min_time] => 
+        )
+
+    [5] => Array
+        (
+            [route_index] => 401
+            [min_time] => 
+        )
+
+    [6] => Array
+        (
+            [route_index] => 430
+            [min_time] => 
+        )
+
+    [7] => Array
+        (
+            [route_index] => 468
+            [min_time] => 
+        )
+
+)
+</pre><pre>Array
+(
+)
+</pre><pre>Array
+(
+)
+</pre>9empty event time range<br><!-- calculate athletes's distance between checkpoint -->
+8empty event time range<br>7<pre>Array
+(
+    [0] => Array
+        (
+            [datetime_from] => 2018-04-29 09:30:00
+            [datetime_to] => 2018-04-29 13:00:00
+        )
+
+)
+</pre><pre>Array
+(
+    [0] => Array
+        (
+            [route_index] => 0
+        )
+
+    [1] => Array
+        (
+            [route_index] => 38
+            [min_time] => 
+        )
+
+    [2] => Array
+        (
+            [route_index] => 110
+            [min_time] => 
+        )
+
+    [3] => Array
+        (
+            [route_index] => 197
+            [min_time] => 
+        )
+
+    [4] => Array
+        (
+            [route_index] => 337
+            [min_time] => 
+        )
+
+    [5] => Array
+        (
+            [route_index] => 401
+            [min_time] => 
+        )
+
+    [6] => Array
+        (
+            [route_index] => 430
+            [min_time] => 
+        )
+
+    [7] => Array
+        (
+            [route_index] => 468
+            [min_time] => 
+        )
+
+)
+</pre><pre>Array
+(
+)
+</pre><pre>Array
+(
+)
+</pre>9empty event time range<br><!-- calculate athletes's distance between checkpoint -->
+8empty event time range<br>7<pre>Array
+(
+    [0] => Array
+        (
+            [datetime_from] => 2018-04-29 09:30:00
+            [datetime_to] => 2018-04-29 13:00:00
+        )
+
+)
+</pre><pre>Array
+(
+    [0] => Array
+        (
+            [route_index] => 0
+        )
+
+    [1] => Array
+        (
+            [route_index] => 38
+            [min_time] => 
+        )
+
+    [2] => Array
+        (
+            [route_index] => 110
+            [min_time] => 
+        )
+
+    [3] => Array
+        (
+            [route_index] => 197
+            [min_time] => 
+        )
+
+    [4] => Array
+        (
+            [route_index] => 337
+            [min_time] => 
+        )
+
+    [5] => Array
+        (
+            [route_index] => 401
+            [min_time] => 
+        )
+
+    [6] => Array
+        (
+            [route_index] => 430
+            [min_time] => 
+        )
+
+    [7] => Array
+        (
+            [route_index] => 468
+            [min_time] => 
+        )
+
+)
+</pre><pre>Array
+(
+)
+</pre><pre>Array
+(
+)
+</pre>9empty event time range<br><!-- calculate athletes's distance between checkpoint -->
+8empty event time range<br>7<pre>Array
+(
+    [0] => Array
+        (
+            [datetime_from] => 2018-04-29 09:30:00
+            [datetime_to] => 2018-04-29 13:00:00
+        )
+
+)
+</pre><pre>Array
+(
+    [0] => Array
+        (
+            [route_index] => 0
+        )
+
+    [1] => Array
+        (
+            [route_index] => 38
+            [min_time] => 
+        )
+
+    [2] => Array
+        (
+            [route_index] => 110
+            [min_time] => 
+        )
+
+    [3] => Array
+        (
+            [route_index] => 197
+            [min_time] => 
+        )
+
+    [4] => Array
+        (
+            [route_index] => 337
+            [min_time] => 
+        )
+
+    [5] => Array
+        (
+            [route_index] => 401
+            [min_time] => 
+        )
+
+    [6] => Array
+        (
+            [route_index] => 430
+            [min_time] => 
+        )
+
+    [7] => Array
+        (
+            [route_index] => 468
+            [min_time] => 
+        )
+
+)
+</pre><pre>Array
+(
+)
+</pre><pre>Array
+(
+)
+</pre>9empty event time range<br><!-- calculate athletes's distance between checkpoint -->
+8empty event time range<br>7<pre>Array
+(
+    [0] => Array
+        (
+            [datetime_from] => 2018-04-29 09:30:00
+            [datetime_to] => 2018-04-29 13:00:00
+        )
+
+)
+</pre><pre>Array
+(
+    [0] => Array
+        (
+            [route_index] => 0
+        )
+
+    [1] => Array
+        (
+            [route_index] => 38
+            [min_time] => 
+        )
+
+    [2] => Array
+        (
+            [route_index] => 110
+            [min_time] => 
+        )
+
+    [3] => Array
+        (
+            [route_index] => 197
+            [min_time] => 
+        )
+
+    [4] => Array
+        (
+            [route_index] => 337
+            [min_time] => 
+        )
+
+    [5] => Array
+        (
+            [route_index] => 401
+            [min_time] => 
+        )
+
+    [6] => Array
+        (
+            [route_index] => 430
+            [min_time] => 
+        )
+
+    [7] => Array
+        (
+            [route_index] => 468
+            [min_time] => 
+        )
+
+)
+</pre><pre>Array
+(
+)
+</pre><pre>Array
+(
+)
 </pre>9empty event time range<br>

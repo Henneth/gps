@@ -1,9 +1,9 @@
 <!-- calculate athletes's distance between checkpoint -->
 <?php
-$host = 'localhost';
+$host = '127.0.0.1';
 $db   = 'gps';
 $user = 'root';
-$pass = 'rts123';
+$pass = 'root';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -17,7 +17,7 @@ $pdo = new PDO($dsn, $user, $pass, $opt);
 // Event IDs
 $events = $pdo->query('SELECT * FROM current_events')->fetchAll();
 if(empty($events)){
-    echo "empty events";
+    echo "empty events<br>";
     return;
 }
 
@@ -31,7 +31,7 @@ foreach ($events as $event) {
     $eventTimeRange_stmt->execute(array(':event_id' => $event_id));
     $eventTimeRange = $eventTimeRange_stmt->fetchAll();
     if(empty($eventTimeRange)){
-        echo "empty event time range";
+        echo "empty event time range<br>";
         continue;
     }
 

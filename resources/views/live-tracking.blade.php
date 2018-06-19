@@ -444,18 +444,31 @@
             var chartHeight = $(window).height() * .8;
 
             // ticks calculation
-            var tempNo = Math.round(distance / Math.pow(10,Math.floor(distance).toString().length-1));
-            if (tempNo > 5) {
-                var step = Math.pow(10,Math.floor(distance).toString().length-1);
+            if (distance < 5000) {
+                // unlikely cases
+                var step = .1;
+            } else if (distance < 10000) {
+                var step = 1;
+            } else if (distance < 100000) {
+                var step = Math.ceil(distance / 10000);
             } else {
-                var step = Math.pow(10,Math.floor(distance).toString().length-2)*tempNo;
+                var step = Math.ceil(distance / 100000);
             }
+
+            // decap calculation
+            // var tempNo = Math.round(distance / Math.pow(10,Math.floor(distance).toString().length-1));
+            // if (tempNo > 5) {
+            //     var step = Math.pow(10,Math.floor(distance).toString().length-1)/1000;
+            // } else {
+            //     var step = Math.pow(10,Math.floor(distance).toString().length-2)*tempNo/1000;
+            // }
             var ticks = [];
             var current = step;
-            while (current <= distance) {
+            while (current <= distance/1000) {
                 ticks.push(current);
                 current = current + step;
             }
+
             // Draw the chart using the data within its DIV.
             chartOptions = {
                 // title: 'Event Elevation Chart',
@@ -463,7 +476,7 @@
                 height: chartHeight,
                 legend: 'none',
                 titleY: 'Elevation (m)',
-                titleX: 'Distance (m)',
+                titleX: 'Distance (km)',
                 chartArea: {
                     left: 60,
                     top: 60,
@@ -555,9 +568,9 @@
                 }
 
                 if (annotationStr.length>0){
-                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, annotationStr+"#"+colour, '<div class="chart-info-window">'+str+'</div>', 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'m</b><br/>Elevation:<b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null]);
+                    elevationData.addRow([parseInt(distance/elevations_global.length * i)/1000, elevations_global[i].elevation, annotationStr+"#"+colour, '<div class="chart-info-window">'+str+'</div>', 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+'m</b><br/>Elevation:<b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null]);
                 } else {
-                    elevationData.addRow([parseInt(distance/elevations_global.length * i), elevations_global[i].elevation, null, null, 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null ]);
+                    elevationData.addRow([parseInt(distance/elevations_global.length * i)/1000, elevations_global[i].elevation, null, null, 0, '<div class="chart-info-window">Distance: <b>'+String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")+' m</b><br/>Elevation: <b>'+elevations_global[i].elevation.toFixed(0)+' m</b></div>', checkpoint ? checkpoint : null ]);
                 }
             }
             chart.draw(elevationData, chartOptions);

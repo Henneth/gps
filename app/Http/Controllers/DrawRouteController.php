@@ -29,6 +29,12 @@ class DrawRouteController extends Controller {
     }
 
     public function saveRoute($event_id) {
+
+        // clear route progress
+        DB::table('route_progress')
+            ->where('event_id', $event_id)
+            ->delete();
+
 		$route = $_POST['route'];
 
         $routeDecode = json_decode($route);
@@ -84,6 +90,7 @@ class DrawRouteController extends Controller {
     }
 
     public function saveMinimumTimes($event_id) {
+
         // clear route progress
         DB::table('route_progress')
             ->where('event_id', $event_id)

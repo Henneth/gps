@@ -11,6 +11,10 @@ use Auth;
 class LiveTrackingController extends Controller {
 
     public function index($event_id) {
+
+        // run calculation.php
+        shell_exec("php /Users/henneth/sites/gps/public/calculation.php 'alert' >> /Users/henneth/sites/gps/public/calculation.log");
+
         $event = DB::table('events')->where('event_id', $event_id)->first();
         $route = DB::table('routes')
             ->where('event_id',$event_id)

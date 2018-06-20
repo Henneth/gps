@@ -17,7 +17,7 @@ $pdo = new PDO($dsn, $user, $pass, $opt);
 // Event IDs
 $events = $pdo->query('SELECT * FROM current_events')->fetchAll();
 if(empty($events)){
-    echo "empty events<br>";
+    echo "empty events\n";
     return;
 }
 
@@ -31,7 +31,7 @@ foreach ($events as $event) {
     $eventTimeRange_stmt->execute(array(':event_id' => $event_id));
     $eventTimeRange = $eventTimeRange_stmt->fetchAll();
     if(empty($eventTimeRange)){
-        echo "empty event time range<br>";
+        echo "empty event time range\n";
         continue;
     }
 
@@ -52,7 +52,7 @@ foreach ($events as $event) {
     if ($route){
         $array = json_decode($route[0]['route'], 1);
     } else {
-        echo "empty route";
+        echo "empty route\n";
         continue;
     }
 

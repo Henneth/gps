@@ -17,25 +17,25 @@ $pdo = new PDO($dsn, $user, $pass, $opt);
 // Event IDs
 $events = $pdo->query('SELECT * FROM current_events')->fetchAll();
 if(empty($events)){
-    echo "empty events<br>";
+    echo "empty events\n";
     return;
 }
 
 foreach ($events as $event) {
     //define event id
     $event_id = $event['event_id'];
-    echo $event_id;
+    echo $event_id . "\n";
 
     // get route data
     $eventTimeRange_stmt = $pdo->prepare('SELECT datetime_from, datetime_to FROM events WHERE event_id = :event_id');
     $eventTimeRange_stmt->execute(array(':event_id' => $event_id));
     $eventTimeRange = $eventTimeRange_stmt->fetchAll();
     if(empty($eventTimeRange)){
-        echo "empty event time range<br>";
+        echo "empty event time range\n";
         continue;
     }
 
-    echo"<pre>".print_r($eventTimeRange,1)."</pre>";
+    // echo"<pre>".print_r($eventTimeRange,1)."</pre>";
     // get last ID
     // $lastIDArray = $pdo->query('SELECT lastID FROM lastID WHERE event_id = 9 LIMIT 1')->fetchAll();
     // if(!empty($lastIDArray)){
@@ -52,12 +52,12 @@ foreach ($events as $event) {
     if ($route){
         $array = json_decode($route[0]['route'], 1);
     } else {
-        echo "empty route";
+        echo "empty route\n";
         continue;
     }
 
     // get checkpoint data relevant
-    $checkpointData_stmt = $pdo->prepare('SELECT route_index, min_time FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1 ORDER BY route_index');
+    $checkpointData_stmt = $pdo->prepare('SELECT route_index, min_time, checkpoint FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1 ORDER BY route_index');
     $checkpointData_stmt->execute(array(':event_id' => $event_id));
     $checkpointData = $checkpointData_stmt->fetchAll();
     array_unshift($checkpointData, array("route_index" => 0));
@@ -80,22 +80,23 @@ foreach ($events as $event) {
     // looping by each device
     foreach ($gps_data_by_device_id as $device_id => $gps_row) {
         // get the largest route progress's index
-        $getRouteIndex = $pdo->prepare('SELECT MAX(route_index) FROM route_progress WHERE route_progress.event_id = :event_id AND route_progress.device_id = :device_id GROUP BY route_progress.device_id');
-        $getRouteIndex -> execute(array(':device_id' => $device_id, ':event_id' => $event_id));
-        $getRouteIndex = $getRouteIndex->fetchAll();
+        $lastReachedPoint_stmt = $pdo->prepare('SELECT MAX(route_index) FROM route_progress WHERE route_progress.event_id = :event_id AND route_progress.device_id = :device_id GROUP BY route_progress.device_id');
+        $lastReachedPoint_stmt->execute(array(':device_id' => $device_id, ':event_id' => $event_id));
+        $lastReachedPoint_raw = $lastReachedPoint_stmt->fetchAll();
 
-        // set the initial reached checkpoint
+        // initialize
         $reachedCheckpoint = -1;
         $lastCheckpointLeft = false;
         $finished = false;
         $checkpointTimes[0] = $eventTimeRange[0]['datetime_from'];
 
-        if ($getRouteIndex){
-            $lastReachedPoint = $getRouteIndex[0]['MAX(route_index)'];
+        if ($lastReachedPoint_raw){
+            $lastReachedPoint = $lastReachedPoint_raw[0]['MAX(route_index)'];
+            $reachedCheckpoint = getCurrentCheckpoint($lastReachedPoint, $checkpointData);
         } else {
             $lastReachedPoint = -1;
         }
-        // echo"<pre>".print_r($gps_row,1)."</pre>";
+        // echo"<pre>".print_r($lastReachedPoint,1)."</pre>";
 
         // looping by each gps data row
         foreach ($gps_row as $key2 => $datum) {
@@ -109,9 +110,6 @@ foreach ($events as $event) {
                 $lon1 = $routePoint['lon'];
                 // echo $datum['latitude_final'].'<br/>';
                 $result = round(distance($lat1, $lon1, $lat2, $lon2, 'K') * 1000);
-                // echo round($result);
-                // echo '<br/>';
-                // echo"<pre>".print_r($result,1)."</pre>";
 
                 if ($result <= 100 && !$finished) {
                     if ($lastCheckpointLeft) {
@@ -190,7 +188,16 @@ function checkMinTime($min_time, $prev_time, $current_time) {
     return $differenceInSeconds >= $time_seconds;
 }
 
-
+function getCurrentCheckpoint($currentRouteIndex, $checkpointData) {
+    foreach ($checkpointData as $key => $value) {
+        if ($currentRouteIndex > $value['route_index']) {
+            $lastReachedCheckpoint = $value['checkpoint'];
+        } else {
+            break;
+        }
+    }
+    return $lastReachedCheckpoint;
+}
 
 // group as an array by key
 function group_by($array, $key) {

@@ -262,28 +262,30 @@
                                     var SumOfSpeedRatios = 0;
                                     var SpeedRatioCount = 0;
                                     for (var i = 1; i < checkpointTimes.length; i++) {
-                                        if (findObjectByKey(minTime, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1)) {
+                                        if (findObjectByKey(minTime, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1) && findObjectByKey(minTime, 'checkpoint', i+1)['min_time']) {
                                             fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i)['reached_at']).getTime(); // get reached_at
                                             nCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i+1)['reached_at']).getTime(); // get reached_at
 
                                             nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', i+1)['min_time'] + 'Z').getTime();
-                                            // console.log("2: "+ nCheckpointTime);
                                             SumOfSpeedRatios += (nCheckpointTime-fCheckpointTime) / nCheckpointMintime;
                                             SpeedRatioCount++;
                                         }
 
                                     }
-                                    var tempPredictTime = SumOfSpeedRatios / SpeedRatioCount * nextCheckpointMinTime + currentCheckpointTime;
 
-                                    var predictTime= new Date(tempPredictTime).toLocaleTimeString();
-                                    // console.log(predictTime);
+                                    if (SpeedRatioCount > 0) {
+                                        var tempPredictTime = SumOfSpeedRatios / SpeedRatioCount * nextCheckpointMinTime + currentCheckpointTime;
 
-                                    var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+                                        var predictTime= new Date(tempPredictTime).toLocaleTimeString();
+                                        // console.log(predictTime);
 
-                                    html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
+                                        var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+
+                                        html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
+                                    }
 
                                 }
-                                
+
                             }
 
             				infowindow.setContent(html);

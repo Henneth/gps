@@ -469,6 +469,7 @@
                     var athleteChineseName = currentRouteIndex[j]['zh_full_name'];
                     var athleteColour = currentRouteIndex[j]['colour_code'];
                     // console.log(athletheDist);
+                    // console.log(distance);
 
                     if (dist <= athletheDist && athletheDist < nextDist){
                         str += 'Bib Number: <b>' + athleteBibNumber + '</b><br/>';
@@ -530,15 +531,9 @@
                 for (var j = 0; j < routeIndexByDevice.length; j++) {
                     getTimeByDevice = routeIndexByDevice[j]['reached_at'];
                     getTimeByDevice = new Date(getTimeByDevice).getTime() / 1000;
-                    // console.log(getTimeByDevice);
-                    // console.log(datetime);
-                    if (datetime <= getTimeByDevice){
-                        if (j == 0) {
-                            athleteArray[key] = routeIndexByDevice[0];
-                            break;
-                        }
-                        // console.log(routeIndexByDevice[j]);
-                        athleteArray[key] = routeIndexByDevice[j-1];
+                    if (datetime >= getTimeByDevice){
+                        athleteArray[key] = routeIndexByDevice[j];
+                    } else {
                         break;
                     }
                 }
@@ -722,27 +717,27 @@
 
         // Flip tags
         $('#chart').click(function(){
+            $('.profile-section').removeClass('active');
+            $('.map-section').removeClass('active');
             window.location.assign(url.origin+url.pathname+'?tab=1');
-            // $('.map-section').removeClass('active');
             // $('.replay-controls-wrapper').show();
-            // $('.profile-section').removeClass('active');
             // $('.elevation-section').addClass('active');
             // resizeChart ();
         })
         $('#profile-tab').click(function(){
+            $('.map-section').removeClass('active');
+            $('.elevation-section').removeClass('active');
             window.location.assign(url.origin+url.pathname+'?tab=2');
-            // $('.elevation-section').removeClass('active');
-            // $('.replay-controls-wrapper').hide();
-            // $('.map-section').removeClass('active');
+            $('.replay-controls-wrapper').hide();
             // $('.profile-section').addClass('active');
 
         })
         $('#home-tab').click(function(){
+            $('.elevation-section').removeClass('active');
+            $('.profile-section').removeClass('active');
             window.location.assign(url.origin+url.pathname+'?tab=0');
             // $('.map-section').addClass('active');
             // $('.replay-controls-wrapper').show();
-            // $('.elevation-section').removeClass('active');
-            // $('.profile-section').removeClass('active');
             // initMap();
         })
 

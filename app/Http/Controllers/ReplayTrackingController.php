@@ -16,7 +16,8 @@ class ReplayTrackingController extends Controller {
     public function index($event_id) {
 
         // run calculation.php
-        shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
+        // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
+        shell_exec("php ".public_path()."/calculation.php");
 
         $event = DB::table('events')->where('event_id', $event_id)->first();
 

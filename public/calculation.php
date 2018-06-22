@@ -130,6 +130,7 @@ foreach ($events as $event) {
                             $tempArray['reached_at'] = $datum['datetime'];
                             $lastReachedPoint = $key;
                             $cpArray[] = $tempArray;
+                            echo"<pre>".print_r($tempArray,1)."</pre>";
                         }
                     } else {
                         if ($key > $lastReachedPoint && $key < $checkpointData[$reachedCheckpoint+2]['route_index']){
@@ -157,13 +158,14 @@ foreach ($events as $event) {
                             $tempArray['reached_at'] = $datum['datetime'];
                             $lastReachedPoint = $key;
                             $cpArray[] = $tempArray;
+                            echo"<pre>".print_r($tempArray,1)."</pre>";
                         }
                     }
                 }
 
             }
         }
-        echo"<pre>".print_r($cpArray,1)."</pre>";
+        // echo"<pre>".print_r($cpArray,1)."</pre>";
         // insert into DB
         if ($cpArray){
             pdoMultiInsert('route_progress', $cpArray, $pdo);

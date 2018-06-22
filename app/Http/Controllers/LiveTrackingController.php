@@ -13,7 +13,8 @@ class LiveTrackingController extends Controller {
     public function index($event_id) {
 
         // run calculation.php
-        shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
+        // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
+        shell_exec("php ".public_path()."/calculation.php > /dev/null 2>/dev/null &");
 
         $event = DB::table('events')->where('event_id', $event_id)->first();
         $route = DB::table('routes')
@@ -67,6 +68,11 @@ class LiveTrackingController extends Controller {
 
     // automatically update data from server
     public function poll($event_id) {
+        
+        // run calculation.php
+        // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
+        shell_exec("php ".public_path()."/calculation.php > /dev/null 2>/dev/null &");
+
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
         // data for drawing map

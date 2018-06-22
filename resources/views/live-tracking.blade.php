@@ -213,75 +213,79 @@
                                 html += '<div>Distance: <b>' + content['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
                             }
 
-                            if ( marker.checkpointData ){ // update
+                            // if there is checkpoint time
+                            if ( marker.checkpointData || checkpointData[content['device_id']]){
 
                                 html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
-                                // show athletes' checkpoint time -- reache at
-                                var checkpointTimes = checkpointData[content['device_id']];
 
-                                for (var i = 0; i < marker.checkpointData.length; i++) {
-                                    html += '<div>Checkpoint '  + marker.checkpointData[i]['checkpoint'] + ': <b>'+ marker.checkpointData[i]['reached_at'] + '</b></div>';
+                                if ( marker.checkpointData ){ // update
+                                    console.log('updated data');
+
+                                    // show athletes' checkpoint time -- reached at
+                                    var checkpointTimes = marker.checkpointData;
+
+                                } else if (checkpointData[content['device_id']]) { // initialize
+                                    console.log('initial data');
+
+                                    // show athletes' checkpoint time -- reached at
+                                    var checkpointTimes = checkpointData[content['device_id']];
+
+                                }
+
+                                for (var i = 0; i < checkpointTimes.length; i++) {
+                                    html += '<div>Checkpoint '  + checkpointTimes[i]['checkpoint'] + ': <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
                                     // console.log(marker.checkpointData[i]);
                                 }
-                            }else{ // initialize
-                                if (checkpointData[content['device_id']]) {
-                                    // console.log(checkpointData[content['device_id']]);
-                                    html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
-                                    // show athletes' checkpoint time -- reache at
-                                    var checkpointTimes = checkpointData[content['device_id']];
-                                    for (var j = 0; j < checkpointTimes.length; j++) {
-                                        html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
 
-                                    }
+                                // get the latest checkpoint number
+                                var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
+                                var lastCheckpoint = minTime[minTime.length-1]['checkpoint'];
 
-                                }
-                            }
+                                if (currentCheckpoint < lastCheckpoint) {
+                                    // get the latest checkpoint reached_at
+                                    var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
+                                    // match then get min time of checkpoints
+                                    var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint+1)['min_time'] + 'Z').getTime();
 
-                            // get the latest checkpoint number
-                            var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
-                            var lastCheckpoint = minTime[minTime.length-1]['checkpoint'];
+                                    // minTime: number of checkpoints
+                                    // checkpoint number greater than 2 can do time prediction of next checkpooint
+                                    if ( checkpointTimes.length >= 2 ) { // && currentCheckpoint < minTime.length
 
-                            if (currentCheckpoint < lastCheckpoint) {
-                                // get the latest checkpoint reached_at
-                                var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
-                                // match then get min time of checkpoints
-                                var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint+1)['min_time'] + 'Z').getTime();
+                                        var fCheckpoint; // new formerCheckpoint
+                                        var nCheckpoint; // new next checkpoint
+                                        var cCheckpoint; // new current checkpoint
+                                        var fCheckpointMintime, nCheckpointMintime, cCheckpointMintime;
+                                        var fCheckpointTime, nCheckpointTime, cCheckpointTime;
+                                        // console.log(minTime);
+                                        // console.log(checkpointTimes);
+                                        var SumOfSpeedRatios = 0;
+                                        var SpeedRatioCount = 0;
+                                        for (var i = 1; i < checkpointTimes.length; i++) {
+                                            if (findObjectByKey(minTime, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1) && findObjectByKey(minTime, 'checkpoint', i+1)['min_time']) {
+                                                fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i)['reached_at']).getTime(); // get reached_at
+                                                nCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i+1)['reached_at']).getTime(); // get reached_at
 
-                                // minTime: number of checkpoints
-                                // checkpoint number greater than 2 can do time prediction of next checkpooint
-                                if ( checkpointTimes.length >= 2 ) { // && currentCheckpoint < minTime.length
+                                                nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', i+1)['min_time'] + 'Z').getTime();
+                                                SumOfSpeedRatios += (nCheckpointTime-fCheckpointTime) / nCheckpointMintime;
+                                                SpeedRatioCount++;
+                                                // console.log(nCheckpointTime);
+                                                // console.log(fCheckpointTime);
+                                                // console.log(nCheckpointMintime);
+                                            }
 
-                                    var fCheckpoint; // new formerCheckpoint
-                                    var nCheckpoint; // new next checkpoint
-                                    var cCheckpoint; // new current checkpoint
-                                    var fCheckpointMintime, nCheckpointMintime, cCheckpointMintime;
-                                    var fCheckpointTime, nCheckpointTime, cCheckpointTime;
-                                    // console.log(minTime);
-                                    // console.log(checkpointTimes);
-                                    // console.log(minTime);
-                                    var SumOfSpeedRatios = 0;
-                                    var SpeedRatioCount = 0;
-                                    for (var i = 1; i < checkpointTimes.length; i++) {
-                                        if (findObjectByKey(minTime, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1) && findObjectByKey(minTime, 'checkpoint', i+1)['min_time']) {
-                                            fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i)['reached_at']).getTime(); // get reached_at
-                                            nCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i+1)['reached_at']).getTime(); // get reached_at
-
-                                            nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', i+1)['min_time'] + 'Z').getTime();
-                                            SumOfSpeedRatios += (nCheckpointTime-fCheckpointTime) / nCheckpointMintime;
-                                            SpeedRatioCount++;
                                         }
 
-                                    }
+                                        if (SpeedRatioCount > 0) {
+                                            var tempPredictTime = SumOfSpeedRatios / SpeedRatioCount * nextCheckpointMinTime + currentCheckpointTime;
 
-                                    if (SpeedRatioCount > 0) {
-                                        var tempPredictTime = SumOfSpeedRatios / SpeedRatioCount * nextCheckpointMinTime + currentCheckpointTime;
+                                            var predictTime= new Date(tempPredictTime).toLocaleTimeString();
+                                            // console.log(predictTime);
 
-                                        var predictTime= new Date(tempPredictTime).toLocaleTimeString();
-                                        // console.log(predictTime);
+                                            var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
 
-                                        var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+                                            html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
+                                        }
 
-                                        html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
                                     }
 
                                 }
@@ -415,6 +419,7 @@
                     dataType:"json",
                     success:function(data)
                     {
+                        console.log('polling...');
                         var array = data['data'];
                         var checkpointData = data['checkpointData'];
                         var currentRouteIndex = data['currentRouteIndex'];
@@ -815,26 +820,23 @@
         console.log(url.origin+url.pathname);
 
         $('#chart').click(function(){
+            $('.map-section').removeClass('active');
+            $('.profile-section').removeClass('active');
             window.location.assign(url.origin+url.pathname+'?tab=1');
-
-            // $('.map-section').removeClass('active');
-            // $('.profile-section').removeClass('active');
             // $('.elevation-section').addClass('active');
             // resizeChart();
         })
         $('#profile-tab').click(function(){
+            $('.elevation-section').removeClass('active');
+            $('.map-section').removeClass('active');
             window.location.assign(url.origin+url.pathname+'?tab=2');
-
-            // $('.elevation-section').removeClass('active');
-            // $('.map-section').removeClass('active');
             // $('.profile-section').addClass('active');
         })
         $('#home-tab').click(function(){
+            $('.elevation-section').removeClass('active');
+            $('.profile-section').removeClass('active');
             window.location.assign(url.origin+url.pathname+'?tab=0');
-
             // $('.map-section').addClass('active');
-            // $('.elevation-section').removeClass('active');
-            // $('.profile-section').removeClass('active');
             // initMap();
         })
 

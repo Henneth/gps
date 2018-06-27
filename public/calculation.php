@@ -1,9 +1,9 @@
 <!-- calculate athletes's distance between checkpoint -->
 <?php
 $host = '127.0.0.1';
-$db   = 'gps';
+$db   = 'gps_live';
 $user = 'root';
-$pass = 'rts123';
+$pass = 'root';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -15,7 +15,7 @@ $opt = [
 $pdo = new PDO($dsn, $user, $pass, $opt);
 
 // Event IDs
-$events = $pdo->query('SELECT * FROM current_events')->fetchAll();
+$events = $pdo->query('SELECT event_id FROM events WHERE current = 1')->fetchAll();
 if(empty($events)){
     echo "empty events\n";
     return;

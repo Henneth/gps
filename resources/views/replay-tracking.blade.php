@@ -99,7 +99,7 @@
     var elevationData;
     var distance = 0;
     var elevations_global;
-    var infowindow;
+    var infowindow, infowindow2;
     var checkpointData;
     var currentRouteIndex;
     var checkpointDistances;
@@ -111,6 +111,7 @@
 
             data = {!! $data !!};
             // console.log(data);
+            checkpointDistances = {!! $checkpointDistances !!};
 
             @if ($data)
 
@@ -127,7 +128,6 @@
 
                     // get checkpoint distance relevant
                     checkpointData = {!! $checkpointData !!};
-                    checkpointDistances = {!! $checkpointDistances !!};
 
                     // info window
                     google.maps.event.addListener(marker, 'click', function (marker) {
@@ -150,7 +150,6 @@
                                     html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
                                 }
                             }
-
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -197,8 +196,8 @@
                         strokeWeight: 3,
                         map: map
                     });
+                    // show checkpoint labels
                     var route = {!!$route->route!!};
-                    // console.log(data);
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["lat"]);
                         gpxLng = parseFloat(route[key]["lon"]);
@@ -208,9 +207,24 @@
 
                     // Add labels/icons to route markers
                     var CPIndex = 1;
-                    for (var i = 1; i < markerList.length; i++) {
+                    for (var i = 1; i < markerList.length -1; i++) {
                         if (markerList[i].isCheckpoint) {
-                            markerList[i].setLabel({text: ""+CPIndex, color: "white"});
+                            var marker = markerList[i];
+
+                            cpName = checkpointDistances[CPIndex-1]['checkpoint_name'];
+                            console.log(cpName);
+                            marker.checkpointName = cpName;
+                            marker.checkpointIndex = CPIndex;
+                            marker.setLabel({text: ""+CPIndex, color: "white"});
+                            marker.addListener('click', function() {
+                                if (this.checkpointName){
+                                    var html = '<div><b>'+ this.checkpointName + ' (CP' + this.checkpointIndex + ')</b>'+ '</div>';
+                                }else {
+                                    var html = '<div><b>'+'CP'+ this.checkpointIndex + '</b></div>';
+                                }
+                                infowindow2.setContent(html);
+                                infowindow2.open(map, this);
+                            });
                             CPIndex++;
                         }
                     }
@@ -234,6 +248,7 @@
                 infowindow = new google.maps.InfoWindow({
                     pixelOffset: new google.maps.Size(0, -36),
                 });
+                infowindow2 = new google.maps.InfoWindow();
 
                 // Add athleteMarkers
                 athleteMarkers = [];
@@ -491,7 +506,11 @@
                 checkpoint = null;
                 for (var key in checkpointDistances) {
                     if (dist <= checkpointDistances[key]['distance'] && checkpointDistances[key]['distance'] < nextDist){
-                        var checkpoint = String(checkpointDistances[key]['checkpoint']);
+                        if (checkpointDistances[key]['checkpoint_name']) {
+                            var checkpoint = String(checkpointDistances[key]['checkpoint_name']);
+                        }else {
+                            var checkpoint = String('CP'+checkpointDistances[key]['checkpoint']);
+                        }
                         break;
                     }
                 }
@@ -575,7 +594,6 @@
             window.resize = resizeChart;
         }
 
-
         function addLatLngInit(IsCP, position) {
             path = poly.getPath();
 
@@ -600,6 +618,8 @@
                     isCheckpoint: IsCP
                 });
             }
+
+
             markerList.push(marker);
         }
     </script>

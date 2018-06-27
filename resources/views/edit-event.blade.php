@@ -47,7 +47,11 @@
             </form>
         </div> --}}
         <div class="box box-primary">
+        @if($event->current && $event->current == 1)
+            <form method="post" action="{{url('/')}}/event/{{$event->event_id}}/edit-event/unset-live">
+        @else
             <form method="post" action="{{url('/')}}/event/{{$event->event_id}}/edit-event/post">
+        @endif
                 {{ csrf_field() }}
                 <div class="box-body">
                     <div class="form-group">
@@ -60,7 +64,7 @@
                             <div class="input-group-addon">
                                 <i class="far fa-clock"></i>
                             </div>
-                            <input type="text" class="form-control pull-right" name="start-time" value="{{$event->datetime_from}}" id="start-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
+                            <input type="text" class="form-control pull-right" name="start-time" value="{{$event->datetime_from}}" id="start-time" autocomplete="off" {{$event->current == 1 ? 'disabled' : ''}} placeholder="yyyy-mm-dd hh:mm">
                         </div>
                     </div>
                     <div class="form-group">
@@ -69,31 +73,38 @@
                             <div class="input-group-addon">
                                 <i class="far fa-clock"></i>
                             </div>
-                            <input type="text" class="form-control pull-right" name="end-time" value="{{$event->datetime_to}}" id="end-time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm">
+                            <input type="text" class="form-control pull-right" name="end-time" value="{{$event->datetime_to}}" id="end-time" autocomplete="off" {{$event->current == 1 ? 'disabled' : ''}} placeholder="yyyy-mm-dd hh:mm">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="end-time">Event Type:</label>
                         <div class="radio" style="margin-bottom: 16px;">
                             <label>
-                                <input type="radio" name="optionsRadios" id="optionsRadios1" value="fixed route" {{$event->event_type == "fixed route" ? "checked" : ""}}>
+                                <input type="radio" name="optionsRadios" id="optionsRadios1" value="fixed route" {{$event->event_type == "fixed route" ? "checked" : ""}} {{$event->current == 1 ? 'disabled' : ''}}>
                                 Fixed route
                             </label>
                             <div style="color: #999;">Several checkpoints in sequence with interim locations and actual route displayed.</div>
                         </div>
                         <div class="radio" style="margin-bottom: 16px;">
                             <label>
-                                <input type="radio" name="optionsRadios" id="optionsRadios2" value="shortest route" {{$event->event_type == "shortest route" ? "checked" : ""}}>
+                                <input type="radio" name="optionsRadios" id="optionsRadios2" value="shortest route" {{$event->event_type == "shortest route" ? "checked" : ""}} {{$event->current == 1 ? 'disabled' : ''}}>
                                 Shortest route
                             </label>
                             <div style="color: #999;">Several checkpoints in sequence without interim locations, map displayed with straight lines between checkpoints, and no elevation chart but tracks the last 10 positions for each device.</div>
                         </div>
                         <div class="radio">
                             <label>
-                                <input type="radio" name="optionsRadios" id="optionsRadios3" value="no route" {{$event->event_type == "no route" ? "checked" : ""}}>
+                                <input type="radio" name="optionsRadios" id="optionsRadios3" value="no route" {{$event->event_type == "no route" ? "checked" : ""}} {{$event->current == 1 ? 'disabled' : ''}}>
                                 No route
                             </label>
                             <div style="color: #999;">Several checkpoints not in sequence, no map displayed, and no elevation chart but tracks the last 10 positions for each device.</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="set-event-live">Live Event Setting:</label>
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="event-live" {{$event->current === 1 ? 'checked':''}}>set this event <b>LIVE</b>?</label>
+                            <div style="color: red;">WARNING! There can only be ONE live event.</div>
                         </div>
                     </div>
                 </div>

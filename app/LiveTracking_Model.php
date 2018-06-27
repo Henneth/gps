@@ -16,7 +16,7 @@ class LiveTracking_Model extends Model
 		} else {
 			$checkIsPublic = "";
 		}
-		$data = DB::select("SELECT * FROM (
+		$data = DB::connection('gps_live')->select("SELECT * FROM (
 				SELECT gps_data.device_id AS device_id, datetime, id, latitude_final, longitude_final, athletes.athlete_id, athletes.bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, colour_code, status FROM gps_data
 				INNER JOIN device_mapping
 				ON gps_data.device_id = device_mapping.device_id
@@ -64,7 +64,7 @@ class LiveTracking_Model extends Model
 
 	// get data from route_distances & route_progress table, get the largest route_index
 	public static function getRouteDistance($event_id){
-		$data = DB::select("SELECT * FROM (SELECT distance, device_mapping.device_id, athletes.bib_number, route_distances.route_index, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.colour_code FROM route_distances
+		$data = DB::connection('gps_live')->select("SELECT * FROM (SELECT distance, device_mapping.device_id, athletes.bib_number, route_distances.route_index, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.colour_code FROM route_distances
 			INNER JOIN route_progress ON route_distances.event_id = route_progress.event_id AND route_distances.route_index = route_progress.route_index
 			INNER JOIN device_mapping ON route_progress.event_id = device_mapping.event_id AND route_progress.device_id = device_mapping.device_id
 			INNER JOIN athletes ON athletes.event_id = device_mapping.event_id AND athletes.bib_number = device_mapping.bib_number
@@ -75,7 +75,7 @@ class LiveTracking_Model extends Model
 	}
 
 	public static function getRouteDistanceByDevice($event_id, $device_id){
-		$data = DB::select("SELECT distance, route_progress.device_id, route_distances.route_index FROM route_distances
+		$data = DB::connection('gps_live')->select("SELECT distance, route_progress.device_id, route_distances.route_index FROM route_distances
 			INNER JOIN route_progress ON route_distances.event_id = route_progress.event_id AND route_distances.route_index = route_progress.route_index
 			WHERE route_distances.event_id = :event_id AND route_progress.device_id = :device_id
 			ORDER BY route_distances.route_index DESC LIMIT 1", ['event_id' => $event_id, 'device_id' => $device_id]);
@@ -83,7 +83,7 @@ class LiveTracking_Model extends Model
 	}
 
 	public static function getCheckpointData($event_id) {
-		$data = DB::select("SELECT * FROM route_distances INNER JOIN route_progress
+		$data = DB::connection('gps_live')->select("SELECT * FROM route_distances INNER JOIN route_progress
 			ON route_progress.event_id = route_distances.event_id AND route_progress.route_index = route_distances.route_index
 			WHERE route_distances.event_id = :event_id AND route_distances.is_checkpoint = 1
 			ORDER BY device_id, route_distances.route_index", ['event_id' => $event_id] );
@@ -91,7 +91,7 @@ class LiveTracking_Model extends Model
 	}
 	// get min times of checkpoints
 	public static function getMinTime($event_id) {
-		$data = DB::select("SELECT checkpoint, min_time FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1", ['event_id' => $event_id]);
+		$data = DB::connection('gps_live')->select("SELECT checkpoint, min_time FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1", ['event_id' => $event_id]);
 		return $data;
 	}
 

@@ -5,7 +5,7 @@
 @endsection
 
 @section('contentheader_title')
-    Live Tracking
+    Live Tracking <small>{{$event->event_id == current_event ? $event->event_name : '' }}</small>
 @endsection
 
 @section('main-content')
@@ -25,6 +25,7 @@
             </div>
             <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>
             <div class="profile-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'active' : '');} else{} ?>">
+                {{-- <p style="color: blue;">Maximum visible athletes at a time: 10</p> --}}
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
@@ -33,7 +34,7 @@
                             <th>Last Name</th>
                             <th>Chinese Name</th>
                             <th>Country Code</th>
-                            <th>Visibility</th>
+                            <th>Visibility (Max:10)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -130,6 +131,7 @@
         var distance = 0;
         var IsCP;
         var map;
+        var infowindow2;
         var elevations_global;
         var checkpointDistances;
         var markerList = []; //array to store marker
@@ -349,8 +351,27 @@
 
                     // Add labels/icons to route markers
                     var CPIndex = 1;
-                    for (var i = 1; i < markerList.length; i++) {
+                    checkpointDistances = {!! $checkpointDistances !!};
+
+                    for (var i = 1; i < markerList.length -1; i++) {
                         if (markerList[i].isCheckpoint) {
+                            var marker = markerList[i];
+
+                            cpName = checkpointDistances[CPIndex-1]['checkpoint_name'];
+                            console.log(cpName);
+                            marker.checkpointName = cpName;
+                            marker.checkpointIndex = CPIndex;
+                            marker.setLabel({text: ""+CPIndex, color: "white"});
+                            marker.addListener('click', function() {
+                                if (this.checkpointName){
+                                    var html = '<div><b>'+ this.checkpointName + ' (CP' + this.checkpointIndex + ')</b>'+ '</div>';
+                                }else {
+                                    var html = '<div><b>'+'CP'+ this.checkpointIndex + '</b></div>';
+                                }
+                                infowindow2.setContent(html);
+                                infowindow2.open(map, this);
+                            });
+
                             markerList[i].setLabel({text: ""+CPIndex, color: "white"});
                             CPIndex++;
                         }
@@ -375,6 +396,7 @@
                 infowindow = new google.maps.InfoWindow({
                     pixelOffset: new google.maps.Size(0, -36),
                 });
+                infowindow2 = new google.maps.InfoWindow();
 
                 // Add athleteMarkers
                 var athleteMarkers = [];
@@ -708,7 +730,12 @@
                 checkpoint = null;
                 for (var key in checkpointDistances) {
                     if (dist <= checkpointDistances[key]['distance'] && checkpointDistances[key]['distance'] < nextDist){
-                        var checkpoint = String(checkpointDistances[key]['checkpoint']);
+                        // var checkpoint = String(checkpointDistances[key]['checkpoint']);
+                        if (checkpointDistances[key]['checkpoint_name']) {
+                            var checkpoint = String(checkpointDistances[key]['checkpoint_name']);
+                        }else {
+                            var checkpoint = String('CP'+checkpointDistances[key]['checkpoint']);
+                        }
                         break;
                     }
                 }
@@ -876,6 +903,10 @@
         $('.check').click(function(){
             // create array
             var array = [];
+            if($('.tgl:checked').size()>10){
+                $(this).prop('checked', false);
+                return;
+            }
             $('.tgl').each(function() {
                 if ($(this).is(":checked")) {
                     array.push($(this).attr("data-id"));

@@ -64,6 +64,18 @@ return [
             'strict'    => false,
         ],
 
+        'gps_live' => [
+            'driver'    => 'mysql',
+            'host'      => env('DB_HOST', 'localhost'),
+            'database'  => env('DB_DATABASE_SECOND', 'forge'),
+            'username'  => env('DB_USERNAME_SECOND', 'forge'),
+            'password'  => env('DB_PASSWORD_SECOND', ''),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => '',
+            'strict'    => false,
+        ],
+
         'pgsql' => [
             'driver'   => 'pgsql',
             'host'     => env('DB_HOST', 'localhost'),

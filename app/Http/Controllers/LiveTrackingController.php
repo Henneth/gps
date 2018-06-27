@@ -16,8 +16,8 @@ class LiveTrackingController extends Controller {
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
         shell_exec("php ".public_path()."/calculation.php > /dev/null 2>/dev/null &");
 
-        $event = DB::table('events')->where('event_id', $event_id)->first();
-        $route = DB::table('routes')
+        $event = DB::table('gps_live.events')->where('event_id', $event_id)->first();
+        $route = DB::table('gps_live.routes')
             ->where('event_id',$event_id)
             ->select('route')
             ->first();
@@ -51,7 +51,7 @@ class LiveTrackingController extends Controller {
         $checkpointData = json_encode($tempCheckpointData);
         // get min time of checkpoints
         $getMinTime = LiveTracking_Model::getMinTime($event_id);
-        // echo "<pre>".print_r($getMinTime,1)."</pre>";
+        echo "<pre>".print_r($getCheckpointData,1)."</pre>";
 
         $getMinTime = json_encode($getMinTime);
 
@@ -68,12 +68,12 @@ class LiveTrackingController extends Controller {
 
     // automatically update data from server
     public function poll($event_id) {
-        
+
         // run calculation.php
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
         shell_exec("php ".public_path()."/calculation.php > /dev/null 2>/dev/null &");
 
-        $event = DB::table('events')->where('event_id', $event_id)->first();
+        $event = DB::table('gps_live.events')->where('event_id', $event_id)->first();
 
         // data for drawing map
         if (Auth::check()) {

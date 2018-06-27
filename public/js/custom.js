@@ -4,11 +4,15 @@ $(function() {
         var currentPath = (url.split("/")[5]);
         var getUrl = window.location;
         var baseUrl = getUrl.protocol + "//" + getUrl.host;
-
-        if (currentPath && currentPath != "checkpoint"){
-            window.location.replace(baseUrl + '/event/' + $(this).val() + '/' + currentPath);
-        }else {
-            window.location.replace(baseUrl + '/event/' + $(this).val());
+        if (currentPath.includes(getUrl.search)){
+            currentPath = "live-tracking";
         }
+        // console.log(currentPath+getUrl.search);
+        if (currentPath && currentPath != "checkpoint" && currentPath != "live-tracking"){
+            window.location.replace(baseUrl + '/event/' + $(this).val() + '/' + currentPath);
+        } else {
+            window.location.replace(baseUrl + '/event/' + $(this).val() + '/' + 'replay-tracking');
+        }
+
     })
 });

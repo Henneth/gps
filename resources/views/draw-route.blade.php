@@ -27,9 +27,10 @@
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="map-tab" class="active"><a href="#tab_1" data-toggle="tab">Draw Route</a></li>
+        @if ($event_type && $event_type->event_type != "shortest route")
             <li id="min-time-tab"><a href="#tab_2" data-toggle="tab">Set Minimum Times</a></li>
             <li id="set-checkpoint-name-tab"><a href="#tab_3" data-toggle="tab">Set Checkpoint Name</a></li>
-
+        @endif
         </ul>
         <div class="tab-content">
             <div class="map-section tab-pane active" id="tab_1">
@@ -83,6 +84,7 @@
             	    <div id="map"></div>
             	</div>
             </div>
+        @if ($event_type && $event_type->event_type != "shortest route")
             <div class="min-time-section tab-pane" id="tab_2">
                 @if ($checkpointMinTimes && $checkpointMinTimes[sizeof($checkpointMinTimes)-1]->checkpoint != 0)
                 <form action="{{url('/')}}/event/{{$event_id}}/save-minimum-times" method="post">
@@ -120,6 +122,7 @@
                 @endif
             </div>
             </div>
+        @endif
         </div>
     </div>
 @endsection

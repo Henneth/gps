@@ -51,7 +51,6 @@ class LiveTrackingController extends Controller {
         $checkpointData = json_encode($tempCheckpointData);
         // get min time of checkpoints
         $getMinTime = LiveTracking_Model::getMinTime($event_id);
-        echo "<pre>".print_r($getCheckpointData,1)."</pre>";
 
         $getMinTime = json_encode($getMinTime);
 
@@ -63,7 +62,27 @@ class LiveTrackingController extends Controller {
         $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
         $currentRouteIndex = json_encode($currentRouteIndex);
 
-        return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime));
+        // get athletes who reached at the end point
+        $getFinishedAthletesTemp = LiveTracking_Model::getFinishedAthletes($event_id);
+        $getFinishedAthletes = json_encode($getFinishedAthletesTemp);
+        // echo "<pre>".print_r($getFinishedAthletes,1)."</pre>";
+
+        $event_type = DB::table('events')
+            ->where('event_id',$event_id)
+            ->select('event_type')
+            ->first();
+        if ($event_type->event_type != 'fixed route'){
+            // get data within 10 minutes for tail
+            $getPeriodTemp = (array) LiveTracking_Model::getPeriod($event_id);
+            $getPeriod = $this->group_by($getPeriodTemp, 'device_id');
+            $getPeriodData = json_encode($getPeriod);
+            // echo "<pre>".print_r($event_type,1)."</pre>";
+        } else {
+            $getPeriodData = '[]';
+        }
+
+
+        return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime, 'getFinishedAthletes'=>$getFinishedAthletes, 'getPeriodData'=>$getPeriodData, 'event_type'=>$event_type));
     }
 
     // automatically update data from server

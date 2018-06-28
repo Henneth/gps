@@ -95,4 +95,16 @@ class LiveTracking_Model extends Model
 		return $data;
 	}
 
+	// get athletes who finished the event. reached at end point
+	public static function getFinishedAthletes($event_id){
+		$data = DB::connection('gps_live')->select("SELECT device_id, route_progress.route_index FROM route_distances
+			LEFT JOIN route_progress ON route_progress.event_id = route_distances.event_id
+			WHERE route_progress.event_id = $event_id AND is_checkpoint = 1 AND route_progress.route_index = (select max(route_index) from route_distances) GROUP BY device_id");
+		return $data;
+	}
+	// get data within 10 minutes for tail
+	public static function getPeriod($event_id) {
+		$data = DB::connection('gps_live')->select("SELECT events.event_id, gps_data.device_id, latitude_final, longitude_final, colour_code FROM gps_data INNER JOIN device_mapping ON device_mapping.device_id = gps_data.device_id INNER JOIN events ON events.event_id = device_mapping.event_id INNER JOIN athletes ON (athletes.event_id = device_mapping.event_id AND athletes.bib_number = device_mapping.bib_number) WHERE events.event_id = :event_id AND DATE_SUB(events.datetime_to, INTERVAL 10 MINUTE) < gps_data.datetime AND gps_data.datetime < events.datetime_to", ['event_id' => $event_id]);
+		return $data;
+	}
 }

@@ -24,7 +24,7 @@ class DrawRouteController extends Controller {
         	->where('is_checkpoint',1)
             ->get();
 
-        // echo "<pre>".print_r($checkpointMinTimes,1)."</pre>";
+        // echo "<pre>".print_r($event_type,1)."</pre>";
         return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event_type'=>$event_type, 'checkpointMinTimes'=>$checkpointMinTimes));
     }
 

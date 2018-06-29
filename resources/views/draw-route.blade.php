@@ -27,7 +27,10 @@
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="map-tab" class="active"><a href="#tab_1" data-toggle="tab">Draw Route</a></li>
+        @if ($event_type && $event_type->event_type != "shortest route")
             <li id="min-time-tab"><a href="#tab_2" data-toggle="tab">Set Minimum Times</a></li>
+            <li id="set-checkpoint-name-tab"><a href="#tab_3" data-toggle="tab">Set Checkpoint Name</a></li>
+        @endif
         </ul>
         <div class="tab-content">
             <div class="map-section tab-pane active" id="tab_1">
@@ -81,6 +84,7 @@
             	    <div id="map"></div>
             	</div>
             </div>
+        @if ($event_type && $event_type->event_type != "shortest route")
             <div class="min-time-section tab-pane" id="tab_2">
                 @if ($checkpointMinTimes && $checkpointMinTimes[sizeof($checkpointMinTimes)-1]->checkpoint != 0)
                 <form action="{{url('/')}}/event/{{$event_id}}/save-minimum-times" method="post">
@@ -99,6 +103,26 @@
                 <div>No checkpoints yet. Please draw the route first.</div>
                 @endif
             </div>
+            <div class="set-checkpoint-name tab-pane" id="tab_3">
+                @if ($checkpointMinTimes && $checkpointMinTimes[sizeof($checkpointMinTimes)-1]->checkpoint != 0)
+                <form action="{{url('/')}}/event/{{$event_id}}/save-checkpoint-name" method="post">
+                    {{ csrf_field() }}
+                    @for ($i=0; $i < sizeof($checkpointMinTimes)-1; $i++)
+                        <div class="form-group">
+                            <label>Name of Checkpoint {{($checkpointMinTimes[$i]->checkpoint)}}</label>
+                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->checkpoint_name}}">
+                        </div>
+                    @endfor
+                    <div>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+                @else
+                <div>No checkpoints yet. Please draw the route first.</div>
+                @endif
+            </div>
+            </div>
+        @endif
         </div>
     </div>
 @endsection

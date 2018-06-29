@@ -5,7 +5,7 @@
 @endsection
 
 @section('contentheader_title')
-    Live Tracking
+    Live Tracking <small>{{$event->event_id == current_event ? $event->event_name : '' }}</small>
 @endsection
 
 @section('main-content')
@@ -25,6 +25,7 @@
             </div>
             <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>
             <div class="profile-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'active' : '');} else{} ?>">
+                {{-- <p style="color: blue;">Maximum visible athletes at a time: 10</p> --}}
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
@@ -33,7 +34,7 @@
                             <th>Last Name</th>
                             <th>Chinese Name</th>
                             <th>Country Code</th>
-                            <th>Visibility</th>
+                            <th>Visibility (Max:10)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -130,6 +131,7 @@
         var distance = 0;
         var IsCP;
         var map;
+        var infowindow2;
         var elevations_global;
         var checkpointDistances;
         var markerList = []; //array to store marker
@@ -153,6 +155,8 @@
 
             // get min time of checkpoints
             minTime = {!! $minTime !!};
+
+            getFinishedAthletes= {!!$getFinishedAthletes!!}
 
             @if ($data)
 
@@ -190,7 +194,6 @@
                         content: borderStyle + '<div><div class="id' + content['device_id'] + ' label_content" style="background-color: #' + content['colour_code'] + '">' + content['bib_number']
                         + '</div></div>'
                     });
-
 
                     // get checkpoint distance relevant
                     var checkpointData = {!! $checkpointData !!};
@@ -339,7 +342,7 @@
                         map: map
                     });
                     var route = {!!$route->route!!};
-                    // console.log(data);
+                    // console.log(route);
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["lat"]);
                         gpxLng = parseFloat(route[key]["lon"]);
@@ -349,15 +352,36 @@
 
                     // Add labels/icons to route markers
                     var CPIndex = 1;
-                    for (var i = 1; i < markerList.length; i++) {
+                    checkpointDistances = {!! $checkpointDistances !!};
+
+                    for (var i = 1; i < markerList.length -1; i++) {
                         if (markerList[i].isCheckpoint) {
+                            var marker = markerList[i];
+
+                            cpName = checkpointDistances[CPIndex-1]['checkpoint_name'];
+                            // console.log(cpName);
+                            marker.checkpointName = cpName;
+                            marker.checkpointIndex = CPIndex;
+                            marker.setLabel({text: ""+CPIndex, color: "white"});
+                            marker.addListener('click', function() {
+                                if (this.checkpointName){
+                                    var html = '<div><b>'+ this.checkpointName + ' (CP' + this.checkpointIndex + ')</b>'+ '</div>';
+                                }else {
+                                    var html = '<div><b>'+'CP'+ this.checkpointIndex + '</b></div>';
+                                }
+                                infowindow2.setContent(html);
+                                infowindow2.open(map, this);
+                            });
+
                             markerList[i].setLabel({text: ""+CPIndex, color: "white"});
                             CPIndex++;
                         }
                     }
+
                     if ( markerList[markerList.length-1] ){
                         markerList[markerList.length-1].setLabel({text: "Fin.", color: "white", fontSize: "10px"});
                     }
+
                     if ( markerList[0] ){
                         markerList[0].setLabel({text: "Start", color: "white", fontSize: "10px"});
                     }
@@ -375,6 +399,7 @@
                 infowindow = new google.maps.InfoWindow({
                     pixelOffset: new google.maps.Size(0, -36),
                 });
+                infowindow2 = new google.maps.InfoWindow();
 
                 // Add athleteMarkers
                 var athleteMarkers = [];
@@ -402,6 +427,55 @@
                         }
                     }
                 }
+
+                var event_type = '{{$event_type->event_type}}';
+                getPeriodData= JSON.parse('{!!$getPeriodData!!}');
+                console.log(event_type);
+                if(getPeriodData && event_type =='shortest route'){
+                    var lineSymbol = {
+                        path: 'M 0,-1 0,1',
+                        strokeOpacity: 1,
+                        scale: 2
+                    };
+                    for (var i in getPeriodData) {
+                        var flightPlanCoordinates = [];
+
+                        // console.log(getPeriodData[i]);
+                        var colourCode = getPeriodData[i][0]['colour_code'];
+                        for (var j = 0; j < getPeriodData[i].length; j++) {
+                            var gpxLat2 = parseFloat(getPeriodData[i][j]['latitude_final']);
+                            var gpxLng2 = parseFloat(getPeriodData[i][j]['longitude_final']);
+                            flightPlanCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
+                        }
+                        // console.log(colourCode);
+                        var flightPath = new google.maps.Polyline({
+                            path: flightPlanCoordinates,
+                            geodesic: true,
+                            strokeColor: '#'+colourCode,
+                            strokeOpacity: 0,
+                            strokeWeight: 2,
+                            icons: [{
+                                icon: lineSymbol,
+                                offset: '0',
+                                repeat: '10px'
+                            }],
+                        });
+                        flightPath.setMap(map);
+                        // console.log(flightPlanCoordinates);
+
+                    }
+                }
+                
+    // Final position
+                // console.log(getFinishedAthletes);
+                // if(getFinishedAthletes){
+                //     for (var i = 0; i < getFinishedAthletes.length; i++) {
+                //         var finishedDeviceID = getFinishedAthletes[i]['device_id'];
+                //         console.log(athleteMarkers[getFinishedAthletes[i]['device_id']]);
+                //         athleteMarkers[getFinishedAthletes[i]['device_id']].setPosition( new google.maps.LatLng(22.407490, 114.237020));
+                //     }
+                // }
+                // athleteMarkers['4109212383'].setPosition( new google.maps.LatLng(22.407490, 114.237020));
 
             @else
                 var central = {lat: 22.2816616, lng: 114.1577151};
@@ -708,7 +782,12 @@
                 checkpoint = null;
                 for (var key in checkpointDistances) {
                     if (dist <= checkpointDistances[key]['distance'] && checkpointDistances[key]['distance'] < nextDist){
-                        var checkpoint = String(checkpointDistances[key]['checkpoint']);
+                        // var checkpoint = String(checkpointDistances[key]['checkpoint']);
+                        if (checkpointDistances[key]['checkpoint_name']) {
+                            var checkpoint = String(checkpointDistances[key]['checkpoint_name']);
+                        }else {
+                            var checkpoint = String('CP'+checkpointDistances[key]['checkpoint']);
+                        }
                         break;
                     }
                 }
@@ -748,7 +827,6 @@
             // Because path is an MVCArray, we can simply append a new coordinate
             // and it will automatically appear.
             path.push(position);
-
             if (IsCP) {
                 // Add a new marker at the new plotted point on the polyline.
                 var marker = new google.maps.Marker({
@@ -817,7 +895,7 @@
         if (tabIndex == 2){
             $('.replay-controls-wrapper').hide();
         }
-        console.log(url.origin+url.pathname);
+        // console.log(url.origin+url.pathname);
 
         $('#chart').click(function(){
             $('.map-section').removeClass('active');
@@ -876,6 +954,10 @@
         $('.check').click(function(){
             // create array
             var array = [];
+            if($('.tgl:checked').size()>10){
+                $(this).prop('checked', false);
+                return;
+            }
             $('.tgl').each(function() {
                 if ($(this).is(":checked")) {
                     array.push($(this).attr("data-id"));

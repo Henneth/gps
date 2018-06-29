@@ -27,30 +27,53 @@
         </form>
         <!-- /.search form --> --}}
 
-        <div style="padding: 12px 18px;">
-            <label style="color: white;">Current Event</label>
-            <select class="sidebar-select form-control" style="width: 100%;" tabindex="-1" aria-hidden="true">
-                <option disabled selected>---- Select an event ----</option>
-                @foreach ($events as $event)
-                    <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
-                    <?php
-                    if (!empty($event_id)) {
-                        if ($event->event_id == $event_id) {
-                            $event_type = $event->event_type;
-                        }
-                    } else {
-                        $event_type = "";
-                    }
-                    ?>
-                @endforeach
-            </select>
-        </div>
+
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
-            @if (!Request::is('view-all-events') && !Request::is('create-new-event') && !Request::is('home') && !Request::is('raw-data'))
+            @if(current_event)
+                <li class="header">LIVE EVENT</li>
+                {{-- @foreach ($events as $event)
+                    @if(current_event == $event->event_id )
+                        <li style="padding: 12px 18px; color:white;">{{$event->event_name}}</li>
+                    @endif
+                @endforeach --}}
+                @foreach ([['Live Tracking', 'fa-map-marker-alt']] as $item)
+                    <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . current_event . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
+                @endforeach
+                @if (Auth::check())
+                    <li class="{{(Route::currentRouteName() == str_slug('Edit Event', '-') && $event_id == current_event) ? 'active' : ''}}"><a href="{{ url( 'event/' . current_event . '/' . str_slug('Edit Event', '-') ) }}"><i class='fa fas fa-cog'></i> <span>Edit Event</span></a></li>
+                @endif
+            @endif
 
-                {{-- <li class="header">CURRENT EVENT</li> --}}
-                @foreach ([['Live Tracking', 'fa-map-marker-alt'], ['Replay Tracking', 'fa-redo']] as $item)
+{{--             @if (!Request::is('view-all-events') && !Request::is('create-new-event') && !Request::is('home') && !Request::is('raw-data')) --}}
+            @if (empty($event_id))
+                <?php $event_id = maxEventID;?>
+            @endif
+
+            <li class="header">ARCHIVE</li>
+            <div style="padding: 12px 18px;">
+                {{-- <label style="color: white;">Current Event</label> --}}
+                <select class="sidebar-select form-control" style="width: 100%;" tabindex="-1" aria-hidden="true">
+                    <option disabled selected>---- Select an event ----</option>
+                    @foreach ($events as $event)
+                        @if(current_event != $event->event_id)
+                            <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
+                        @endif
+                        <?php
+                        if (!empty($event_id)) {
+                            if ($event->event_id == $event_id) {
+                                $event_type = $event->event_type;
+                            }
+                        } else {
+                            $event_type = "";
+                        }
+                        ?>
+                    @endforeach
+                </select>
+            </div>
+
+            @if(current_event != $event_id)
+                @foreach ([['Replay Tracking', 'fa-redo']] as $item)
                     <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                 @endforeach
 
@@ -65,7 +88,6 @@
                         @endforeach
                     @endif
                 @endif
-
             @endif
 
             <li class="header">ALL EVENTS</li>

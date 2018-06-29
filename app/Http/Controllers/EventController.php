@@ -10,6 +10,7 @@ class EventController extends Controller {
 
     public function viewAllEvents() {
         $events = DB::table('events')->orderby('event_id', 'desc')->get();
+        // echo '<pre>'.print_r($events,1).'</pre>';
         return view('view-all-events')->with(array('events' => $events));
     }
     public function createNewEvent() {

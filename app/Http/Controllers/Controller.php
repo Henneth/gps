@@ -17,7 +17,7 @@ abstract class Controller extends BaseController
     public function __construct()
     {
         // Fetch the Site Settings object
-        $this->events = DB::table('events')->orderby('event_id', 'desc')->get();
+        $this->events = DB::table('events')->orderby('datetime_from', 'desc')->get();
         View::share('events', $this->events);
     }
 }

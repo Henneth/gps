@@ -24,7 +24,7 @@ class DrawRouteController extends Controller {
         	->where('is_checkpoint',1)
             ->get();
 
-        // echo "<pre>".print_r($checkpointCount,1)."</pre>";
+        // echo "<pre>".print_r($event_type,1)."</pre>";
         return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event_type'=>$event_type, 'checkpointMinTimes'=>$checkpointMinTimes));
     }
 
@@ -71,16 +71,18 @@ class DrawRouteController extends Controller {
 
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
             }
+            $tempArray ['checkpoint_name'] = NULL;
             $tempArray ['event_id'] = $event_id;
             $distanceArray [] = $tempArray;
-
 
             $index++;
             // echo $key;
             // echo "<pre>".print_r($routeDecode[$key],1)."</pre>";
             // echo "<pre>".print_r($routeDecode[$key]->lon,1)."</pre>";
         }
-            // echo "<pre>".print_r($distanceArray,1)."</pre>";
+
+        $distanceArray[sizeof($distanceArray)-1]['checkpoint_name'] = 'Finish';
+        // echo "<pre>".print_r($distanceArray,1)."</pre>";
         DB::table('route_distances')->where('event_id', $event_id)->delete();
 		DB::table('route_distances')
 			->insert($distanceArray);
@@ -114,6 +116,18 @@ class DrawRouteController extends Controller {
     private function isValidTime($time, $format = 'H:i:s') {
         $d = DateTime::createFromFormat($format, $time);
         return $d && $d->format($format) == $time;
+    }
+
+    public function saveCheckpointName($event_id) {
+        foreach ($_POST['checkpoint_name'] as $route_distance_id => $checkpoint_name) {
+            $checkpoint_name = !empty($checkpoint_name) ? $checkpoint_name : null;
+            DB::table('route_distances')
+            ->where('route_distance_id', $route_distance_id)
+            ->update(
+                ['checkpoint_name' => $checkpoint_name]
+            );
+        }
+        return redirect('event/'.$event_id.'/draw-route')->with('success', 'Name of checkpoints are saved.');
     }
 
 /*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/

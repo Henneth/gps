@@ -101,10 +101,10 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="set-event-live">Live Event Setting:</label>
+                        <label for="set-event-live">Event Status:</label>
                         <div class="checkbox">
-                            <label><input type="checkbox" name="event-live" {{$event->current === 1 ? 'checked':''}}>set this event <b>LIVE</b>?</label>
-                            <div style="color: red;">WARNING! There can only be ONE live event.</div>
+                            <label><input type="checkbox" name="event-live" {{$event->current === 1 ? 'checked':''}}>Set as live event</label>
+                            <div style="color: red;">• There can only be ONE live event.</div>
                         </div>
                     </div>
                 </div>

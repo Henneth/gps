@@ -14,7 +14,7 @@ class DataImport_Model extends Model
             ->select('current')
             ->where('current', 1)
             ->first();
-        if ($data && $data->current == 1 ){
+        if ($data && $data->current == 1){
             DB::connection('gps_live')->insert("INSERT INTO gps_data
                 (`device_id`, `longitude`,`longitude_logo`, `longitude_final`,`latitude`,`latitude_logo`, `latitude_final`, `elevation`, `datetime`)
                 VALUES (:device_id, :longitude, :longitude_logo, :longitude_final, :latitude, :latitude_logo, :latitude_final, :elevation, :datetime)", [

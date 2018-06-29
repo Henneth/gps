@@ -31,54 +31,58 @@
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
             @if(current_event)
-                <li class="header">LIVE EVENT</li>
-                {{-- @foreach ($events as $event)
+                <li class="header">LIVE EVENT
+                @foreach ($events as $event)
                     @if(current_event == $event->event_id )
-                        <li style="padding: 12px 18px; color:white;">{{$event->event_name}}</li>
+                        <div style="padding: 4px 0 0;color:white;font-style: italic;font-size: 1.2em;"><span style="color: red;">●</span> {{$event->event_name}}</div>
                     @endif
-                @endforeach --}}
+                @endforeach
+                </li>
                 @foreach ([['Live Tracking', 'fa-map-marker-alt']] as $item)
                     <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . current_event . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                 @endforeach
                 @if (Auth::check())
-                    <li class="{{(Route::currentRouteName() == str_slug('Edit Event', '-') && $event_id == current_event) ? 'active' : ''}}"><a href="{{ url( 'event/' . current_event . '/' . str_slug('Edit Event', '-') ) }}"><i class='fa fas fa-cog'></i> <span>Edit Event</span></a></li>
+                    @foreach ([['Draw Route', 'fa-pencil-alt'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Edit Event', 'fas fa-cog']] as $item)
+                        <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') && $event_id == current_event) ? 'active' : ''}}"><a href="{{ url( 'event/' . current_event . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
+                    @endforeach
                 @endif
             @endif
 
 {{--             @if (!Request::is('view-all-events') && !Request::is('create-new-event') && !Request::is('home') && !Request::is('raw-data')) --}}
             @if (empty($event_id))
-                <?php $event_id = maxEventID;?>
+                <?php $event_id = 0;?>
             @endif
 
-            <li class="header">ARCHIVE</li>
-            <div style="padding: 12px 18px;">
-                {{-- <label style="color: white;">Current Event</label> --}}
-                <select class="sidebar-select form-control" style="width: 100%;" tabindex="-1" aria-hidden="true">
-                    <option disabled selected>---- Select an event ----</option>
-                    @foreach ($events as $event)
-                        @if(current_event != $event->event_id)
-                            <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
-                        @endif
-                        <?php
-                        if (!empty($event_id)) {
-                            if ($event->event_id == $event_id) {
-                                $event_type = $event->event_type;
+            <li class="header">ARCHIVE
+                <div style="padding: 8px 0 4px;">
+                    {{-- <label style="color: white;">Current Event</label> --}}
+                    <select class="sidebar-select form-control" style="width: 100%;height: 28px;" tabindex="-1" aria-hidden="true">
+                        <option disabled selected>---- Select an event ----</option>
+                        @foreach ($events as $event)
+                            @if(current_event != $event->event_id)
+                                <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
+                            @endif
+                            <?php
+                            if (!empty($event_id)) {
+                                if ($event->event_id == $event_id) {
+                                    $event_type = $event->event_type;
+                                }
+                            } else {
+                                $event_type = "";
                             }
-                        } else {
-                            $event_type = "";
-                        }
-                        ?>
-                    @endforeach
-                </select>
-            </div>
+                            ?>
+                        @endforeach
+                    </select>
+                </div>
+            </li>
 
-            @if(current_event != $event_id)
+            @if(current_event != $event_id && $event_id != 0)
                 @foreach ([['Replay Tracking', 'fa-redo']] as $item)
                     <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                 @endforeach
 
                 @if (Auth::check())
-                    @if ($event_type == 'fixed route')
+                    @if ($event_type == 'fixed route' || $event_type == 'shortest route')
                         @foreach ([['Draw Route', 'fa-pencil-alt'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Edit Event', 'fas fa-cog']] as $item)
                             <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                         @endforeach

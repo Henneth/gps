@@ -15,9 +15,9 @@ class DrawRouteController extends Controller {
         	->where('event_id',$event_id)
         	->select('route')
         	->first();
-        $event_type = DB::table('events')
+        $event = DB::table('events')
         	->where('event_id',$event_id)
-        	->select('event_type')
+        	->select('event_type', 'current')
         	->first();
         $checkpointMinTimes = DB::table('route_distances')
         	->where('event_id',$event_id)
@@ -25,7 +25,7 @@ class DrawRouteController extends Controller {
             ->get();
 
         // echo "<pre>".print_r($event_type,1)."</pre>";
-        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event_type'=>$event_type, 'checkpointMinTimes'=>$checkpointMinTimes));
+        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event'=>$event, 'checkpointMinTimes'=>$checkpointMinTimes));
     }
 
     public function saveRoute($event_id) {

@@ -19,10 +19,15 @@ class DeviceMappingController extends Controller {
         //     ->get();
         // print_r($devices);
         $athletes = DB::table('athletes')
-        ->where('event_id', $event_id)
-        ->get();
-        // print_r($athletes);
-        return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes));
+            ->where('event_id', $event_id)
+            ->get();
+
+        $event = DB::table('events')
+            ->where('event_id',$event_id)
+            ->select('current')
+            ->first();
+
+        return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes, 'event' => $event));
     }
     public function addDeviceMapping($event_id) {
         if (empty($_POST['device_id']) || empty($_POST['athlete_bib_num'])) {

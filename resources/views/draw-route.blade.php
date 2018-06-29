@@ -24,23 +24,26 @@
 
 @section('main-content')
     @include('partials/alerts')
+
+    @if ($event && $event->event_type == "fixed route")
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="map-tab" class="active"><a href="#tab_1" data-toggle="tab">Draw Route</a></li>
-        @if ($event_type && $event_type->event_type != "shortest route")
             <li id="min-time-tab"><a href="#tab_2" data-toggle="tab">Set Minimum Times</a></li>
             <li id="set-checkpoint-name-tab"><a href="#tab_3" data-toggle="tab">Set Checkpoint Name</a></li>
-        @endif
         </ul>
+    @else
+    <div class="nav-tabs-custom box">
+    @endif
         <div class="tab-content">
             <div class="map-section tab-pane active" id="tab_1">
                 <div class="form-group">
-            		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;"><i class="fa fa-undo"></i> Undo</button>
+            		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;" {{$event->current? 'disabled' : ''}}><i class="fa fa-undo"></i> Undo</button>
             		<div class="data-form display-inline-block">
             			<form id="save-route" action="{{ url('/') }}/event/{{$event_id}}/save-route" method="POST">
             				{{ csrf_field() }}
             				<input type="hidden" id="route" name="route">
-            				<button type="sumbit" class="btn btn-primary" id="save"><i class="far fa-save"></i> Save Route</button>
+            				<button type="sumbit" class="btn btn-primary" id="save" {{$event->current? 'disabled' : ''}}><i class="far fa-save"></i> Save Route</button>
             			</form>
             		</div>{{--
                     <div class="switchBtn">
@@ -49,7 +52,7 @@
                         <label class="tgl-btn" for="cb1"></label>
                     </div> --}}
                     <div class="pull-right">
-                        <button class="btn btn-primary" onclick="toggleExcelImport();return false;"><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
+                        <button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$event->current? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
                     </div>
             	</div>
 
@@ -76,7 +79,7 @@
                         <!-- /.box-body -->
 
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Submit</button>
                         </div>
                     </form>
                 </div>
@@ -84,7 +87,7 @@
             	    <div id="map"></div>
             	</div>
             </div>
-        @if ($event_type && $event_type->event_type != "shortest route")
+        @if ($event && $event->event_type == "fixed route")
             <div class="min-time-section tab-pane" id="tab_2">
                 @if ($checkpointMinTimes && $checkpointMinTimes[sizeof($checkpointMinTimes)-1]->checkpoint != 0)
                 <form action="{{url('/')}}/event/{{$event_id}}/save-minimum-times" method="post">
@@ -92,11 +95,11 @@
                     @for ($i=0; $i < sizeof($checkpointMinTimes); $i++)
                         <div class="form-group min-times-row">
                             <label>From {{($i == 0) ? 'Start' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint - 1)}} to {{($checkpointMinTimes[$i]->checkpoint == sizeof($checkpointMinTimes)) ? 'Finish' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint)}}</label>
-                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->min_time}}">
+                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->min_time}}" {{$event->current? 'disabled' : ''}}>
                         </div>
                     @endfor
                     <div>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Save</button>
                     </div>
                 </form>
                 @else
@@ -110,11 +113,11 @@
                     @for ($i=0; $i < sizeof($checkpointMinTimes)-1; $i++)
                         <div class="form-group">
                             <label>Name of Checkpoint {{($checkpointMinTimes[$i]->checkpoint)}}</label>
-                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->checkpoint_name}}">
+                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->checkpoint_name}}" {{$event->current? 'disabled' : ''}}>
                         </div>
                     @endfor
                     <div>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Save</button>
                     </div>
                 </form>
                 @else
@@ -245,7 +248,7 @@
         showInfoWindow(marker);
     }
 
-    var event_type = '{{$event_type->event_type}}'; // get event_type from DB
+    var event_type = '{{$event->event_type}}'; // get event_type from DB
 
     function showInfoWindow(marker){
         //Attach click event handler to the marker.

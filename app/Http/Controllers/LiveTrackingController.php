@@ -14,7 +14,7 @@ class LiveTrackingController extends Controller {
 
         // run calculation.php
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
-        shell_exec("php ".public_path()."/calculation.php > /dev/null 2>/dev/null &");
+        shell_exec("php ".public_path()."/calculation.php");
 
         $event = DB::table('gps_live.events')->where('event_id', $event_id)->first();
         $route = DB::table('gps_live.routes')
@@ -49,13 +49,13 @@ class LiveTrackingController extends Controller {
         $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
         $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
         $checkpointData = json_encode($tempCheckpointData);
+
         // get min time of checkpoints
         $getMinTime = LiveTracking_Model::getMinTime($event_id);
-
         $getMinTime = json_encode($getMinTime);
 
         // get checkpoint distances
-        $tempCheckpointDistances = DB::table('route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();
+        $tempCheckpointDistances = DB::table('gps_live.route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();
         $checkpointDistances = json_encode($tempCheckpointDistances);
 
         // get athlete's distances for elevation chart
@@ -67,22 +67,22 @@ class LiveTrackingController extends Controller {
         $getFinishedAthletes = json_encode($getFinishedAthletesTemp);
         // echo "<pre>".print_r($getFinishedAthletes,1)."</pre>";
 
+        // Event Type & Tail
         $event_type = DB::table('events')
             ->where('event_id',$event_id)
             ->select('event_type')
             ->first();
         if ($event_type->event_type != 'fixed route'){
             // get data within 10 minutes for tail
-            $getPeriodTemp = (array) LiveTracking_Model::getPeriod($event_id);
-            $getPeriod = $this->group_by($getPeriodTemp, 'device_id');
-            $getPeriodData = json_encode($getPeriod);
-            // echo "<pre>".print_r($event_type,1)."</pre>";
+            $tailTemp = (array) LiveTracking_Model::getTail($event_id);
+            $tail = $this->group_by($tailTemp, 'device_id');
+            $tail = json_encode($tail);
         } else {
-            $getPeriodData = '[]';
+            $tail = '[]';
         }
 
 
-        return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime, 'getFinishedAthletes'=>$getFinishedAthletes, 'getPeriodData'=>$getPeriodData, 'event_type'=>$event_type));
+        return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime, 'getFinishedAthletes'=>$getFinishedAthletes, 'tail'=>$tail, 'event_type'=>$event_type));
     }
 
     // automatically update data from server
@@ -120,10 +120,24 @@ class LiveTrackingController extends Controller {
         // get athlete's distances for elevation chart
         $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
 
+        // Event Type & Tail
+        $event_type = DB::table('events')
+            ->where('event_id',$event_id)
+            ->select('event_type')
+            ->first();
+        if ($event_type->event_type != 'fixed route'){
+            // get data within 10 minutes for tail
+            $tailTemp = (array) LiveTracking_Model::getTail($event_id);
+            $tail = $this->group_by($tailTemp, 'device_id');
+        } else {
+            $tail = '[]';
+        }
+
         $array = [];
         $array['data'] = $data;
         $array['checkpointData'] = $checkpointData;
         $array['currentRouteIndex'] = $currentRouteIndex;
+        $array['tail'] = $tail;
 
         // echo "<pre>".print_r($array,1)."</pre>";
 

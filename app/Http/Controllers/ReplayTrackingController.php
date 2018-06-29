@@ -22,14 +22,13 @@ class ReplayTrackingController extends Controller {
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
         if (Auth::check()) {
-            $data = ReplayTracking_Model::getLocations($event_id, $event->datetime_from, $event->datetime_to);
+            $data = ReplayTracking_Model::getLocations($event_id, $event->datetime_from, $event->datetime_to, true);
             $profile = DeviceMapping_Model::getAthletesProfile($event_id);
         }else{
-            $data = ReplayTracking_Model::getLocations2($event_id, $event->datetime_from, $event->datetime_to);
+            $data = ReplayTracking_Model::getLocations($event_id, $event->datetime_from, $event->datetime_to, false);
             $profile = DeviceMapping_Model::getAthletesProfile2($event_id);
         }
 
-        // $data = ReplayTracking_Model::getLocations($event_id, $event->datetime_from, $event->datetime_to);
         $array = [];
         foreach ($data as $key => $value) {
             $array[$value->device_id][] = $value;

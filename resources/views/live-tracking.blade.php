@@ -138,6 +138,7 @@
         var firstLoad = true;
         var minTime;
         var showOffKey; // store "ON" device_id, data retrive from localStorage
+        var tailArray = [];
 
 
         function findObjectByKey(array, key, value) {
@@ -197,6 +198,7 @@
 
                     // get checkpoint distance relevant
                     var checkpointData = {!! $checkpointData !!};
+                    // console.log(checkpointData);
 
                     google.maps.event.addListener(marker, 'click', (function (marker) {
             			return function () {
@@ -235,14 +237,23 @@
 
                                 }
 
-                                for (var i = 0; i < checkpointTimes.length; i++) {
-                                    html += '<div>Checkpoint '  + checkpointTimes[i]['checkpoint'] + ': <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
-                                    // console.log(marker.checkpointData[i]);
-                                }
 
                                 // get the latest checkpoint number
                                 var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
                                 var lastCheckpoint = minTime[minTime.length-1]['checkpoint'];
+
+                                for (var i = 0; i < checkpointTimes.length; i++) {
+                                    if (lastCheckpoint == checkpointTimes[i]['checkpoint']) {
+                                        html += '<div>Finish: <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
+                                    } else {
+                                        if (checkpointTimes[i]['checkpoint_name']) {
+                                            html += '<div>' + checkpointTimes[i]['checkpoint_name'] + ' (CP' + checkpointTimes[i]['checkpoint'] + '): <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
+                                        } else {
+                                            html += '<div>CP' + checkpointTimes[i]['checkpoint'] + ': <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
+                                        }
+                                    }
+                                    // console.log(marker.checkpointData[i]);
+                                }
 
                                 if (currentCheckpoint < lastCheckpoint) {
                                     // get the latest checkpoint reached_at
@@ -333,7 +344,6 @@
                 markerList = [];
 
                 @if ($route)
-
                     // set route
                     poly = new google.maps.Polyline({
                         strokeColor: '#3d00f7',
@@ -392,7 +402,6 @@
                         bounds.extend(markerList[i].getPosition());
                     }
                     map.fitBounds(bounds);
-
                 @endif
 
                 // set InfoWindow pixelOffset
@@ -428,28 +437,25 @@
                     }
                 }
 
-                var event_type = '{{$event_type->event_type}}';
-                getPeriodData= JSON.parse('{!!$getPeriodData!!}');
-                console.log(event_type);
-                if(getPeriodData && event_type =='shortest route'){
+                var tail = {!!$tail!!};
+                if (tail){
                     var lineSymbol = {
                         path: 'M 0,-1 0,1',
                         strokeOpacity: 1,
                         scale: 2
                     };
-                    for (var i in getPeriodData) {
-                        var flightPlanCoordinates = [];
+                    for (var i in tail) {
+                        var tailCoordinates = [];
 
-                        // console.log(getPeriodData[i]);
-                        var colourCode = getPeriodData[i][0]['colour_code'];
-                        for (var j = 0; j < getPeriodData[i].length; j++) {
-                            var gpxLat2 = parseFloat(getPeriodData[i][j]['latitude_final']);
-                            var gpxLng2 = parseFloat(getPeriodData[i][j]['longitude_final']);
-                            flightPlanCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
+                        var colourCode = tail[i][0]['colour_code'];
+                        for (var j = 0; j < tail[i].length; j++) {
+                            var gpxLat2 = parseFloat(tail[i][j]['latitude_final']);
+                            var gpxLng2 = parseFloat(tail[i][j]['longitude_final']);
+                            tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
                         }
                         // console.log(colourCode);
-                        var flightPath = new google.maps.Polyline({
-                            path: flightPlanCoordinates,
+                        var tailPath = new google.maps.Polyline({
+                            path: tailCoordinates,
                             geodesic: true,
                             strokeColor: '#'+colourCode,
                             strokeOpacity: 0,
@@ -460,12 +466,12 @@
                                 repeat: '10px'
                             }],
                         });
-                        flightPath.setMap(map);
-                        // console.log(flightPlanCoordinates);
-
+                        tailPath.setMap(map);
+                        tailArray[i] = tailPath;
                     }
                 }
-                
+                console.log(tailArray);
+
     // Final position
                 // console.log(getFinishedAthletes);
                 // if(getFinishedAthletes){
@@ -497,7 +503,7 @@
                         var array = data['data'];
                         var checkpointData = data['checkpointData'];
                         var currentRouteIndex = data['currentRouteIndex'];
-
+                        var tail = data['tail'];
                         // console.log(currentRouteIndex);
 
 
@@ -563,6 +569,42 @@
                                         athleteMarkers[array[key]['device_id']] = (addMarker(location, map, array[key]));
                                     }
                                 }
+                            }
+                        }
+
+
+                        // update tails
+                        if (tail){
+                            var lineSymbol = {
+                                path: 'M 0,-1 0,1',
+                                strokeOpacity: 1,
+                                scale: 2
+                            };
+                            for (var i in tail) {
+                                var tailCoordinates = [];
+
+                                var colourCode = tail[i][0]['colour_code'] ? tail[i][0]['colour_code'] : '000000';
+                                for (var j = 0; j < tail[i].length; j++) {
+                                    var gpxLat2 = parseFloat(tail[i][j]['latitude_final']);
+                                    var gpxLng2 = parseFloat(tail[i][j]['longitude_final']);
+                                    tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
+                                }
+                                // console.log(colourCode);
+
+                                tailArray[i].setMap(null);
+                                tailArray[i] = new google.maps.Polyline({
+                                    path: tailCoordinates,
+                                    geodesic: true,
+                                    strokeColor: '#'+colourCode,
+                                    strokeOpacity: 0,
+                                    strokeWeight: 2,
+                                    icons: [{
+                                        icon: lineSymbol,
+                                        offset: '0',
+                                        repeat: '10px'
+                                    }],
+                                });
+                                tailArray[i].setMap(map);
                             }
                         }
                     }
@@ -786,7 +828,11 @@
                         if (checkpointDistances[key]['checkpoint_name']) {
                             var checkpoint = String(checkpointDistances[key]['checkpoint_name']);
                         }else {
-                            var checkpoint = String('CP'+checkpointDistances[key]['checkpoint']);
+                            if (key == checkpointDistances.length -1) {
+                                var checkpoint = String('Finish');
+                            } else {
+                                var checkpoint = String('CP'+checkpointDistances[key]['checkpoint']);
+                            }
                         }
                         break;
                     }

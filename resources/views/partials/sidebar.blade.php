@@ -31,10 +31,14 @@
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
             @if(current_event)
-                <li class="header">LIVE EVENT
+                <li class="header live-event">LIVE EVENT
+                <span class="pull-right-container">
+                    <i class="fa fa-minus pull-right"></i>
+                    <i class="fa fa-plus pull-right" style="display: none;"></i>
+                </span>
                 @foreach ($events as $event)
                     @if(current_event == $event->event_id )
-                        <div style="padding: 4px 0 0;color:white;font-style: italic;font-size: 1.2em;"><span style="color: red;">●</span> {{$event->event_name}}</div>
+                        <div style="padding: 4px 0 0;color:#ccc;font-style: italic;font-size: 1.2em;"><span style="color: red;">●</span> {{$event->event_name}}</div>
                     @endif
                 @endforeach
                 </li>
@@ -54,6 +58,10 @@
             @endif
 
             <li class="header">ARCHIVE
+                <span class="pull-right-container">
+                    <i class="fa fa-minus pull-right"></i>
+                    <i class="fa fa-plus pull-right" style="display: none;"></i>
+                </span>
                 <div style="padding: 8px 0 4px;">
                     {{-- <label style="color: white;">Current Event</label> --}}
                     <select class="sidebar-select form-control" style="width: 100%;height: 28px;" tabindex="-1" aria-hidden="true">
@@ -91,19 +99,28 @@
                             <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                         @endforeach
                     @endif
+
+                    <script>
+                        var live_event_off = true;
+                    </script>
                 @endif
             @endif
 
-            <li class="header">ALL EVENTS</li>
-                @foreach ([['View all events', 'fa-file-alt']] as $item)
+            <li class="header">ALL EVENTS
+                <span class="pull-right-container">
+                    <i class="fa fa-minus pull-right"></i>
+                    <i class="fa fa-plus pull-right" style="display: none;"></i>
+                </span>
+            </li>
+            @foreach ([['View all events', 'fa-file-alt']] as $item)
+                <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
+            @endforeach
+
+            @if (Auth::check())
+                @foreach ([['Create new event', 'fa-plus'], ['Raw Data', 'fa-database']] as $item)
                     <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                 @endforeach
-
-                @if (Auth::check())
-                    @foreach ([['Create new event', 'fa-plus'], ['Raw Data', 'fa-database']] as $item)
-                        <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
-                    @endforeach
-                @endif
+            @endif
             {{-- <li class="treeview">
             {{-- <li class="treeview">
                 <a href="#"><i class='fa fa-link'></i> <span>Multilevel</span> <i class="fa fa-angle-left pull-right"></i></a>

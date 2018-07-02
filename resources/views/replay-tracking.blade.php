@@ -212,7 +212,6 @@
                             var marker = markerList[i];
 
                             cpName = checkpointDistances[CPIndex-1]['checkpoint_name'];
-                            console.log(cpName);
                             marker.checkpointName = cpName;
                             marker.checkpointIndex = CPIndex;
                             marker.setLabel({text: ""+CPIndex, color: "white"});
@@ -371,7 +370,7 @@
 
             // if showOffKey is not null, localStorage will be used
             var routeIndexesByDevice_filtered = [];
-            if (showOffKey !== null){
+            if (showOffKey){
                 for (var i = 0; i < showOffKey.length; i++) {
                     showOffKey[i];
                     // console.log(showOffKey[i]);

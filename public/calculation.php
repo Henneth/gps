@@ -3,7 +3,7 @@
 $host = '127.0.0.1';
 $db   = 'gps_live';
 $user = 'root';
-$pass = 'root';
+$pass = 'rts123';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

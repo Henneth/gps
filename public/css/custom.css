@@ -107,3 +107,17 @@
   margin-left: -.8em;
 }
 
+/* Sidebar */
+.sidebar i.fa-minus,
+.sidebar i.fa-plus {
+    font-size: 0.8em;
+    margin-top: 4px;
+}
+.sidebar li.header,
+.sidebar li.header{
+    cursor: pointer;
+}
+.sidebar li.header:hover,
+.sidebar li.header:hover{
+    color: #aaa;
+}

@@ -22,7 +22,7 @@ $(function() {
         $(this).find(".fa-plus").toggle();
         $(this).find(".fa-minus").toggle();
     })
-    if (typeof live_event_off != 'undefined' && live_event_off)
+    if (typeof live_event_off != 'undefined' && live_event_off) {
         var live_event_header = $('section.sidebar .sidebar-menu li.header.live-event');
         live_event_header.nextUntil(".header").toggle();
         live_event_header.find(".fa-plus").toggle();

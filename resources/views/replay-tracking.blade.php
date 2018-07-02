@@ -370,7 +370,7 @@
 
             // if showOffKey is not null, localStorage will be used
             var routeIndexesByDevice_filtered = [];
-            if (showOffKey){
+            if (typeof showOffKey != 'undefined' && showOffKey){
                 for (var i = 0; i < showOffKey.length; i++) {
                     showOffKey[i];
                     // console.log(showOffKey[i]);

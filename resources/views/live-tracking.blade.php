@@ -574,7 +574,9 @@
 
 
                         // update tails
-                        if (tail){
+                        if (typeof(tail) !== "undefined" && tail){
+                            console.log(tail);
+                            
                             var lineSymbol = {
                                 path: 'M 0,-1 0,1',
                                 strokeOpacity: 1,
@@ -590,8 +592,9 @@
                                     tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
                                 }
                                 // console.log(colourCode);
-
-                                tailArray[i].setMap(null);
+                                if (typeof(tailArray[i]) !== "undefined" && tailArray[i]){
+                                    tailArray[i].setMap(null);
+                                }
                                 tailArray[i] = new google.maps.Polyline({
                                     path: tailCoordinates,
                                     geodesic: true,

@@ -33,7 +33,7 @@ class EditEvent_Model extends Model
 		DB::table('gps_live.gps_data')->truncate();
 
 		DB::delete("DELETE FROM gps.route_progress WHERE event_id = :event_id", ['event_id'=>$event_id]);
-		DB::insert("INSERT INTO gps.route_progress(`event_id`, `device_id`, `route_index`, `reached_at`) SELECT (`event_id`, `device_id`, `route_index`, `reached_at`) FROM gps_live.route_progress WHERE event_id = :event_id", ['event_id'=>$event_id]);
+		DB::insert("INSERT INTO gps.route_progress(`event_id`, `device_id`, `route_index`, `reached_at`) SELECT `event_id`, `device_id`, `route_index`, `reached_at` FROM gps_live.route_progress WHERE event_id = :event_id", ['event_id'=>$event_id]);
 		DB::table('gps_live.route_progress')->truncate();
 
 		// DB::delete("DELETE FROM gps.athletes WHERE event_id = :event_id", ['event_id'=>$event_id]);
@@ -47,7 +47,7 @@ class EditEvent_Model extends Model
 		DB::table('gps_live.events')->truncate();
 
 		DB::delete("DELETE FROM gps.last_id WHERE event_id = :event_id", ['event_id'=>$event_id]);
-		DB::delete("INSERT INTO gps.last_id(`event_id`, `last_id`) SELECT (`event_id`, `last_id`) FROM gps_live.last_id WHERE event_id = :event_id", ['event_id'=>$event_id]);
+		DB::delete("INSERT INTO gps.last_id(`event_id`, `last_id`) SELECT `event_id`, `last_id` FROM gps_live.last_id WHERE event_id = :event_id", ['event_id'=>$event_id]);
 		DB::table('gps_live.last_id')->truncate();
 
 		// DB::delete("DELETE FROM gps.routes WHERE event_id = :event_id", ['event_id'=>$event_id]);

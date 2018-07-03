@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use App\ReplayTracking_Model as ReplayTracking_Model;
-use App\LiveTracking_Model as LiveTracking_Model;
 use App\DeviceMapping_Model as DeviceMapping_Model;
 
 
@@ -47,7 +46,7 @@ class ReplayTrackingController extends Controller {
         $routeIndexesByDevice = $this->group_by($routeIndexes, "device_id");
 
         // get checkpoint times
-        $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
+        $getCheckpointData = (array) ReplayTracking_Model::getCheckpointData($event_id);
         $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
         $checkpointData = json_encode($tempCheckpointData);
         // echo "<pre>".print_r($data,1)."</pre>";

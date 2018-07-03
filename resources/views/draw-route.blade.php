@@ -170,7 +170,7 @@
         polyIndex = 0;
         //Mirrors the path array to find index to delete and such
         mirrorCoordinates = [];
-        @if($data && $data->route)
+        @if($data)
             var data = {!!$data->route!!};
             // console.log(data);
             for(var key in data){

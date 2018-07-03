@@ -33,7 +33,7 @@ class EditEvent_Model extends Model
 		DB::table('gps_live.gps_data')->truncate();
 
 		DB::delete("DELETE FROM gps.route_progress WHERE event_id = :event_id", ['event_id'=>$event_id]);
-		DB::insert("INSERT INTO gps.route_progress SELECT * FROM gps_live.route_progress WHERE event_id = :event_id", ['event_id'=>$event_id]);
+		DB::insert("INSERT INTO gps.route_progress SELECT *, NULL AS route_progress_id FROM gps_live.route_progress WHERE event_id = :event_id", ['event_id'=>$event_id]);
 		DB::table('gps_live.route_progress')->truncate();
 
 		// DB::delete("DELETE FROM gps.athletes WHERE event_id = :event_id", ['event_id'=>$event_id]);

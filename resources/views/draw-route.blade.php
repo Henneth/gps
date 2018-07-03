@@ -25,6 +25,34 @@
 @section('main-content')
     @include('partials/alerts')
 
+    <div id="excelImportBox" class="box box-primary" style="display: none;">
+        <div class="box-header with-border">
+            <h3 class="box-title">Import GPX File</h3>
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+            </div>
+        </div>
+        <!-- /.box-header -->
+        <!-- form start -->
+        <form role="form" action="{{url('/')}}/event/{{$event_id}}/edit-event/gpx-file-upload" method="post" enctype="multipart/form-data">
+            {{ csrf_field() }}
+            <div class="box-body">
+                <div class="form-group">
+                    <label for="excelFile">GPX file upload</label>
+                    <input type="file" id="excelFile" name="fileToUpload">
+
+                    <p class="help-block">.gpx file only.</p>
+                </div>
+            </div>
+            <!-- /.box-body -->
+
+            <div class="box-footer">
+                <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Submit</button>
+            </div>
+        </form>
+    </div>
+
     @if ($event && $event->event_type == "fixed route")
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
@@ -56,33 +84,6 @@
                     </div>
             	</div>
 
-                <div id="excelImportBox" class="box box-primary" style="display: none;">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Import GPX File</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                    <!-- /.box-header -->
-                    <!-- form start -->
-                    <form role="form" action="{{url('/')}}/event/{{$event_id}}/edit-event/gpx-file-upload" method="post" enctype="multipart/form-data">
-                        {{ csrf_field() }}
-                        <div class="box-body">
-                            <div class="form-group">
-                                <label for="excelFile">GPX file upload</label>
-                                <input type="file" id="excelFile" name="fileToUpload">
-
-                                <p class="help-block">.gpx file only.</p>
-                            </div>
-                        </div>
-                        <!-- /.box-body -->
-
-                        <div class="box-footer">
-                            <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Submit</button>
-                        </div>
-                    </form>
-                </div>
             	<div class="container-flex">
             	    <div id="map"></div>
             	</div>

@@ -700,17 +700,19 @@
                 }
             }
 
-            // clear and redraw elevation chart
-            elevationData = new google.visualization.DataTable();
-            elevationData.addColumn('number', 'Distance');
-            elevationData.addColumn('number', 'Elevation');
-            elevationData.addColumn({type: 'string', role:'annotation'});
-            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-            elevationData.addColumn('number', 'dummy');
-            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
-            elevationData.addColumn({type: 'string', role:'annotation'});
-            currentRouteIndex = dataFilterByTime(time);
-            drawChart(currentRouteIndex);
+            @if ($event && $event->event_type == "fixed route")
+                // clear and redraw elevation chart
+                elevationData = new google.visualization.DataTable();
+                elevationData.addColumn('number', 'Distance');
+                elevationData.addColumn('number', 'Elevation');
+                elevationData.addColumn({type: 'string', role:'annotation'});
+                elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+                elevationData.addColumn('number', 'dummy');
+                elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+                elevationData.addColumn({type: 'string', role:'annotation'});
+                currentRouteIndex = dataFilterByTime(time);
+                drawChart(currentRouteIndex);
+            @endif
         }
         $('.replay-controls.pause').click(function() {
             $(this).prop('disabled', 'disabled').removeClass('btn-primary').addClass('btn-default');

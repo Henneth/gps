@@ -14,7 +14,9 @@
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
-            <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
+            @if ($event && $event->event_type == "fixed route")
+                <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
+            @endif
             <li id="profile-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Athletes</a></li>
         </ul>
         <div class="tab-content">
@@ -23,7 +25,9 @@
                 <div style="color: #666; float: right;">Elapsed Time: <b><span id="time"></span></b></div>
                 <div id="map"></div> {{-- google map here --}}
             </div>
-            <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>
+            @if ($event && $event->event_type == "fixed route")
+                <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>
+            @endif
             <div class="profile-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'active' : '');} else{} ?>">
                 {{-- <p style="color: blue;">Maximum visible athletes at a time: 10</p> --}}
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
@@ -576,7 +580,7 @@
                         // update tails
                         if (typeof(tail) !== "undefined" && tail){
                             console.log(tail);
-                            
+
                             var lineSymbol = {
                                 path: 'M 0,-1 0,1',
                                 strokeOpacity: 1,

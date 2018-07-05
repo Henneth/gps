@@ -21,7 +21,11 @@ class EventController extends Controller {
             return redirect('create-new-event')->with('error', 'Event name must not be empty.');
         }
 
+        if (empty($_POST['optionsRadios'])) {
+            return redirect('create-new-event')->with('error', 'Event type must not be empty.');
+        }
         $event_name = $_POST['event-name'];
+        $event_type = $_POST['optionsRadios'];
         $start_name = $_POST['start-time'];
         $end_name = $_POST['end-time'];
         $d1 = new DateTime($start_name);
@@ -32,7 +36,7 @@ class EventController extends Controller {
         }
 
         DB::table('events')->insert(
-            ['event_name' => $event_name, 'datetime_from' => $start_name, 'datetime_to' => $end_name]
+            ['event_name' => $event_name, 'event_type' => $event_type, 'datetime_from' => $start_name, 'datetime_to' => $end_name]
         );
         return redirect('create-new-event')->with('success', 'Event Created.');
     }

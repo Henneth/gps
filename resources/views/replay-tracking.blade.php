@@ -14,7 +14,9 @@
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
-            <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
+            @if($event->event_type =='fixed route')
+                <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
+            @endif
             <li id="profile-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Athletes</a></li>
         </ul>
         <div class="tab-content">
@@ -35,9 +37,11 @@
             <div class="map-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'active' : '');} else{echo 'active';} ?>" >
                 <div id="map"></div>
             </div>
-            <div  class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" >
-                <div id="elevationChart" style="width:100%; height:100%;"></div>
-            </div>
+            @if($event->event_type =='fixed route')
+                <div  class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" >
+                    <div id="elevationChart" style="width:100%; height:100%;"></div>
+                </div>
+            @endif
             <div class="profile-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'active' : '');} else{} ?>" >
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
@@ -47,7 +51,7 @@
                             <th>Last Name</th>
                             <th>Chinese Name</th>
                             <th>Country Code</th>
-                            <th>Visibility</th>
+                            <th>Visibility (Max:20)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -88,9 +92,11 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script>
-    // elevation chart
-    google.charts.load('current', {'packages':['corechart']});
-    google.charts.setOnLoadCallback(initChart);
+    @if($event->event_type =='fixed route')
+        // elevation chart
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(initChart);
+    @endif
 
     // init global variables
     var map;
@@ -140,16 +146,19 @@
                             html += '<div>Country: <b>' + content['country'] + '</b></div>';
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
                             html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
-                            html += '<div>Distance: <b>' + currentRouteIndex[content['device_id']]['distance'].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
 
-                            if (checkpointData[content['device_id']]) {
-                                html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
-                                // show athlete reaches at checkpoint time
-                                var checkpointTimes = checkpointData[content['device_id']];
-                                for (var j = 0; j < checkpointTimes.length; j++) {
-                                    html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
+                            @if($event->event_type =='fixed route')
+                                html += '<div>Distance: <b>' + currentRouteIndex[content['device_id']]['distance'].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
+
+                                if (checkpointData[content['device_id']]) {
+                                    html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
+                                    // show athlete reaches at checkpoint time
+                                    var checkpointTimes = checkpointData[content['device_id']];
+                                    for (var j = 0; j < checkpointTimes.length; j++) {
+                                        html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
+                                    }
                                 }
-                            }
+                            @endif
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -198,13 +207,20 @@
                     });
                     // show checkpoint labels
                     var route = {!!$route->route!!};
+                    var lastCP = route.length - 1;
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["lat"]);
                         gpxLng = parseFloat(route[key]["lon"]);
                         IsCP = route[key]["isCheckpoint"] || key == 0;
+                        // console.log(IsCP);
+                        // set last point to checkpoint
+                        // if (key == lastCP){
+                        //     route[lastCP]["isCheckpoint"] = true;
+                        //     IsCP = route[lastCP]["isCheckpoint"];
+                        //     // console.log(IsCP);
+                        // }
                         addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
                     }
-
                     // Add labels/icons to route markers
                     var CPIndex = 1;
                     for (var i = 1; i < markerList.length -1; i++) {
@@ -227,6 +243,8 @@
                             CPIndex++;
                         }
                     }
+                    console.log(markerList);
+                    console.log('aa');
                     if ( markerList[markerList.length-1] ){
                         markerList[markerList.length-1].setLabel({text: "Fin.", color: "white", fontSize: "10px"});
                     }
@@ -699,18 +717,19 @@
                     }
                 }
             }
-
-            // clear and redraw elevation chart
-            elevationData = new google.visualization.DataTable();
-            elevationData.addColumn('number', 'Distance');
-            elevationData.addColumn('number', 'Elevation');
-            elevationData.addColumn({type: 'string', role:'annotation'});
-            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-            elevationData.addColumn('number', 'dummy');
-            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
-            elevationData.addColumn({type: 'string', role:'annotation'});
-            currentRouteIndex = dataFilterByTime(time);
-            drawChart(currentRouteIndex);
+            @if($event->event_type =='fixed route')
+                // clear and redraw elevation chart
+                elevationData = new google.visualization.DataTable();
+                elevationData.addColumn('number', 'Distance');
+                elevationData.addColumn('number', 'Elevation');
+                elevationData.addColumn({type: 'string', role:'annotation'});
+                elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+                elevationData.addColumn('number', 'dummy');
+                elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+                elevationData.addColumn({type: 'string', role:'annotation'});
+                currentRouteIndex = dataFilterByTime(time);
+                drawChart(currentRouteIndex);
+            @endif
         }
         $('.replay-controls.pause').click(function() {
             $(this).prop('disabled', 'disabled').removeClass('btn-primary').addClass('btn-default');
@@ -798,6 +817,12 @@
 
             // create array
             var array = [];
+            // max 10
+            if($('.tgl:checked').size()>20){
+                $(this).prop('checked', false);
+                return;
+            }
+
             $('.tgl').each(function() {
                 if ($(this).is(":checked")) {
                     array.push($(this).attr("data-id"));

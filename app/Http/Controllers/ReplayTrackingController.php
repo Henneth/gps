@@ -16,7 +16,7 @@ class ReplayTrackingController extends Controller {
 
         // run calculation.php
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
-        // shell_exec("php ".public_path()."/calculation.php");
+        shell_exec("php ".public_path()."/calculation.php replay ".$event_id);
 
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
@@ -49,7 +49,7 @@ class ReplayTrackingController extends Controller {
         $getCheckpointData = (array) ReplayTracking_Model::getCheckpointData($event_id);
         $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
         $checkpointData = json_encode($tempCheckpointData);
-        // echo "<pre>".print_r($data,1)."</pre>";
+        // echo "<pre>".print_r($event,1)."</pre>";
 
         // get checkpoint distances
         $tempCheckpointDistances = DB::table('route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();

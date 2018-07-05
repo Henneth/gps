@@ -41,14 +41,14 @@ class TRKParser {
         list($time,$null)   = explode("Z", $mytime);
         // echo $date;
         // echo $time;
-        $this->temp['ele'] = $ele;
-        $this->temp['date'] = $date;
-        $this->temp['time'] = $time;
+        // $this->temp['ele'] = $ele;
+        // $this->temp['date'] = $date;
+        // $this->temp['time'] = $time;
       } else{
         // $this->temp['ele'] = "'$ele', NULL, NULL);\n";
-        $this->temp['ele'] = $ele;
-        $this->temp['date'] = NULL;
-        $this->temp['time'] = NULL;
+        // $this->temp['ele'] = $ele;
+        // $this->temp['date'] = NULL;
+        // $this->temp['time'] = NULL;
       }
       $this->array[] = $this->temp;
       # This will write the last part of INSERT statment

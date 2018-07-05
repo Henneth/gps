@@ -65,7 +65,7 @@ class LiveTrackingController extends Controller {
         // get athletes who reached at the end point
         $getFinishedAthletesTemp = LiveTracking_Model::getFinishedAthletes($event_id);
         $getFinishedAthletes = json_encode($getFinishedAthletesTemp);
-        // echo "<pre>".print_r($getFinishedAthletes,1)."</pre>";
+        // echo "<pre>".print_r($jsonData,1)."</pre>";
 
         // Event Type & Tail
         $event_type = DB::table('events')

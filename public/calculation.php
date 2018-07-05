@@ -1,10 +1,19 @@
 <!-- calculate athletes's distance between checkpoint -->
 <?php
+
+// print_r($argv);
+
+require_once('../setEnv.php');
+
 $host = '127.0.0.1';
-$db   = 'gps_live';
 $user = 'root';
-$pass = 'rts123';
+$pass = ($env == 'server') ? 'rts123' : 'root';
 $charset = 'utf8mb4';
+if ( !empty($argv[1]) && ($argv[1] == 'replay') && is_numeric($argv[2]) ){
+    $db = 'gps';
+} else{
+    $db = 'gps_live';
+}
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $opt = [
@@ -14,12 +23,21 @@ $opt = [
 ];
 $pdo = new PDO($dsn, $user, $pass, $opt);
 
-// Event IDs
-$events = $pdo->query('SELECT event_id FROM events WHERE current = 1')->fetchAll();
-if(empty($events)){
-    echo "empty events\n";
-    return;
+if ( !empty($argv[1]) && ($argv[1] == 'replay') && is_numeric($argv[2]) ){
+    $event['event_id'] = $argv[2];
+    $events = [$event];
+    print_r($events);
+} else {
+    // Event IDs
+    $events = $pdo->query('SELECT event_id FROM events WHERE current = 1')->fetchAll();
+    if(empty($events)){
+        echo "empty events\n";
+        return;
+    }
 }
+
+
+
 
 foreach ($events as $event) {
     //define event id
@@ -193,7 +211,7 @@ function checkMinTime($min_time, $prev_time, $current_time) {
 function getCurrentCheckpoint($currentRouteIndex, $checkpointData) {
     foreach ($checkpointData as $key => $value) {
         if ($currentRouteIndex > $value['route_index']) {
-            $lastReachedCheckpoint = $value['checkpoint'];
+            $lastReachedCheckpoint = !empty($value['checkpoint']) ? $value['checkpoint'] : 0;
         } else {
             break;
         }

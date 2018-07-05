@@ -14,9 +14,9 @@
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
-            {{-- @if ($event && $event->event_type == "fixed route") --}}
+            @if ($event_type->event_type == "fixed route")
                 <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
-            {{-- @endif --}}
+            @endif
             <li id="profile-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Athletes</a></li>
         </ul>
         <div class="tab-content">
@@ -25,9 +25,9 @@
                 <div style="color: #666; float: right;">Elapsed Time: <b><span id="time"></span></b></div>
                 <div id="map"></div> {{-- google map here --}}
             </div>
-            {{-- @if ($event && $event->event_type == "fixed route") --}}
+            @if ($event_type->event_type == "fixed route")
                 <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>
-            {{-- @endif --}}
+            @endif
             <div class="profile-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'active' : '');} else{} ?>">
                 {{-- <p style="color: blue;">Maximum visible athletes at a time: 10</p> --}}
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
@@ -38,7 +38,7 @@
                             <th>Last Name</th>
                             <th>Chinese Name</th>
                             <th>Country Code</th>
-                            <th>Visibility (Max:10)</th>
+                            <th>Visibility (Max:20)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,9 +126,11 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script>
-        // elevation chart
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(initChart);
+        @if ($event_type->event_type == "fixed route")
+            // elevation chart
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(initChart);
+        @endif
         var chart;
         var chartOptions;
         var elevationData;
@@ -214,102 +216,104 @@
                             if( content['country'] ){ html += '<div>Country: <b>' + content['country'] + '</b></div>'; }
                             html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
 
-                            if ( marker.profile ) { // update
-                                html += '<div>Location: <b>' + parseFloat(marker.profile['latitude_final']).toFixed(6) + ', ' + parseFloat(marker.profile['longitude_final']).toFixed(6) + '</b></div>';
-                                html += '<div>Distance: <b>' + marker.profile['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
-                            } else{ // initialize
-                                html += '<div>Location: <b>' + parseFloat(location['lat']).toFixed(6) + ', ' + parseFloat(location['lng']).toFixed(6) + '</b></div>';
-                                html += '<div>Distance: <b>' + content['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
-                            }
-
-                            // if there is checkpoint time
-                            if ( marker.checkpointData || checkpointData[content['device_id']]){
-
-                                html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
-
-                                if ( marker.checkpointData ){ // update
-                                    console.log('updated data');
-
-                                    // show athletes' checkpoint time -- reached at
-                                    var checkpointTimes = marker.checkpointData;
-
-                                } else if (checkpointData[content['device_id']]) { // initialize
-                                    console.log('initial data');
-
-                                    // show athletes' checkpoint time -- reached at
-                                    var checkpointTimes = checkpointData[content['device_id']];
-
+                            @if ($event_type->event_type == "fixed route")
+                                if ( marker.profile ) { // update
+                                    html += '<div>Location: <b>' + parseFloat(marker.profile['latitude_final']).toFixed(6) + ', ' + parseFloat(marker.profile['longitude_final']).toFixed(6) + '</b></div>';
+                                    html += '<div>Distance: <b>' + marker.profile['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
+                                } else{ // initialize
+                                    html += '<div>Location: <b>' + parseFloat(location['lat']).toFixed(6) + ', ' + parseFloat(location['lng']).toFixed(6) + '</b></div>';
+                                    html += '<div>Distance: <b>' + content['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
                                 }
 
+                                // if there is checkpoint time
+                                if ( marker.checkpointData || checkpointData[content['device_id']]){
 
-                                // get the latest checkpoint number
-                                var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
-                                var lastCheckpoint = minTime[minTime.length-1]['checkpoint'];
+                                    html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
 
-                                for (var i = 0; i < checkpointTimes.length; i++) {
-                                    if (lastCheckpoint == checkpointTimes[i]['checkpoint']) {
-                                        html += '<div>Finish: <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
-                                    } else {
-                                        if (checkpointTimes[i]['checkpoint_name']) {
-                                            html += '<div>' + checkpointTimes[i]['checkpoint_name'] + ' (CP' + checkpointTimes[i]['checkpoint'] + '): <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
-                                        } else {
-                                            html += '<div>CP' + checkpointTimes[i]['checkpoint'] + ': <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
-                                        }
+                                    if ( marker.checkpointData ){ // update
+                                        console.log('updated data');
+
+                                        // show athletes' checkpoint time -- reached at
+                                        var checkpointTimes = marker.checkpointData;
+
+                                    } else if (checkpointData[content['device_id']]) { // initialize
+                                        console.log('initial data');
+
+                                        // show athletes' checkpoint time -- reached at
+                                        var checkpointTimes = checkpointData[content['device_id']];
+
                                     }
-                                    // console.log(marker.checkpointData[i]);
-                                }
 
-                                if (currentCheckpoint < lastCheckpoint) {
-                                    // get the latest checkpoint reached_at
-                                    var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
-                                    // match then get min time of checkpoints
-                                    var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint+1)['min_time'] + 'Z').getTime();
 
-                                    // minTime: number of checkpoints
-                                    // checkpoint number greater than 2 can do time prediction of next checkpooint
-                                    if ( checkpointTimes.length >= 2 ) { // && currentCheckpoint < minTime.length
+                                    // get the latest checkpoint number
+                                    var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
+                                    var lastCheckpoint = minTime[minTime.length-1]['checkpoint'];
 
-                                        var fCheckpoint; // new formerCheckpoint
-                                        var nCheckpoint; // new next checkpoint
-                                        var cCheckpoint; // new current checkpoint
-                                        var fCheckpointMintime, nCheckpointMintime, cCheckpointMintime;
-                                        var fCheckpointTime, nCheckpointTime, cCheckpointTime;
-                                        // console.log(minTime);
-                                        // console.log(checkpointTimes);
-                                        var SumOfSpeedRatios = 0;
-                                        var SpeedRatioCount = 0;
-                                        for (var i = 1; i < checkpointTimes.length; i++) {
-                                            if (findObjectByKey(minTime, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1) && findObjectByKey(minTime, 'checkpoint', i+1)['min_time']) {
-                                                fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i)['reached_at']).getTime(); // get reached_at
-                                                nCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i+1)['reached_at']).getTime(); // get reached_at
+                                    for (var i = 0; i < checkpointTimes.length; i++) {
+                                        if (lastCheckpoint == checkpointTimes[i]['checkpoint']) {
+                                            html += '<div>Finish: <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
+                                        } else {
+                                            if (checkpointTimes[i]['checkpoint_name']) {
+                                                html += '<div>' + checkpointTimes[i]['checkpoint_name'] + ' (CP' + checkpointTimes[i]['checkpoint'] + '): <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
+                                            } else {
+                                                html += '<div>CP' + checkpointTimes[i]['checkpoint'] + ': <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
+                                            }
+                                        }
+                                        // console.log(marker.checkpointData[i]);
+                                    }
 
-                                                nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', i+1)['min_time'] + 'Z').getTime();
-                                                SumOfSpeedRatios += (nCheckpointTime-fCheckpointTime) / nCheckpointMintime;
-                                                SpeedRatioCount++;
-                                                // console.log(nCheckpointTime);
-                                                // console.log(fCheckpointTime);
-                                                // console.log(nCheckpointMintime);
+                                    if (currentCheckpoint < lastCheckpoint) {
+                                        // get the latest checkpoint reached_at
+                                        var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
+                                        // match then get min time of checkpoints
+                                        var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint+1)['min_time'] + 'Z').getTime();
+
+                                        // minTime: number of checkpoints
+                                        // checkpoint number greater than 2 can do time prediction of next checkpooint
+                                        if ( checkpointTimes.length >= 2 ) { // && currentCheckpoint < minTime.length
+
+                                            var fCheckpoint; // new formerCheckpoint
+                                            var nCheckpoint; // new next checkpoint
+                                            var cCheckpoint; // new current checkpoint
+                                            var fCheckpointMintime, nCheckpointMintime, cCheckpointMintime;
+                                            var fCheckpointTime, nCheckpointTime, cCheckpointTime;
+                                            // console.log(minTime);
+                                            // console.log(checkpointTimes);
+                                            var SumOfSpeedRatios = 0;
+                                            var SpeedRatioCount = 0;
+                                            for (var i = 1; i < checkpointTimes.length; i++) {
+                                                if (findObjectByKey(minTime, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1) && findObjectByKey(minTime, 'checkpoint', i+1)['min_time']) {
+                                                    fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i)['reached_at']).getTime(); // get reached_at
+                                                    nCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i+1)['reached_at']).getTime(); // get reached_at
+
+                                                    nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', i+1)['min_time'] + 'Z').getTime();
+                                                    SumOfSpeedRatios += (nCheckpointTime-fCheckpointTime) / nCheckpointMintime;
+                                                    SpeedRatioCount++;
+                                                    // console.log(nCheckpointTime);
+                                                    // console.log(fCheckpointTime);
+                                                    // console.log(nCheckpointMintime);
+                                                }
+
+                                            }
+
+                                            if (SpeedRatioCount > 0) {
+                                                var tempPredictTime = SumOfSpeedRatios / SpeedRatioCount * nextCheckpointMinTime + currentCheckpointTime;
+
+                                                var predictTime= new Date(tempPredictTime).toLocaleTimeString();
+                                                // console.log(predictTime);
+
+                                                var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
+
+                                                html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
                                             }
 
                                         }
 
-                                        if (SpeedRatioCount > 0) {
-                                            var tempPredictTime = SumOfSpeedRatios / SpeedRatioCount * nextCheckpointMinTime + currentCheckpointTime;
-
-                                            var predictTime= new Date(tempPredictTime).toLocaleTimeString();
-                                            // console.log(predictTime);
-
-                                            var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
-
-                                            html += '<div style="color:blue;"><br>Predicted time for next checkpoint: <b>' + predictDate +" "+ predictTime + '</b></div>';
-                                        }
-
                                     }
 
                                 }
-
-                            }
-
+                            @endif
+                            
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -538,8 +542,9 @@
                             // console.log(currentRouteIndex_filtered);
                         }
                         currentRouteIndex = currentRouteIndex_filtered;
-
-                        drawChart(currentRouteIndex);
+                        @if ($event_type->event_type == "fixed route")
+                            drawChart(currentRouteIndex);
+                        @endif
 
 
                         // check device_id in localStorage
@@ -1007,10 +1012,12 @@
         $('.check').click(function(){
             // create array
             var array = [];
-            if($('.tgl:checked').size()>10){
+            // max 10
+            if($('.tgl:checked').size()>20){
                 $(this).prop('checked', false);
                 return;
             }
+
             $('.tgl').each(function() {
                 if ($(this).is(":checked")) {
                     array.push($(this).attr("data-id"));

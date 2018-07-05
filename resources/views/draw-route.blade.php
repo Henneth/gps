@@ -414,6 +414,16 @@
     function toggleExcelImport() {
         $('#excelImportBox').toggle();
     }
+
+    // run save route after import gpx data
+    $( document ).ready(function() {
+        @if( app('request')->input('gpx') )
+            window.onload = function(){
+                $( "#save" ).trigger( "click" );
+            };
+        @endif
+    });
+
     </script>
 
     <!-- Google Maps -->

@@ -28,6 +28,10 @@
         <div class="box">
             <!-- /.box-header -->
             <div class="box-body">
+                <ul class="nav nav-tabs">
+                    <li class="{{ (!isset($_GET['live'])) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data">Achive Data</a></li>
+                    <li class="{{ (isset($_GET['live']) && $_GET['live'] == 1) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data?live=1">Live Data</a></li>
+                </ul>
                 <table id="table1" class="table table-bordered table-striped display responsive no-wrap" width="100%">
                     <thead>
                         <tr>

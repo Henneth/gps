@@ -1,0 +1,68 @@
+<!-- calculate athletes's distance between checkpoint -->
+Array
+(
+    [0] => calculation.php
+    [1] => alert
+)
+alert7
+<pre>Array
+(
+    [0] => Array
+        (
+            [route_index] => 0
+        )
+
+    [1] => Array
+        (
+            [route_index] => 38
+            [min_time] => 
+            [checkpoint] => 1
+        )
+
+    [2] => Array
+        (
+            [route_index] => 110
+            [min_time] => 
+            [checkpoint] => 2
+        )
+
+    [3] => Array
+        (
+            [route_index] => 197
+            [min_time] => 
+            [checkpoint] => 3
+        )
+
+    [4] => Array
+        (
+            [route_index] => 337
+            [min_time] => 
+            [checkpoint] => 4
+        )
+
+    [5] => Array
+        (
+            [route_index] => 395
+            [min_time] => 
+            [checkpoint] => 5
+        )
+
+    [6] => Array
+        (
+            [route_index] => 430
+            [min_time] => 
+            [checkpoint] => 6
+        )
+
+    [7] => Array
+        (
+            [route_index] => 468
+            [min_time] => 
+            [checkpoint] => 7
+        )
+
+)
+</pre>
+Notice: Undefined index: checkpoint in /Users/azolla/sites/gps/public/calculation.php on line 203
+
+Notice: Undefined index: checkpoint in /Users/azolla/sites/gps/public/calculation.php on line 203

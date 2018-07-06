@@ -92,6 +92,7 @@ class AthletesController extends Controller {
                 ->select('code')
                 ->get();
 
+            $countries = [];
             foreach ($countries_sql as $key => $temp) {
                 $countries[] = $temp->code;
             }
@@ -101,6 +102,7 @@ class AthletesController extends Controller {
                 ->where('event_id', $event_id)
                 ->get();
 
+            $bib_numbers = [];
             foreach ($bib_numbers_sql as $key => $temp) {
                 $bib_numbers[] = $temp->bib_number;
             }

@@ -63,7 +63,7 @@ class GPXController extends Controller {
         //     ['event_id'=> $event_id, 'route' =>$route]
         // );
         // DB::unprepared($rss_parser->sql);
-        return redirect('event/'.$event_id.'/draw-route')->with('success', 'Excel file imported.');
+        return redirect('event/'.$event_id.'/draw-route?gpx=1')->with('success', 'Excel file imported.');
     }
 
 

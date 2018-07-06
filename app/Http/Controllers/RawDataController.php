@@ -9,7 +9,11 @@ use App\Http\Controllers\Controller;
 class RawDataController extends Controller {
 
     public function index() {
-        $data = DB::table('gps_data')->orderby('datetime', 'desc')->limit(1000)->get();
+        if (isset($_GET['live']) && $_GET['live'] == 1){
+            $data = DB::table('gps_live.gps_data')->orderby('datetime', 'desc')->limit(3000)->get();
+        }else {
+            $data = DB::table('gps_data')->orderby('datetime', 'desc')->limit(3000)->get();
+        }
         // print_r($data);
         foreach ($data as &$value) {
             $datetime1 = date_create($value->datetime);
@@ -21,13 +25,20 @@ class RawDataController extends Controller {
                 $value->delay = $interval->format("%H:%I:%S");
             }
         }
-        $deviceID = DB::table('gps_data')
-                    ->select('device_id')
-                    ->orderBy('device_id', 'asc')
-                    ->groupBy('device_id')
-                    ->get();
-                    // print_r($deviceID);
 
+        if (isset($_GET['live']) && $_GET['live'] == 1){
+            $deviceID = DB::table('gps_live.gps_data')
+                        ->select('device_id')
+                        ->orderBy('device_id', 'asc')
+                        ->groupBy('device_id')
+                        ->get();
+        }else {
+            $deviceID = DB::table('gps_data')
+                        ->select('device_id')
+                        ->orderBy('device_id', 'asc')
+                        ->groupBy('device_id')
+                        ->get();
+        }
         return view('raw-data')->with(array('data' => $data, 'deviceID' => $deviceID));
     }
 

@@ -19,10 +19,12 @@ class RawDataController extends Controller {
             $datetime1 = date_create($value->datetime);
             $datetime2 = date_create($value->created_at);
             $interval = date_diff($datetime1, $datetime2);
+            // echo "<pre>".print_r($interval,1)."</pre>";
+
             if ($interval->format("%D")>0) {
                 $value->delay = "> 1 day";
-            }else{
-                $value->delay = $interval->format("%H:%I:%S");
+            } else{
+                $value->delay = $interval->format("%R%H:%I:%S");
             }
         }
 

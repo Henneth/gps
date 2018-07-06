@@ -143,13 +143,18 @@ class DeviceMappingController extends Controller {
                 ->select('device_id')
                 ->where('event_id', $event_id)
                 ->get();
+
+            $device_ids = [];
             foreach ($device_ids_sql as $temp) {
                 $device_ids[] = $temp->device_id;
             }
+
             $bib_numbers_sql = DB::table('device_mapping')
                 ->select('bib_number')
                 ->where('event_id', $event_id)
                 ->get();
+
+            $bib_numbers = [];
             foreach ($bib_numbers_sql as $temp) {
                 $bib_numbers[] = $temp->bib_number;
             }

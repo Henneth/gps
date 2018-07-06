@@ -10,9 +10,9 @@ class RawDataController extends Controller {
 
     public function index() {
         if (isset($_GET['live']) && $_GET['live'] == 1){
-            $data = DB::table('gps_live.gps_data')->orderby('datetime', 'desc')->limit(1000)->get();
+            $data = DB::table('gps_live.gps_data')->orderby('datetime', 'desc')->limit(3000)->get();
         }else {
-            $data = DB::table('gps_data')->orderby('datetime', 'desc')->limit(1000)->get();
+            $data = DB::table('gps_data')->orderby('datetime', 'desc')->limit(3000)->get();
         }
         // print_r($data);
         foreach ($data as &$value) {

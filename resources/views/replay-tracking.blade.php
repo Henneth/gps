@@ -697,7 +697,7 @@
             var time = offset + timestamp_from;
 
             var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
-            // console.log(dateString);
+            // console.log(data);
 
             for (var device_id in data) {
                 if (athleteMarkers[device_id]) {

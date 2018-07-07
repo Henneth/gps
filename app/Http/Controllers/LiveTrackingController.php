@@ -16,6 +16,8 @@ class LiveTrackingController extends Controller {
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
         // shell_exec("php ".public_path()."/calculation.php");
 
+        echo "success";
+
         $event = DB::table('gps_live.events')->where('event_id', $event_id)->first();
         $route = DB::table('gps_live.routes')
             ->where('event_id',$event_id)

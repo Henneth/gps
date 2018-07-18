@@ -31,7 +31,7 @@ class LiveTrackingController extends Controller {
             }
             $jsonData = json_encode($data);
             // used in profile tab
-            $profile = DeviceMapping_Model::getAthletesProfile($event_id, true);
+            $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false, true);
         }else{
             $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, false);
             foreach ($data as $value) {
@@ -40,7 +40,7 @@ class LiveTrackingController extends Controller {
             }
             $jsonData = json_encode($data);
             // used in profile tab
-            $profile = DeviceMapping_Model::getAthletesProfile2($event_id, true);
+            $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true);
         }
 
         $jsonProfile = json_encode($profile);
@@ -102,7 +102,7 @@ class LiveTrackingController extends Controller {
                 $value->distance = !empty($progressData) ? $progressData[0]->distance : 0;
             }
             $jsonData = json_encode($data);
-            $profile = DeviceMapping_Model::getAthletesProfile($event_id, true);
+            $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false, true);
         }else{
             $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, false);
             foreach ($data as $value) {
@@ -110,7 +110,7 @@ class LiveTrackingController extends Controller {
                 $value->distance = !empty($progressData) ? $progressData[0]->distance : 0;
             }
             $jsonData = json_encode($data);
-            $profile = DeviceMapping_Model::getAthletesProfile2($event_id, true);
+            $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true);
         }
 
         // get checkpoint times

@@ -60,7 +60,7 @@ Route::get('event/{event_id}', function ($event_id) {
 Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index')->name('live-tracking');
 Route::get('event/{event_id}/live-tracking/poll', 'LiveTrackingController@poll');
 Route::get('event/{event_id}/replay-tracking', 'ReplayTrackingController@index')->name('replay-tracking');
-
+Route::get('event/{event_id}/replay-tracking/poll', 'ReplayTrackingController@poll');
 
 // Admins
 Route::group(['middleware' => 'auth'], function () {

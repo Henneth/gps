@@ -44,6 +44,7 @@ class ReplayTrackingController extends Controller {
         // get athlete's distances for elevation chart
         $routeIndexes = (array) ReplayTracking_Model::getRouteDistance($event_id);
         $routeIndexesByDevice = $this->group_by($routeIndexes, "device_id");
+        $routeIndexesByDevice = json_encode($routeIndexesByDevice);
 
         // get checkpoint times
         $getCheckpointData = (array) ReplayTracking_Model::getCheckpointData($event_id);
@@ -54,9 +55,6 @@ class ReplayTrackingController extends Controller {
         // get checkpoint distances
         $tempCheckpointDistances = DB::table('route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();
         $checkpointDistances = json_encode($tempCheckpointDistances);
-
-        $routeIndexesByDevice = json_encode($routeIndexesByDevice);
-        $profile = DeviceMapping_Model::getAthletesProfile($event_id);
 
         return view('replay-tracking')->with(array('data' => $jsonData, 'profile' => $profile, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $route, 'event'=>$event, 'routeIndexesByDevice' => $routeIndexesByDevice, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances));
     }

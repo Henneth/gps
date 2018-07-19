@@ -69,7 +69,7 @@ class ReplayTrackingController extends Controller {
 
         // run calculation.php
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
-        // // shell_exec("php ".public_path()."/calculation.php replay ".$event_id);
+        // shell_exec("php ".public_path()."/calculation.php replay ".$event_id);
 
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
@@ -135,12 +135,12 @@ class ReplayTrackingController extends Controller {
         return response()->json($data);
     }
 
-    private function group_by($array, $key) {
-        $return = array();
-        foreach($array as $val) {
-            $return[$val->$key][] = $val;
-        }
-        return $return;
-    }
+    // private function group_by($array, $key) {
+    //     $return = array();
+    //     foreach($array as $val) {
+    //         $return[$val->$key][] = $val;
+    //     }
+    //     return $return;
+    // }
 
 }

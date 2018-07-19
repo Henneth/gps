@@ -313,7 +313,7 @@
 
                                 }
                             @endif
-                            
+
             				infowindow.setContent(html);
             				infowindow.open(map, marker);
             			}
@@ -621,7 +621,7 @@
                         }
                     }
                 });
-            }, 10000);//time in milliseconds
+            }, 60000);//time in milliseconds
 
         }
 

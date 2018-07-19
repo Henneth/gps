@@ -69,18 +69,10 @@ class ReplayTrackingController extends Controller {
 
         // run calculation.php
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
-        // shell_exec("php ".public_path()."/calculation.php replay ".$event_id);
+        // // shell_exec("php ".public_path()."/calculation.php replay ".$event_id);
 
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
-
-        // $array = [];
-        // foreach ($data as $key => $value) {
-        //     $array[$value->device_id][] = $value;
-        // }
-        // echo "<pre>".print_r($array,1)."</pre>";
-
-        // $jsonData = json_encode($array);
         $timestamp_from = strtotime($event->datetime_from." HKT");
         $timestamp_to = strtotime($event->datetime_to." HKT");
 
@@ -88,26 +80,6 @@ class ReplayTrackingController extends Controller {
             ->where('event_id',$event_id)
             ->select('route')
             ->first();
-
-//  - -- - -- - -- - -- -- - -- -- - -- -- - -
-        // to-do tasks, improve the processing time of data
-        // refer to poll function below, filter by device_id
-
-        // get athlete's distances for elevation chart
-        // $routeIndexes = (array) ReplayTracking_Model::getRouteDistance($event_id);
-        // $routeIndexesByDevice = $this->group_by($routeIndexes, "device_id");
-        // // echo "<pre>".print_r($routeIndexesByDevice,1)."</pre>";
-        //
-        // $routeIndexesByDevice = json_encode($routeIndexesByDevice);
-
-//  - -- - -- - -- - -- -- - -- -- - -- -- - -
-
-
-        // get checkpoint times
-        // $getCheckpointData = (array) ReplayTracking_Model::getCheckpointData($event_id);
-        // $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
-        // $checkpointData = json_encode($tempCheckpointData);
-        // echo "<pre>".print_r($tempCheckpointData,1)."</pre>";
 
         // get checkpoint distances
         $tempCheckpointDistances = DB::table('route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();

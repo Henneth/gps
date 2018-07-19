@@ -68,7 +68,7 @@
 
 @section('js')
     <script>
-    var profile = {!! json_encode($profile) !!};
+        var profile = {!! json_encode($profile) !!};
         // console.log(profile);
 
         $(function () {

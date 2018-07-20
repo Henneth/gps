@@ -14,13 +14,7 @@
 </div>
 <div>
     <div class="nav-tabs-custom">
-        <ul class="nav nav-tabs">
-            <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
-            @if($event->event_type =='fixed route')
-                <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation chart</a></li>
-            @endif
-            <li id="profile-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Athletes</a></li>
-        </ul>
+        @include('replay-tracking-tabbar')
         <div class="tab-content">
             <div class="flex-container form-group replay-controls-wrapper">
                 <button type="button" class="replay-controls play btn btn-primary">Play</button>
@@ -107,9 +101,8 @@
 
                             if (eventType =='fixed route' && currentRouteIndex[content['athlete']['device_id']]){
                                 html += '<div>Distance: <b>' + currentRouteIndex[content['athlete']['device_id']]['distance'].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
-                                // console.log(content);
 
-                                if (content['checkpointData']) {
+                                if (content['checkpointData'] && content['checkpointData'].length != 0) {
                                     html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
                                     // show athlete reaches at checkpoint time
                                     var checkpointTimes =content['checkpointData'];

@@ -20,9 +20,9 @@ Route::group(array('prefix' => ''), function() {
     ->first();
 
     if ($data) {
-        define('current_event', $data->event_id);
+        define('live_event', $data->event_id);
     }else {
-        define('current_event', false);
+        define('live_event', false);
     }
 
     // get the lastest event ID from 'event' table, column name 'current'

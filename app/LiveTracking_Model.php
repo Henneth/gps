@@ -46,16 +46,6 @@ class LiveTracking_Model extends Model
 
 	public static function getLocationsViaDeviceID($event_id, $datetime_from, $datetime_to, $deviceID) {
 
-		$ongoing = DB::connection('gps_live')->select("SELECT datetime_to > NOW() AS ongoing, datetime_to FROM events WHERE event_id = :event_id LIMIT 1", [
-			'event_id' => $event_id
-		]);
-		if (!empty($ongoing) && $ongoing[0]->ongoing) {
-			$upperTimeLimit = 'NOW()';
-		} else {
-			$upperTimeLimit = '"'.$ongoing[0]->datetime_to.'"';
-		}
-
-
 		$athlete = DB::connection('gps_live')->select("SELECT device_mapping.device_id, device_mapping.status, athletes.athlete_id, device_mapping.bib_number, athletes.first_name, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.is_public, athletes.colour_code, countries.country, countries.code
 			FROM device_mapping
 			INNER JOIN athletes
@@ -89,24 +79,23 @@ class LiveTracking_Model extends Model
 			INNER JOIN device_mapping
 			ON gps_data.device_id = device_mapping.device_id
 			LEFT JOIN (SELECT device_id, reached_at from route_progress where event_id = :event_id1 and device_id = :device_id1 and route_index = (SELECT max(route_index) as maxrouteindex from route_distances where event_id = :event_id2)) t2
-		ON (t2.device_id = device_mapping.device_id)
-		WHERE device_mapping.event_id = :event_id3
-		AND device_mapping.device_id = :device_id2
-		AND datetime >= :datetime_from
-		AND datetime <= :datetime_to
-		AND (start_time IS NULL OR (start_time IS NOT NULL AND datetime >= start_time))
-		AND (end_time IS NULL OR (end_time IS NOT NULL AND datetime <= end_time))
-		AND DATE_SUB(".$upperTimeLimit.", INTERVAL 10 MINUTE) < gps_data.datetime AND gps_data.datetime < ".$upperTimeLimit."
-		AND (reached_at IS NULL OR (reached_at IS NOT NULL AND datetime <= reached_at))
-		ORDER BY datetime DESC, id DESC", [
-		"event_id1"=>$event_id,
-		"event_id2"=>$event_id,
-		"event_id3"=>$event_id,
-		"device_id1"=>$deviceID,
-		"device_id2"=>$deviceID,
-		"datetime_from"=>$datetime_from,
-		"datetime_to"=>$datetime_to
-		]);
+			ON (t2.device_id = device_mapping.device_id)
+			WHERE device_mapping.event_id = :event_id3
+			AND device_mapping.device_id = :device_id2
+			AND datetime >= :datetime_from
+			AND datetime <= :datetime_to
+			AND (start_time IS NULL OR (start_time IS NOT NULL AND datetime >= start_time))
+			AND (end_time IS NULL OR (end_time IS NOT NULL AND datetime <= end_time))
+			AND (reached_at IS NULL AND datetime >= DATE_SUB(NOW(), INTERVAL 10 MINUTE) OR (reached_at IS NOT NULL AND datetime <= reached_at AND datetime >= DATE_SUB(reached_at, INTERVAL 10 MINUTE)))
+			ORDER BY datetime DESC, id DESC", [
+			"event_id1"=>$event_id,
+			"event_id2"=>$event_id,
+			"event_id3"=>$event_id,
+			"device_id1"=>$deviceID,
+			"device_id2"=>$deviceID,
+			"datetime_from"=>$datetime_from,
+			"datetime_to"=>$datetime_to
+			]);
 
 		$array = [];
 		$array['athlete'] = !empty($athlete) ? $athlete[0] : null;

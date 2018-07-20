@@ -79,9 +79,6 @@
                 route = {!!$route->route!!};
             @endif
 
-            // Add athleteMarkers
-            athleteMarkers = [];
-
             // check device_id in localStorage, "ON" data will be save in localStorage
             var temp = localStorage.getItem("visibility{{$event_id}}");
             var array = jQuery.parseJSON( temp );
@@ -95,23 +92,12 @@
                 data: {'device_ids': showOffKey ? JSON.stringify(showOffKey) : null},
                 dataType: "json",
                 success:function(ajax_data) {
-                    // console.log(ajax_data);
-                    // document.getElementById("loading").style.display="none";
                     $('#loading').fadeOut('slow',function(){$(this).remove();});
                     data = ajax_data;
 
-                    // clear and redraw elevation chart
-                    elevationData = new google.visualization.DataTable();
-                    elevationData.addColumn('number', 'Distance');
-                    elevationData.addColumn('number', 'Elevation');
-                    elevationData.addColumn({type: 'string', role:'annotation'});
-                    elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-                    elevationData.addColumn('number', 'dummy');
-                    elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
-                    elevationData.addColumn({type: 'string', role:'annotation'});
                     currentRouteIndex = lastPositionData();
                     drawChart(currentRouteIndex);
-                    // console.log(currentRouteIndex);
+                    console.log(currentRouteIndex);
                 },
                 error:function() {
                     $('#loading').fadeOut('slow',function(){$(this).remove();});
@@ -174,17 +160,6 @@
             // Because the samples are equidistant, the 'Sample'
             // column here does double duty as distance along the
             // X axis.
-            elevationData = new google.visualization.DataTable();
-            elevationData.addColumn('number', 'Distance');
-            elevationData.addColumn('number', 'Elevation');
-            elevationData.addColumn({type: 'string', role:'annotation'});
-            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-            elevationData.addColumn('number', 'dummy');
-            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
-            elevationData.addColumn({type: 'string', role:'annotation'});
-
-
-
 
             var chartHeight = $(window).height() * .8;
 
@@ -261,6 +236,15 @@
 
         function drawChart(currentRouteIndex) {
 
+            elevationData = new google.visualization.DataTable();
+            elevationData.addColumn('number', 'Distance');
+            elevationData.addColumn('number', 'Elevation');
+            elevationData.addColumn({type: 'string', role:'annotation'});
+            elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
+            elevationData.addColumn('number', 'dummy');
+            elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
+            elevationData.addColumn({type: 'string', role:'annotation'});
+
             for (var i = 0; i < elevations_global.length; i++) {
                 // the current athlete's distance between
                 var dist = distance/elevations_global.length * i;
@@ -270,10 +254,11 @@
                 var athleteCount = 0;
                 var str = "";
                 str += 'Distance: <b>' + String((distance/elevations_global.length * i).toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m</b><br/>Elevation: <b>' + elevations_global[i].elevation.toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m</b><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
+
                 for (var j in currentRouteIndex) {
                     if(currentRouteIndex[j]['distance']) {
-                        var athletheDist = currentRouteIndex[j]['distance']['distance'];
-                        var athletheDeviceID = currentRouteIndex[j]['athlete']['device_id'];
+                        var athleteDist = currentRouteIndex[j]['distance']['distance'];
+
                         var athleteBibNumber = currentRouteIndex[j]['athlete']['bib_number'];
                         var athleteFirstName = currentRouteIndex[j]['athlete']['first_name'];
                         var athleteLastName = currentRouteIndex[j]['athlete']['last_name'];
@@ -281,7 +266,7 @@
                         var athleteColour = currentRouteIndex[j]['athlete']['colour_code'];
                         // console.log(distance);
 
-                        if (dist <= athletheDist && athletheDist < nextDist){
+                        if (dist <= athleteDist && athleteDist < nextDist){
                             str += 'Bib Number: <b>' + athleteBibNumber + '</b><br/>';
                             str += 'First Name: <b>' + athleteFirstName + '</b><br/>';
                             str += 'Last Name: <b>' + athleteLastName + '</b><br/><hr class="end" style="width: 100%; positive: absolute; margin-left: 0;">';
@@ -450,41 +435,9 @@
                 var time = offset + timestamp_from;
 
                 var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
-                // console.log(data);
 
-                // for (var device_id in data) {
-                //     if (athleteMarkers[device_id]) {
-                //         // console.log(device_id);
-                //         var markerHasData = false;
-                //         athleteMarkers[device_id].setVisible(true);
-                //         // console.log(data[device_id]['data']);
-                //         for (var i in data[device_id]['data']) {
-                //             // console.log(time);
-                //             if (data[device_id]['data'][i]['timestamp'] <= time) {
-                //                 // console.log("ok");
-                //                 athleteMarkers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id]['data'][i]['latitude_final']), parseFloat(data[device_id]['data'][i]['longitude_final'])) );
-                //                 markerHasData = true;
-                //                 break;
-                //             }
-                //         }
-                //         if (!markerHasData) {
-                //             athleteMarkers[device_id].setVisible(false);
-                //         }
-                //     }
-                // }
-                @if($event->event_type =='fixed route')
-                    // clear and redraw elevation chart
-                    elevationData = new google.visualization.DataTable();
-                    elevationData.addColumn('number', 'Distance');
-                    elevationData.addColumn('number', 'Elevation');
-                    elevationData.addColumn({type: 'string', role:'annotation'});
-                    elevationData.addColumn({type: 'string', role:'annotationText', p: {html: true}});
-                    elevationData.addColumn('number', 'dummy');
-                    elevationData.addColumn({type: 'string', role:'tooltip', p: {html: true}});
-                    elevationData.addColumn({type: 'string', role:'annotation'});
-                    currentRouteIndex = dataFilterByTime(time);
-                    drawChart(currentRouteIndex);
-                @endif
+                currentRouteIndex = dataFilterByTime(time);
+                drawChart(currentRouteIndex);
             }
             $('.replay-controls.pause').click(function() {
                 $(this).prop('disabled', 'disabled').removeClass('btn-primary').addClass('btn-default');

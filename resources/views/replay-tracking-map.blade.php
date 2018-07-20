@@ -78,7 +78,7 @@
             @if ($checkpointDistances)
 
                 // Function to add a marker to the map.
-                function addMarker(location, map, content) {
+                function addMarker(map, content) {
                     var borderStyle = '<style>.id' + content['athlete']['device_id'] + '.label_content:after { border-top: solid 8px #' + content['athlete']['colour_code'] + '; }</style>';
                     var marker = new RichMarker({
                         map: map,
@@ -91,6 +91,7 @@
                     // info window
                     google.maps.event.addListener(marker, 'click', function (marker) {
             			return function () {
+                            console.log(marker);
                             var html = '<div>Bib Number: <b>' + content['athlete']['bib_number'] + '</b></div>';
                             if( content['athlete']['first_name'] ){ html += '<div>First Name: <b>' + content['athlete']['first_name'] + '</b></div>'; }
                             if( content['athlete']['last_name'] ){ html += '<div>Last Name: <b>' + content['athlete']['last_name'] + '</b></div>'; }
@@ -242,15 +243,14 @@
                         for (var key in data) {
                             if (data[key]['data'] && data[key]['data'].length != 0) {
                                 // console.log(data[key]);
-                                var location = {lat: parseFloat(data[key]['data'][0]['latitude_final']), lng: parseFloat(data[key]['data'][0]['longitude_final'])};
 
                                 if (temp !== null) { // localStorage is not empty
                                     if (jQuery.inArray(data[key]['athlete']['device_id'], array) !== -1) {
-                                        athleteMarkers[key] = (addMarker(location, map, data[key]));
+                                        athleteMarkers[key] = (addMarker(map, data[key]));
                                     }
                                 } else {
                                     if (data[key]['athlete']['status'] == "visible"){
-                                        athleteMarkers[key] = (addMarker(location, map, data[key]));
+                                        athleteMarkers[key] = (addMarker(map, data[key]));
                                     }
                                 }
                             }

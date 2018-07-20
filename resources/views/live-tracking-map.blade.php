@@ -9,8 +9,11 @@
 @endsection
 
 @section('main-content')
-<div class="container-flex">
 
+<div class="container-flex">
+    <div class="loading" id="loading" style="display: none;">
+        <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+    </div>
     <div class="nav-tabs-custom">
         <ul class="nav nav-tabs">
             <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
@@ -40,6 +43,76 @@
             height:80vh;
             width: 100%;
         }
+
+        .lds-ellipsis {
+          display: inline-block;
+          position: relative;
+          width: 64px;
+          height: 64px;
+        }
+        .lds-ellipsis div {
+          position: absolute;
+          top: 27px;
+          width: 11px;
+          height: 11px;
+          border-radius: 50%;
+          background: #fff;
+          animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        .lds-ellipsis div:nth-child(1) {
+          left: 6px;
+          animation: lds-ellipsis1 0.6s infinite;
+        }
+        .lds-ellipsis div:nth-child(2) {
+          left: 6px;
+          animation: lds-ellipsis2 0.6s infinite;
+        }
+        .lds-ellipsis div:nth-child(3) {
+          left: 26px;
+          animation: lds-ellipsis2 0.6s infinite;
+        }
+        .lds-ellipsis div:nth-child(4) {
+          left: 45px;
+          animation: lds-ellipsis3 0.6s infinite;
+        }
+        @keyframes lds-ellipsis1 {
+          0% {
+            transform: scale(0);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+        @keyframes lds-ellipsis3 {
+          0% {
+            transform: scale(1);
+          }
+          100% {
+            transform: scale(0);
+          }
+        }
+        @keyframes lds-ellipsis2 {
+          0% {
+            transform: translate(0, 0);
+          }
+          100% {
+            transform: translate(19px, 0);
+          }
+        }
+
+        .loading {
+            position: fixed;
+            z-index: 10000;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .label_content{
             position:relative;
             border-radius: 4px;
@@ -88,29 +161,21 @@
     <!-- RichMarker -->
     <script src="{{ asset('/js/richmarker-compiled.js') }}" type="text/javascript"></script>
 
-    {{-- elevation chart --}}
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
     <script>
-
-        // var chart;
-        // var chartOptions;
-        // var elevationData;
-        // var distance = 0;
         var IsCP;
         var map;
-        var infowindow2;
-        // var elevations_global;
+        var infowindow, infowindow2;
         var checkpointDistances;
         var markerList = []; //array to store marker
         var firstLoad = true;
-        var minTime;
         var showOffKey; // store "ON" device_id, data retrive from localStorage
         var tailArray = [];
         var data;
         var eventType;
+        var athleteMarkers = [];
 
         eventType = '{{$event->event_type}}';
+        checkpointDistances = {!! $checkpointDistances !!};
 
         function findObjectByKey(array, key, value) {
             for (var i = 0; i < array.length; i++) {
@@ -121,73 +186,63 @@
             return null;
         }
 
-        function initMap() {
 
-            checkpointDistances = {!! $checkpointDistances !!};
+        function initMap() {
 
             @if ($checkpointDistances)
 
                 // Function to add a marker to the map.
-                function addMarker(location, map, content) {
+                function addMarker(map, content) {
                     // Add the marker at the clicked location, and add the next-available label
                     // from the array of alphabetical characters.
 
-                    var borderStyle = '<style>.id' + content['device_id'] + '.label_content:after { border-top: solid 8px #' + content['colour_code'] + '; }</style>';
+                    var borderStyle = '<style>.id' + content['athlete']['device_id'] + '.label_content:after { border-top: solid 8px #' + content['athlete']['colour_code'] + '; }</style>';
                     var marker = new RichMarker({
                         map: map,
                         flat: true,
-                        position: new google.maps.LatLng(parseFloat(content['latitude_final']), parseFloat(content['longitude_final'])),
-                        content: borderStyle + '<div><div class="id' + content['device_id'] + ' label_content" style="background-color: #' + content['colour_code'] + '">' + content['bib_number']
+                        position: new google.maps.LatLng(parseFloat(content['data'][0]['latitude_final']), parseFloat(content['data'][0]['longitude_final'])),
+                        content: borderStyle + '<div><div class="id' + content['athlete']['device_id'] + ' label_content" style="background-color: #' + content['athlete']['colour_code'] + '">' + content['athlete']['bib_number']
                         + '</div></div>'
                     });
 
-                    // get checkpoint distance relevant
-                    var checkpointData = {!! $checkpointData !!};
-                    // console.log(checkpointData);
-
                     google.maps.event.addListener(marker, 'click', (function (marker) {
             			return function () {
-                            // console.log(marker);
-                            var html = '<div>Bib Number: <b>' + content['bib_number'] + '</b></div>';
-                            if( content['first_name'] ){ html += '<div>First Name: <b>' + content['first_name'] + '</b></div>'; }
-                            if( content['last_name'] ){ html += '<div>Last Name: <b>' + content['last_name'] + '</b></div>'; }
-                            if( content['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['zh_full_name'] + '</b></div>'; }
-                            if( content['country'] ){ html += '<div>Country: <b>' + content['country'] + '</b></div>'; }
-                            html += '<div>Device ID: <b>' + content['device_id'] + '</b></div>';
+                            var html = '<div>Bib Number: <b>' + content['athlete']['bib_number'] + '</b></div>';
+                            if( content['athlete']['first_name'] ){ html += '<div>First Name: <b>' + content['athlete']['first_name'] + '</b></div>'; }
+                            if( content['athlete']['last_name'] ){ html += '<div>Last Name: <b>' + content['athlete']['last_name'] + '</b></div>'; }
+                            if( content['athlete']['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['athlete']['zh_full_name'] + '</b></div>'; }
+                            if( content['athlete']['country'] ){ html += '<div>Country: <b>' + content['athlete']['country'] + '</b></div>'; }
+                            html += '<div>Device ID: <b>' + content['athlete']['device_id'] + '</b></div>';
 
                             if (eventType == "fixed route"){
-                                if ( marker.profile ) { // update
-                                    html += '<div>Location: <b>' + parseFloat(marker.profile['latitude_final']).toFixed(6) + ', ' + parseFloat(marker.profile['longitude_final']).toFixed(6) + '</b></div>';
-                                    html += '<div>Distance: <b>' + marker.profile['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
-                                } else{ // initialize
-                                    html += '<div>Location: <b>' + parseFloat(location['lat']).toFixed(6) + ', ' + parseFloat(location['lng']).toFixed(6) + '</b></div>';
-                                    html += '<div>Distance: <b>' + content['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
-                                }
+                                if ( marker ) { // update
+                                    html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
+                                    if( content['distances']){
+                                        var currentRouteIndex = content['distances'].length - 1;
 
+                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
+                                    }
+                                } else{ // initialize
+                                    html += '<div>Location: <b>' + parseFloat(content['data'][0]['latitude_final']).toFixed(6) + ', ' + parseFloat(content['data'][0]['longitude_final']).toFixed(6) + '</b></div>';
+                                    if( content['distances']){
+                                        var currentRouteIndex = content['distances'].length - 1;
+
+                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
+                                    }
+                                }
                                 // if there is checkpoint time
-                                if ( marker.checkpointData || checkpointData[content['device_id']]){
+                                if ( content['checkpointData'] ){
 
                                     html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
 
-                                    if ( marker.checkpointData ){ // update
-                                        console.log('updated data');
+                                    var checkpointTimes = content['checkpointData'];
+console.log(checkpointTimes);
 
-                                        // show athletes' checkpoint time -- reached at
-                                        var checkpointTimes = marker.checkpointData;
-
-                                    } else if (checkpointData[content['device_id']]) { // initialize
-                                        console.log('initial data');
-
-                                        // show athletes' checkpoint time -- reached at
-                                        var checkpointTimes = checkpointData[content['device_id']];
-
-                                    }
-
-
-                                    // get the latest checkpoint number
+                                    // get the latest checkpoint index, is a number
                                     var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint'];
-                                    var lastCheckpoint = minTime[minTime.length-1]['checkpoint'];
-
+                                    // get last checkpoint index from checkpoints' list, is a number
+                                    var lastCheckpoint = checkpointDistances[checkpointDistances.length-1]['checkpoint'];
+console.log(lastCheckpoint);
                                     for (var i = 0; i < checkpointTimes.length; i++) {
                                         if (lastCheckpoint == checkpointTimes[i]['checkpoint']) {
                                             html += '<div>Finish: <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
@@ -205,27 +260,26 @@
                                         // get the latest checkpoint reached_at
                                         var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['reached_at']).getTime();
                                         // match then get min time of checkpoints
-                                        var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(minTime, 'checkpoint', currentCheckpoint+1)['min_time'] + 'Z').getTime();
+                                        var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(checkpointDistances, 'checkpoint', currentCheckpoint+1)['min_time'] + 'Z').getTime();
 
-                                        // minTime: number of checkpoints
+                                        // checkpointDistances: number of checkpoints
                                         // checkpoint number greater than 2 can do time prediction of next checkpooint
-                                        if ( checkpointTimes.length >= 2 ) { // && currentCheckpoint < minTime.length
+                                        if ( checkpointTimes.length >= 2 ) {
 
                                             var fCheckpoint; // new formerCheckpoint
                                             var nCheckpoint; // new next checkpoint
                                             var cCheckpoint; // new current checkpoint
                                             var fCheckpointMintime, nCheckpointMintime, cCheckpointMintime;
                                             var fCheckpointTime, nCheckpointTime, cCheckpointTime;
-                                            // console.log(minTime);
                                             // console.log(checkpointTimes);
                                             var SumOfSpeedRatios = 0;
                                             var SpeedRatioCount = 0;
                                             for (var i = 1; i < checkpointTimes.length; i++) {
-                                                if (findObjectByKey(minTime, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1) && findObjectByKey(minTime, 'checkpoint', i+1)['min_time']) {
+                                                if (findObjectByKey(checkpointDistances, 'checkpoint', i) && findObjectByKey(checkpointTimes, 'checkpoint', i+1) && findObjectByKey(checkpointDistances, 'checkpoint', i+1)['min_time']) {
                                                     fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i)['reached_at']).getTime(); // get reached_at
                                                     nCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint', i+1)['reached_at']).getTime(); // get reached_at
 
-                                                    nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(minTime, 'checkpoint', i+1)['min_time'] + 'Z').getTime();
+                                                    nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(checkpointDistances, 'checkpoint', i+1)['min_time'] + 'Z').getTime();
                                                     SumOfSpeedRatios += (nCheckpointTime-fCheckpointTime) / nCheckpointMintime;
                                                     SpeedRatioCount++;
                                                     // console.log(nCheckpointTime);
@@ -309,7 +363,6 @@
 
                     // Add labels/icons to route markers
                     var CPIndex = 1;
-                    checkpointDistances = {!! $checkpointDistances !!};
 
                     for (var i = 1; i < markerList.length -1; i++) {
                         if (markerList[i].isCheckpoint) {
@@ -357,78 +410,38 @@
                 });
                 infowindow2 = new google.maps.InfoWindow();
 
-                // Add athleteMarkers
-                var athleteMarkers = [];
-
-                // check device_id in localStorage
-                var temp = localStorage.getItem("visibility{{$event_id}}");
-                var array = jQuery.parseJSON( temp );
-                showOffKey = array;
-                // console.log(" array: " + showOffKey );
-
-
-                // // for (var i = 0; i < data.length; i++) {
-                //     var location = {lat: parseFloat(data[i]['latitude_final']), lng: parseFloat(data[i]['longitude_final'])};
+                // if (tail){
+                //     var lineSymbol = {
+                //         path: 'M 0,-1 0,1',
+                //         strokeOpacity: 1,
+                //         scale: 2
+                //     };
+                //     for (var i in tail) {
+                //         var tailCoordinates = [];
                 //
-                //     // localStorage is not empty
-                //     if (temp !== null) {
-                //         if (jQuery.inArray(data[i]['device_id'], array) !== -1) {
-                //             athleteMarkers[data[i]['device_id']] = (addMarker(location, map, data[i]));
+                //         var colourCode = tail[i][0]['colour_code'];
+                //         for (var j = 0; j < tail[i].length; j++) {
+                //             var gpxLat2 = parseFloat(tail[i][j]['latitude_final']);
+                //             var gpxLng2 = parseFloat(tail[i][j]['longitude_final']);
+                //             tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
                 //         }
-                //     // localStorage empty
-                //     } else {
-                //         // check database visible setting
-                //         if (data[i]['status'] == "visible"){
-                //             athleteMarkers[data[i]['device_id']] = (addMarker(location, map, data[i]));
-                //         }
-                //     }
-                // // }
-
-                var tail = {!!$tail!!};
-                if (tail){
-                    var lineSymbol = {
-                        path: 'M 0,-1 0,1',
-                        strokeOpacity: 1,
-                        scale: 2
-                    };
-                    for (var i in tail) {
-                        var tailCoordinates = [];
-
-                        var colourCode = tail[i][0]['colour_code'];
-                        for (var j = 0; j < tail[i].length; j++) {
-                            var gpxLat2 = parseFloat(tail[i][j]['latitude_final']);
-                            var gpxLng2 = parseFloat(tail[i][j]['longitude_final']);
-                            tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
-                        }
-                        // console.log(colourCode);
-                        var tailPath = new google.maps.Polyline({
-                            path: tailCoordinates,
-                            geodesic: true,
-                            strokeColor: '#'+colourCode,
-                            strokeOpacity: 0,
-                            strokeWeight: 2,
-                            icons: [{
-                                icon: lineSymbol,
-                                offset: '0',
-                                repeat: '10px'
-                            }],
-                        });
-                        tailPath.setMap(map);
-                        tailArray[i] = tailPath;
-                    }
-                }
-                console.log(tailArray);
-
-    // Final position
-                // console.log(getFinishedAthletes);
-                // if(getFinishedAthletes){
-                //     for (var i = 0; i < getFinishedAthletes.length; i++) {
-                //         var finishedDeviceID = getFinishedAthletes[i]['device_id'];
-                //         console.log(athleteMarkers[getFinishedAthletes[i]['device_id']]);
-                //         athleteMarkers[getFinishedAthletes[i]['device_id']].setPosition( new google.maps.LatLng(22.407490, 114.237020));
+                //         // console.log(colourCode);
+                //         var tailPath = new google.maps.Polyline({
+                //             path: tailCoordinates,
+                //             geodesic: true,
+                //             strokeColor: '#'+colourCode,
+                //             strokeOpacity: 0,
+                //             strokeWeight: 2,
+                //             icons: [{
+                //                 icon: lineSymbol,
+                //                 offset: '0',
+                //                 repeat: '10px'
+                //             }],
+                //         });
+                //         tailPath.setMap(map);
+                //         tailArray[i] = tailPath;
                 //     }
                 // }
-                // athleteMarkers['4109212383'].setPosition( new google.maps.LatLng(22.407490, 114.237020));
 
             @else
                 var central = {lat: 22.2816616, lng: 114.1577151};
@@ -438,84 +451,56 @@
                 });
             @endif
 
-            setInterval(function()
-            {
+
+            // check device_id in localStorage
+            var temp = localStorage.getItem("visibility{{$event_id}}");
+            var array = jQuery.parseJSON( temp );
+            showOffKey = array;
+
+            function pollData(firstTime = false) {
                 $.ajax({
                     type:"get",
                     url:"{{url('/')}}/event/{{$event_id}}/live-tracking/poll",
                     data: {'device_ids': showOffKey ? JSON.stringify(showOffKey) : null},
                     dataType:"json",
                     success:function(ajax_data) {
+                        if (firstTime) {
+                            $('#loading').fadeOut('slow',function(){$(this).remove();});
+                        }
                         data = ajax_data;
                         console.log('polling...');
-                        var array = ajax_data['data'];
+
                         var checkpointData = ajax_data['checkpointData'];
-                        var currentRouteIndex = ajax_data['currentRouteIndex'];
-                        var tail = ajax_data['tail'];
-                        // console.log(currentRouteIndex);
-
-
-                        // automatically update chart tab --- if showOffKey is not null, localStorage will be used
-                        var currentRouteIndex_filtered = [];
-
-                        if (showOffKey !== null){
-                            for (var i = 0; i < showOffKey.length; i++) {
-                                // console.log("offKey: "+ showOffKey[i]);
-                                for (var j = 0; j < currentRouteIndex.length; j++) {
-                                    if( showOffKey[i] == currentRouteIndex[j]['device_id'] ){
-                                        currentRouteIndex_filtered.push(currentRouteIndex[j]);
-                                    }
-                                }
-                            }
-                            // console.log(currentRouteIndex_filtered);
-                        }else{
-                            for(var i in array ){
-                                // console.log(array);
-                                for (var j = 0; j < currentRouteIndex.length; j++) {
-                                    // console.log(currentRouteIndex[j]);
-
-                                    if ( (array[i]['device_id'] == currentRouteIndex[j]['device_id']) && (array[i]['status'] == "visible") ){
-                                        currentRouteIndex_filtered.push(currentRouteIndex[j]);
-                                    }
-                                }
-                            }
-                            // console.log(currentRouteIndex_filtered);
-                        }
-                        currentRouteIndex = currentRouteIndex_filtered;
-                        @if ($event->event_type == "fixed route")
-                            drawChart(currentRouteIndex);
-                        @endif
-
+                        // console.log(data);
 
                         // check device_id in localStorage
                         var temp = localStorage.getItem("visibility{{$event_id}}");
                         var localStorageArray = jQuery.parseJSON( temp );
                         // console.log("localStorageArray"+localStorageArray);
 
-                        // console.log(currentRouteIndex);
                         // console.log(array);
-                        for (var key in array) {
+                        for (var key in data) {
                             // marker exists
-                            if (athleteMarkers[array[key]['device_id']]) {
-                                athleteMarkers[array[key]['device_id']].setPosition( new google.maps.LatLng(parseFloat(array[key]['latitude_final']), parseFloat(array[key]['longitude_final'])) );
-                                athleteMarkers[array[key]['device_id']].profile = array[key];
-                                athleteMarkers[array[key]['device_id']].checkpointData = checkpointData[array[key]['device_id']];
+                            if (athleteMarkers[key]) {
+                                athleteMarkers[key].setPosition( new google.maps.LatLng(parseFloat(data[key]['data'][0]['latitude_final']), parseFloat(data[key]['data'][0]['longitude_final'])) );
+                                // athleteMarkers[device_id].profile = data[device_id];
+                                // athleteMarkers[device_id].checkpointData = checkpointData[device_id];
                                 // console.log(athleteMarkers[array[key]['device_id']]);
 
                             // marker does not exist
                             } else {
-                                var location = {lat: parseFloat(array[key]['latitude_final']), lng: parseFloat(array[key]['longitude_final'])};
-
-                                // localStorage is not empty
-                                if (temp !== null) {
-                                    if (jQuery.inArray(array[key]['device_id'], localStorageArray) !== -1) {
-                                        athleteMarkers[array[key]['device_id']] = (addMarker(location, map, array[key]));
-                                    }
-                                // localStorage empty
-                                } else {
-                                    // check database visible setting
-                                    if (array[key]['status'] == "visible"){
-                                        athleteMarkers[array[key]['device_id']] = (addMarker(location, map, array[key]));
+                                if (data[key]['data'] && data[key]['data'].length != 0) {
+                                    // localStorage is not empty
+                                    if (temp !== null) {
+                                        if (jQuery.inArray(key, localStorageArray) !== -1) {
+                                            athleteMarkers[key] = (addMarker(map, data[key]));
+                                        }
+                                    // localStorage empty
+                                    } else {
+                                        // check database visible setting
+                                        if (data[key]['athlete']['status'] == "visible"){
+                                            athleteMarkers[key] = (addMarker(map, data[key]));
+                                        }
                                     }
                                 }
                             }
@@ -524,7 +509,6 @@
 
                         // update tails
                         if (typeof(tail) !== "undefined" && tail){
-                            console.log(tail);
 
                             var lineSymbol = {
                                 path: 'M 0,-1 0,1',
@@ -559,9 +543,16 @@
                                 tailArray[i].setMap(map);
                             }
                         }
+                    },
+                    error:function() {
+                        $('#loading').fadeOut('slow',function(){$(this).remove();});
                     }
                 });
-            }, 10000);//time in milliseconds
+            }
+            // Execute the setInterval function without delay the first time
+            $('#loading').show();
+            pollData(true);
+            setInterval(pollData, 30000);//time in milliseconds
 
         }
 
@@ -637,7 +628,6 @@
         $('#home-tab').click(function(){
             window.location.assign(url.origin+url.pathname+'?tab=0');
         })
-
 
     </script>
 

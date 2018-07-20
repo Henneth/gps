@@ -101,6 +101,8 @@ class LiveTrackingController extends Controller {
         // get checkpoint distances
         $tempCheckpointDistances = DB::table('gps_live.route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();
         $checkpointDistances = json_encode($tempCheckpointDistances);
+        // echo "<pre>".print_r($route,1)."</pre>";
+
 
         if (!empty($_GET['tab']) && $_GET['tab'] == 2) {
             if (Auth::check()) {
@@ -112,64 +114,36 @@ class LiveTrackingController extends Controller {
         }
 
         if (!empty($_GET['tab']) && $_GET['tab'] == 1) {
-            return view('live-tracking-map')->with(array('event_id' => $event_id, 'event'=>$event, 'checkpointDistances'=>$checkpointDistances));
+            return view('live-tracking-chart')->with(array('event_id' => $event_id, 'event'=>$event, 'route' => $route, 'checkpointDistances'=>$checkpointDistances));
         }
+        else {
+            return view('live-tracking-map')->with(array('event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'checkpointDistances'=>$checkpointDistances));
+        }
+
 
 // -----------------------------------------
 
-        // data for drawing map
-        if (Auth::check()) {
-            $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, true);
-            foreach ($data as $value) {
-                $progressData = LiveTracking_Model::getRouteDistanceByDevice($event_id, $value->device_id);
-                $value->distance = !empty($progressData) ? $progressData[0]->distance : 0;
-            }
-            $jsonData = json_encode($data);
-            echo "<pre>".print_r($data,1)."</pre>";
 
-            // used in profile tab
-
-        }else{
-            $data = LiveTracking_Model::getLatestLocations($event_id, $event->datetime_from, $event->datetime_to, false);
-            foreach ($data as $value) {
-                $progressData = LiveTracking_Model::getRouteDistanceByDevice($event_id, $value->device_id);
-                $value->distance = !empty($progressData) ? $progressData[0]->distance : 0;
-            }
-            $jsonData = json_encode($data);
-            // used in profile tab
-
-        }
+// // working on this
+//         // get checkpoint times
+//         $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
+//         $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
+//         $checkpointData = json_encode($tempCheckpointData);
+//         // echo "<pre>".print_r($tempCheckpointData,1)."</pre>";
 
 
-        // get checkpoint times
-        $getCheckpointData = (array) LiveTracking_Model::getCheckpointData($event_id);
-        $tempCheckpointData = $this->group_by($getCheckpointData, 'device_id');
-        $checkpointData = json_encode($tempCheckpointData);
 
-        // // get min time of checkpoints
-        // $getMinTime = LiveTracking_Model::getMinTime($event_id);
-        // $getMinTime = json_encode($getMinTime);
-
-
-        // get athlete's distances for elevation chart
-        $currentRouteIndex = LiveTracking_Model::getRouteDistance($event_id);
-        $currentRouteIndex = json_encode($currentRouteIndex);
-
-
-        // Tail
-        if ($event->event_type != 'fixed route'){
-            // get data within 10 minutes for tail
-            $tailTemp = (array) LiveTracking_Model::getTail($event_id);
-            $tail = $this->group_by($tailTemp, 'device_id');
-            $tail = json_encode($tail);
-        } else {
-            $tail = '[]';
-        }
+        // // Tail
+        // if ($event->event_type != 'fixed route'){
+        //     // get data within 10 minutes for tail
+        //     $tailTemp = (array) LiveTracking_Model::getTail($event_id);
+        //     $tail = $this->group_by($tailTemp, 'device_id');
+        //     $tail = json_encode($tail);
+        // } else {
+        //     $tail = '[]';
+        // }
 // -----------------------------------------
 
-        if(empty($_GET['tab']) || $_GET['tab'] == 0) {
-            return view('live-tracking-map')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'tail'=>$tail));
-        }
 
 
         // return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime, 'getFinishedAthletes'=>$getFinishedAthletes, 'tail'=>$tail, 'event_type'=>$event_type));

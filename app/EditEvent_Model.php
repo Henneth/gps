@@ -27,7 +27,7 @@ class EditEvent_Model extends Model
 		// DB::insert("INSERT INTO gps_live.route_progress SELECT * FROM gps.route_progress WHERE event_id = :event_id", ['event_id'=>$event_id]);
 	}
 	public static function copyToArchiveDB($event_id) {
-		shell_exec("php ".public_path()."/calculation.php");
+		// shell_exec("php ".public_path()."/calculation.php");
 
 		DB::insert("INSERT INTO gps.gps_data(device_id, latitude, latitude_logo, latitude_final, longitude, longitude_logo, longitude_final, elevation, battery_level, is_valid, `datetime`, created_at) SELECT device_id, latitude, latitude_logo, latitude_final, longitude, longitude_logo, longitude_final, elevation, battery_level, is_valid, `datetime`, created_at FROM gps_live.gps_data");
 		DB::table('gps_live.gps_data')->truncate();
@@ -58,5 +58,6 @@ class EditEvent_Model extends Model
 		// DB::delete("INSERT INTO gps.route_distances SELECT * FROM gps_live.route_distances WHERE event_id = :event_id", ['event_id'=>$event_id]);
 		DB::table('gps_live.route_distances')->truncate();
 
+		shell_exec("php ".public_path()."/calculation.php replay ".$event_id." > /dev/null 2>/dev/null &");
 	}
 }

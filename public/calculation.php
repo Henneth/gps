@@ -1,7 +1,8 @@
-<!-- calculate athletes's distance between checkpoint -->
+<!-- Start -->
 <?php
+// This script is for calculating athletes' distance progresses
 
-// print_r($argv);
+// $before = microtime(true);
 
 require_once('../setEnv.php');
 
@@ -31,7 +32,7 @@ if ( !empty($argv[1]) && ($argv[1] == 'replay') && is_numeric($argv[2]) ){
     // Event IDs
     $events = $pdo->query('SELECT event_id FROM events WHERE current = 1')->fetchAll();
     if(empty($events)){
-        echo "empty events\n";
+        echo "No live events";
         return;
     }
 }
@@ -79,7 +80,7 @@ foreach ($events as $event) {
     $checkpointData_stmt->execute(array(':event_id' => $event_id));
     $checkpointData = $checkpointData_stmt->fetchAll();
     array_unshift($checkpointData, array("route_index" => 0));
-    echo"<pre>".print_r($checkpointData,1)."</pre>";
+    // echo"<pre>".print_r($checkpointData,1)."</pre>";
 
     // get gps data
     $gps_data_stmt = $pdo->prepare('SELECT * FROM gps_data WHERE :datetime_from <= gps_data.datetime AND gps_data.datetime <= :datetime_to AND id > :lastID');
@@ -127,9 +128,9 @@ foreach ($events as $event) {
                 $lat1 = $routePoint['lat'];
                 $lon1 = $routePoint['lon'];
                 // echo $datum['latitude_final'].'<br/>';
-                $result = round(distance($lat1, $lon1, $lat2, $lon2, 'K') * 1000);
+                $result = distanceUnder100m($lat1, $lon1, $lat2, $lon2);
 
-                if ($result <= 100 && !$finished) {
+                if ($result && !$finished) {
                     if ($lastCheckpointLeft) {
                         if ($key > $lastReachedPoint && $key <= $checkpointData[$reachedCheckpoint+1]['route_index']){
                             if ($key == $checkpointData[$reachedCheckpoint+1]['route_index']) {
@@ -138,7 +139,7 @@ foreach ($events as $event) {
                                     break;
                                 }
                                 $reachedCheckpoint++;
-                                echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
+                                // echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
                                 $finished = true;
                             }
 
@@ -148,7 +149,7 @@ foreach ($events as $event) {
                             $tempArray['reached_at'] = $datum['datetime'];
                             $lastReachedPoint = $key;
                             $cpArray[] = $tempArray;
-                            echo"<pre>".print_r($tempArray,1)."</pre>";
+                            // echo"<pre>".print_r($tempArray,1)."</pre>";
                         }
                     } else {
                         if ($key > $lastReachedPoint && $key < $checkpointData[$reachedCheckpoint+2]['route_index']){
@@ -158,7 +159,7 @@ foreach ($events as $event) {
                                     break;
                                 }
                                 $reachedCheckpoint++;
-                                echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
+                                // echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
                                 if ($reachedCheckpoint == sizeof($checkpointData)-2) {
                                     $lastCheckpointLeft = true;
                                 }
@@ -176,7 +177,7 @@ foreach ($events as $event) {
                             $tempArray['reached_at'] = $datum['datetime'];
                             $lastReachedPoint = $key;
                             $cpArray[] = $tempArray;
-                            echo"<pre>".print_r($tempArray,1)."</pre>";
+                            // echo"<pre>".print_r($tempArray,1)."</pre>";
                         }
                     }
                 }
@@ -193,17 +194,21 @@ foreach ($events as $event) {
     }
 }
 
+
+// $after = microtime(true);
+// echo ($after-$before) . " sec\n";
+
 function checkMinTime($min_time, $prev_time, $current_time) {
     $timeFirst  = strtotime($prev_time);
     $timeSecond = strtotime($current_time);
     $differenceInSeconds = $timeSecond - $timeFirst;
-    echo $differenceInSeconds.' ';
+    // echo $differenceInSeconds.' ';
 
     $str_time = $min_time;
     $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", $str_time);
     sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
     $time_seconds = $hours * 3600 + $minutes * 60 + $seconds;
-    echo $time_seconds;
+    // echo $time_seconds;
 
     return $differenceInSeconds >= $time_seconds;
 }
@@ -255,24 +260,29 @@ function group_by($array, $key) {
 /*::                                                                         :*/
 /*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 //https://www.geodatasource.com/developers/php
-function distance($lat1, $lon1, $lat2, $lon2, $unit) {
-
+// function distance_decap($lat1, $lon1, $lat2, $lon2, $unit) {
+//
+//     $theta = $lon1 - $lon2;
+//     $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+//     $dist = acos($dist);
+//     $dist = rad2deg($dist);
+//     $miles = $dist * 60 * 1.1515;
+//     $unit = strtoupper($unit);
+//
+//     if ($unit == "K") {
+//         return ($miles * 1.609344);
+//     } else if ($unit == "N") {
+//         return ($miles * 0.8684);
+//     } else {
+//         return $miles;
+//     }
+// }
+function distanceUnder100m($lat1, $lon1, $lat2, $lon2) {
     $theta = $lon1 - $lon2;
-    $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-    $dist = acos($dist);
-    $dist = rad2deg($dist);
-    $miles = $dist * 60 * 1.1515;
-    $unit = strtoupper($unit);
-
-    if ($unit == "K") {
-        return ($miles * 1.609344);
-    } else if ($unit == "N") {
-        return ($miles * 0.8684);
-    } else {
-        return $miles;
-    }
+    $alpha = $lat1 - $lat2;
+    $dist = pow(deg2rad($theta),2) + pow(deg2rad($alpha),2) <= 0.000000000246368;
+    return $dist;
 }
-
 
 
 /**
@@ -319,3 +329,6 @@ function pdoMultiInsert($tableName, $data, $pdoObject){
     //Execute our statement (i.e. insert the data).
     return $pdoStatement->execute();
 }
+
+?>
+<!-- End -->

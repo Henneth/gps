@@ -143,7 +143,7 @@
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": '{{ (isset($_GET['live']) && $_GET['live'] == 1) ? "http://localhost:8888/datatables-processing.php?live=1" : "http://localhost:8888/datatables-processing.php"}}',
+                "url": '{{url('/')}}{{ (isset($_GET['live']) && $_GET['live'] == 1) ? "/datatables-processing.php?live=1" : "/datatables-processing.php"}}',
                 "data": function ( d ) {
                     d.datetime_from = $('#time-from').val(),
                     d.datetime_to = $('#time-to').val(),

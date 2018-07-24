@@ -469,6 +469,7 @@ console.log(lastCheckpoint);
                         }
                         data = ajax_data;
                         console.log('polling...');
+                        console.log(data);
 
                         var checkpointData = ajax_data['checkpointData'];
                         // console.log(data);
@@ -504,31 +505,35 @@ console.log(lastCheckpoint);
                                     }
                                 }
                             }
-                        }
 
+                            // get tail data
+                            var tail = data[key]['data'];
+                            // get athlete's colour_code
+                            var colourCode = data[key]['athlete']['colour_code'];
+                            colourCode = colourCode ? colourCode : '000000';
 
-                        // update tails
-                        if (typeof(tail) !== "undefined" && tail){
+                            var tailCoordinates = []; // array to store all Lat & Lng of that athlete
 
-                            var lineSymbol = {
-                                path: 'M 0,-1 0,1',
-                                strokeOpacity: 1,
-                                scale: 2
-                            };
-                            for (var i in tail) {
-                                var tailCoordinates = [];
+                            // update tails
+                            if (typeof(tail) !== "undefined" && tail){
 
-                                var colourCode = tail[i][0]['colour_code'] ? tail[i][0]['colour_code'] : '000000';
-                                for (var j = 0; j < tail[i].length; j++) {
-                                    var gpxLat2 = parseFloat(tail[i][j]['latitude_final']);
-                                    var gpxLng2 = parseFloat(tail[i][j]['longitude_final']);
-                                    tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2})
+                                var lineSymbol = {
+                                    path: 'M 0,-1 0,1',
+                                    strokeOpacity: 1,
+                                    scale: 2
+                                };
+                                for (var i in tail) {
+
+                                    var gpxLat2 = parseFloat(tail[i]['latitude_final']);
+                                    var gpxLng2 = parseFloat(tail[i]['longitude_final']);
+                                    tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2});
                                 }
-                                // console.log(colourCode);
-                                if (typeof(tailArray[i]) !== "undefined" && tailArray[i]){
-                                    tailArray[i].setMap(null);
+
+                                if (typeof(tailArray[key]) !== "undefined" && tailArray[key]){
+                                    tailArray[key].setMap(null);
                                 }
-                                tailArray[i] = new google.maps.Polyline({
+
+                                tailArray[key] = new google.maps.Polyline({
                                     path: tailCoordinates,
                                     geodesic: true,
                                     strokeColor: '#'+colourCode,
@@ -540,7 +545,8 @@ console.log(lastCheckpoint);
                                         repeat: '10px'
                                     }],
                                 });
-                                tailArray[i].setMap(map);
+
+                                tailArray[key].setMap(map);
                             }
                         }
                     },

@@ -72,6 +72,7 @@
         var showOffKey; // store "ON" device_id, data retrive from localStorage
         var data;
         var eventType;
+        var tailArray = [];
 
         eventType = '{{$event->event_type}}';
 
@@ -243,7 +244,7 @@
                     data: {'device_ids': showOffKey ? JSON.stringify(showOffKey) : null},
                     dataType: "json",
                     success:function(ajax_data) {
-                        // console.log(ajax_data);
+                        console.log(ajax_data);
                         // document.getElementById("loading").style.display="none";
                         $('#loading').fadeOut('slow',function(){$(this).remove();});
                         data = ajax_data;
@@ -408,23 +409,64 @@
                 var time = offset + timestamp_from;
 
                 var dateString = moment.unix(time).format("YYYY-MM-DD HH:mm:ss");
-                // console.log(data);
 
                 for (var device_id in data) {
+
                     if (athleteMarkers[device_id]) {
-                        // console.log(device_id);
+
                         var markerHasData = false;
                         athleteMarkers[device_id].setVisible(true);
+
+                        var tailCoordinates = []; // array to store all Lat & Lng of that athlete
+                        var colourCode = data[device_id]['athlete']['colour_code'];
+                        colourCode = colourCode ? colourCode : '000000';
+
+                        // tail
+                        var lineSymbol = {
+                            path: 'M 0,-1 0,1',
+                            strokeOpacity: 1,
+                            scale: 2
+                        };
+                        for (var j = data[device_id]['data'].length - 1; j > 0; j--) {
+                            if (data[device_id]['data'][j]['timestamp'] <= time) {
+
+                                var gpxLat2 = parseFloat(data[device_id]['data'][j]['latitude_final']);
+                                var gpxLng2 = parseFloat(data[device_id]['data'][j]['longitude_final']);
+                                tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2});
+                            }
+                        }
+
+
                         // console.log(data[device_id]['data']);
                         for (var i in data[device_id]['data']) {
-                            // console.log(time);
+
                             if (data[device_id]['data'][i]['timestamp'] <= time) {
                                 // console.log("ok");
                                 athleteMarkers[device_id].setPosition( new google.maps.LatLng(parseFloat(data[device_id]['data'][i]['latitude_final']), parseFloat(data[device_id]['data'][i]['longitude_final'])) );
                                 markerHasData = true;
                                 break;
                             }
+
                         }
+
+                        if (typeof(tailArray[device_id]) !== "undefined" && tailArray[device_id]){
+                            tailArray[device_id].setMap(null);
+                        }
+                        // tail
+                        tailArray[device_id] = new google.maps.Polyline({
+                            path: tailCoordinates,
+                            geodesic: true,
+                            strokeColor: '#'+colourCode,
+                            strokeOpacity: 0,
+                            strokeWeight: 2,
+                            icons: [{
+                                icon: lineSymbol,
+                                offset: '0',
+                                repeat: '10px'
+                            }],
+                        });
+                        tailArray[device_id].setMap(map);
+
                         if (!markerHasData) {
                             athleteMarkers[device_id].setVisible(false);
                         }

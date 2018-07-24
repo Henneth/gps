@@ -14,13 +14,7 @@
             <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
         </div>
         <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-                <li id="home-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'class="active"' : '');} else{echo 'class="active"';} ?> ><a href="#" data-toggle="tab">Map</a></li>
-                @if ($event->event_type == "fixed route")
-                    <li id="chart" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Elevation</a></li>
-                @endif
-                <li id="profile-tab" <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 2 ? 'class="active"' : '');} else{} ?> ><a href="#" data-toggle="tab">Athletes</a></li>
-            </ul>
+            @include('live-tracking-tabbar')
             <div class="tab-content">
                 @if ($event->event_type == "fixed route")
                     <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>

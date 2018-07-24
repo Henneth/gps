@@ -38,10 +38,11 @@ class EditEventController extends Controller {
         $datetime_from = $_POST['start-time'];
         $datetime_to = $_POST['end-time'];
         $event_type = $_POST['optionsRadios'];
+        $hide_others = (isset($_POST['hide_others']) && $_POST['hide_others'] == 'on') ? 1 : 0;
         DB::table('events')
             ->where('event_id', $event_id)
             ->update(
-                ['datetime_from' => $datetime_from, 'datetime_to' => $datetime_to, 'event_type' =>$event_type]
+                ['datetime_from' => $datetime_from, 'datetime_to' => $datetime_to, 'event_type' => $event_type, 'hide_others' => $hide_others]
             );
 
         // clear current column value to zero first if event-live is ticked(1)

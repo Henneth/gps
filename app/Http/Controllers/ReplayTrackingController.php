@@ -110,6 +110,8 @@ class ReplayTrackingController extends Controller {
     }
 
     public function poll($event_id){
+
+        $time_start = microtime(true);
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
         if ( !empty($_GET['device_ids']) ){
@@ -132,6 +134,11 @@ class ReplayTrackingController extends Controller {
                 $data[$deviceID->device_id] = $deviceData;
             }
         }
+
+        $time_end = microtime(true);
+        $execution_time = ($time_end - $time_start);
+        // echo $execution_time;
+
         return response()->json($data);
     }
 

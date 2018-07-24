@@ -90,14 +90,21 @@
                                 <input type="radio" name="optionsRadios" id="optionsRadios2" value="shortest route" {{$event->event_type == "shortest route" ? "checked" : ""}} {{$event->current == 1 ? 'disabled' : ''}}>
                                 Shortest route
                             </label>
-                            <div style="color: #999;">Several checkpoints in sequence without interim locations, map displayed with straight lines between checkpoints, and no elevation chart but tracks the last 10 positions for each device.</div>
+                            <div style="color: #999;">Several checkpoints in sequence without interim locations, map displayed with straight lines between checkpoints, and no elevation chart but tracks the last 10 minutes for each device.</div>
                         </div>
                         <div class="radio">
                             <label>
                                 <input type="radio" name="optionsRadios" id="optionsRadios3" value="no route" {{$event->event_type == "no route" ? "checked" : ""}} {{$event->current == 1 ? 'disabled' : ''}}>
                                 No route
                             </label>
-                            <div style="color: #999;">Several checkpoints not in sequence, no map displayed, and no elevation chart but tracks the last 10 positions for each device.</div>
+                            <div style="color: #999;">Several checkpoints not in sequence, no map displayed, and no elevation chart but tracks the last 10 minutes for each device.</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="hide_others">Hide Other Events:</label>
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="hide_others" {{$event->hide_others === 1 ? 'checked':''}} {{$event->current == 1 ? 'disabled' : ''}}>Hide other events</label>
+                            <div style="color: #999;">Other events will not be shown on pages of this event, but admin wll not be affected by this option.</div>
                         </div>
                     </div>
                     <div class="form-group">

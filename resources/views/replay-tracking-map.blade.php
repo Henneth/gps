@@ -31,7 +31,29 @@
                 </div>
             </div>
             <div class="map-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 0 ? 'active' : '');} else{echo 'active';} ?>" >
-                <div id="map"></div>
+                <div style="position:relative;">
+                    <div id="mySidenavBtn" class="sidenavbtn">
+                        <span id="track-participants-title" onclick="openNav()"><i class="fa fa-users"></i>&nbsp;Track Participants</span>
+                    </div>
+                    <div id="mySidenav" class="sidenav">
+                        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+                        <h4 style="padding:4px 8px; font-weight:600;">Track Participants</h4>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col"></th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Bib Number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id='participants'></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="map"></div> {{-- google map here --}}
+                </div>
+                {{-- <div id="map"></div> --}}
             </div>
             @if($event->event_type =='fixed route')
                 <div  class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" >
@@ -253,6 +275,18 @@
                                     if (data[key]['athlete']['status'] == "visible"){
                                         athleteMarkers[key] = (addMarker(map, data[key]));
                                     }
+                                }
+                            }
+
+                            if (data[key]['athlete']) {
+                                // get athlete's colour_code
+                                var colourCode = data[key]['athlete']['colour_code'];
+                                colourCode = colourCode ? colourCode : '000000';
+
+                                // participants
+                                if(data[key]["athlete"]){
+                                    var d1 = document.getElementById('participants');
+                                    d1.insertAdjacentHTML('afterend', '<td><span class="symbolStyle" style="color: '+'#'+colourCode +';">&#9632;</span></td><td>'+data[key]["athlete"]["first_name"]+' ' +data[key]["athlete"]["last_name"]+'</td><td>'+data[key]["athlete"]["bib_number"]+'</td>');
                                 }
                             }
                         }
@@ -500,6 +534,17 @@
             })
 
         })
+        /* Set the width of the side navigation to 250px */
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "400px";
+            $("#mySidenavBtn").fadeOut();
+        }
+
+        /* Set the width of the side navigation to 0 */
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+            $("#mySidenavBtn").fadeIn();
+        }
 
     </script>
 @endsection
@@ -509,75 +554,6 @@
         #map {
             height:80vh;
             width: 100%;
-        }
-
-        .lds-ellipsis {
-          display: inline-block;
-          position: relative;
-          width: 64px;
-          height: 64px;
-        }
-        .lds-ellipsis div {
-          position: absolute;
-          top: 27px;
-          width: 11px;
-          height: 11px;
-          border-radius: 50%;
-          background: #fff;
-          animation-timing-function: cubic-bezier(0, 1, 1, 0);
-        }
-        .lds-ellipsis div:nth-child(1) {
-          left: 6px;
-          animation: lds-ellipsis1 0.6s infinite;
-        }
-        .lds-ellipsis div:nth-child(2) {
-          left: 6px;
-          animation: lds-ellipsis2 0.6s infinite;
-        }
-        .lds-ellipsis div:nth-child(3) {
-          left: 26px;
-          animation: lds-ellipsis2 0.6s infinite;
-        }
-        .lds-ellipsis div:nth-child(4) {
-          left: 45px;
-          animation: lds-ellipsis3 0.6s infinite;
-        }
-        @keyframes lds-ellipsis1 {
-          0% {
-            transform: scale(0);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-        @keyframes lds-ellipsis3 {
-          0% {
-            transform: scale(1);
-          }
-          100% {
-            transform: scale(0);
-          }
-        }
-        @keyframes lds-ellipsis2 {
-          0% {
-            transform: translate(0, 0);
-          }
-          100% {
-            transform: translate(19px, 0);
-          }
-        }
-
-        .loading {
-            position: fixed;
-            z-index: 10000;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .label_content{

@@ -11,11 +11,11 @@
 @section('main-content')
     <div class="container-flex">
         <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Events</h3>
-            </div>
-            <!-- /.box-header -->
             <div class="box-body">
+                <ul class="nav nav-tabs">
+                    <li class="{{ (!isset($_GET['events'])) ? 'active' : ''}}" ><a href="#">Events</a></li>
+                    <li class="{{ (isset($_GET['events']) && $_GET['events'] == 1) ? 'active' : ''}}" ><a href="#">Port/Event Mapping</a></li>
+                </ul>
                 <table class="table table-bordered">
                     <tbody>
                         <tr>
@@ -33,6 +33,22 @@
                                 <td>{{$event->datetime_to}}</td>
                                 {{-- <td><span class="badge bg-red">55%</span></td> --}}
                             </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th>Ports</th>
+                            <th>Event</th>
+                            {{-- <th style="width: 40px">Label</th> --}}
+                        </tr>
+                        @foreach ($events as $event)
+                            <tr>
+                                <td>{{$event->event_id}}<span style="color:red;text-transform: uppercase;font-style: italic;font-weight: bold;">{{$event->current === 1 ? '&nbsp;&nbsp;●&nbsp;Live' : ''}}</span></td>
+                                <td><select class="form-control"><option>Default select</option></select></td>
+                            </tr>
+
                         @endforeach
                     </tbody>
                 </table>

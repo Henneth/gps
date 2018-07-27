@@ -79,6 +79,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('create-new-event', 'EventController@createNewEvent');
     Route::post('create-new-event/post', 'EventController@createNewEventPost');
 
+    // View all events
+    Route::post('view-all-events/post', 'EventController@portEventMappingPost');
+
     // Athletes
     Route::get('event/{event_id}/athletes', 'AthletesController@index')->name('athletes');
     Route::post('event/{event_id}/athletes/add', 'AthletesController@addAthlete');

@@ -6,7 +6,7 @@ use DB;
 use App\Http\Controllers\Controller;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
-
+use App\CreateEvent_Model as CreateEvent_Model;
 class EventController extends Controller {
 
     public function viewAllEvents() {
@@ -55,7 +55,13 @@ class EventController extends Controller {
         DB::table('events')->insert(
             ['event_name' => $event_name, 'event_type' => $event_type, 'datetime_from' => $start_name, 'datetime_to' => $end_name]
         );
-        return redirect('create-new-event')->with('success', 'Event Created.');
+
+        // get current event_id for creating new gps_live DB
+        $event_id = DB::getPdo()->lastInsertId();
+        CreateEvent_Model::createLiveDB($event_id);
+        echo '<pre>'.print_r($event_id,1).'</pre>';
+
+        // return redirect('create-new-event')->with('success', 'Event Created.');
     }
 
     public function portEventMappingPost(){

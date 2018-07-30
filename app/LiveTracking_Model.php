@@ -44,7 +44,7 @@ class LiveTracking_Model extends Model
 	// }
 // ---------------------------------
 
-	public static function getLocationsViaDeviceID($event_id, $datetime_from, $datetime_to, $deviceID) {
+	public static function getLocationsViaDeviceID($event_id, $datetime_from, $datetime_to, $deviceID, $color) {
 
 		$athlete = DB::connection('gps_live')->select("SELECT device_mapping.device_id, device_mapping.status, athletes.athlete_id, device_mapping.bib_number, athletes.first_name, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.is_public, athletes.colour_code, countries.country, countries.code
 			FROM device_mapping
@@ -53,6 +53,10 @@ class LiveTracking_Model extends Model
 			LEFT JOIN countries
 			ON (countries.code = athletes.country_code)
 			WHERE device_mapping.device_id =:device_id AND device_mapping.event_id =:event_id", ["device_id"=>$deviceID, "event_id"=>$event_id]);
+
+		if (!empty($athlete)) {
+			$athlete[0]->colour_code = $color;
+		}
 
 		$distances = DB::connection('gps_live')->select("SELECT * FROM route_distances
 			INNER JOIN route_progress

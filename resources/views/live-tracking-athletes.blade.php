@@ -5,7 +5,7 @@
 @endsection
 
 @section('contentheader_title')
-    Live Tracking <small>{{$event->event_id == current_event ? $event->event_name : '' }}</small>
+    Live Tracking <small>{{$event->event_id == live_event ? $event->event_name : '' }}</small>
 @endsection
 
 @section('main-content')

@@ -62,13 +62,17 @@ class ReplayTrackingController extends Controller {
 
         // $time_start = microtime(true);
         $event = DB::table('events')->where('event_id', $event_id)->first();
+        $colorArray = ["00FF00","0000FF","FF0000","FFFF00","00FFFF","FF00FF","00FF80","8000FF","FF8000","80FF00","0080FF","FF0080","80FF80","8080FF","FF8080","FFFF80","80FFFF","FF80FF","80FFBF","BF80FF","FFBF80","BFFF80","80BFFF","FF80BF"];
 
         if ( !empty($_GET['device_ids']) ){
             $deviceIDs = json_decode($_GET['device_ids']);
             $data = [];
+
+            $count = 0; // count index of $colorArray
             foreach ($deviceIDs as $key => $deviceID) {
-                $deviceData = ReplayTracking_Model::getLocationsViaDeviceID($event_id, $event->datetime_from, $event->datetime_to, $deviceID);
+                $deviceData = ReplayTracking_Model::getLocationsViaDeviceID($event_id, $event->datetime_from, $event->datetime_to, $deviceID, $colorArray[$count]);
                 $data[$deviceID] = $deviceData;
+                $count++;
             }
         } else {
             // get 20 athletes from db
@@ -78,9 +82,12 @@ class ReplayTrackingController extends Controller {
                 $deviceIDs = DeviceMapping_Model::getAthletesProfile($event_id, false, true);
             }
             $data = [];
+
+            $count = 0; // count index of $colorArray
             foreach ($deviceIDs as $key => $deviceID) {
-                $deviceData = ReplayTracking_Model::getLocationsViaDeviceID($event_id, $event->datetime_from, $event->datetime_to, $deviceID->device_id);
+                $deviceData = ReplayTracking_Model::getLocationsViaDeviceID($event_id, $event->datetime_from, $event->datetime_to, $deviceID->device_id, $colorArray[$count]);
                 $data[$deviceID->device_id] = $deviceData;
+                $count++;
             }
         }
 

@@ -54,8 +54,53 @@ class GPXController extends Controller {
 
         xml_parser_free($xml_parser);
 
-        // echo $rss_parser->array;
-        $route = json_encode($rss_parser->array);
+
+// working on it
+        $gpxArray = $rss_parser->array;
+        $distanceArray = [];
+
+        foreach ($gpxArray as $key => $value) {
+            if ($key == 0) {
+                $lat2 = $value['lat'];
+                $lon2 = $value['lon'];
+                $distanceArray[] = array("lat" => $lat2, "lon" => $lon2);
+            } else {
+                $lat2 = $value['lat'];
+                $lon2 = $value['lon'];
+                // the distance between two points, if it greater than "50m", will be seperate to cut into multiple parts
+                $point_distance = $this->distance_decap($lat1, $lon1, $lat2, $lon2);
+                // below "2" means two point that used to calculate the distance, should ignore them
+                $number_of_sections = ceil($point_distance / 50);
+
+                if ($number_of_sections > 1){
+                    $x = 1;
+                    do {
+                        $other = $number_of_sections - $x;
+                        $add_lat = ( ($lat2 * $x) + ($lat1 * $other) ) / $number_of_sections;
+                        $add_lon = ( ($lon2 * $x) + ($lon1 * $other) ) / $number_of_sections;
+                        $distanceArray[] = array("lat" => $add_lat, "lon" => $add_lon);
+
+
+                        // echo "add lat ".$add_lat;
+                        // echo "add lat ".$add_lon;
+                        $x++;
+                    } while ($x <= $number_of_sections - 1);
+
+                }
+                
+                $distanceArray[] = array("lat" => $lat2, "lon" => $lon2);
+            }
+
+            // store the value of former checkpoint
+            $lat1 = $lat2;
+            $lon1 = $lon2;
+        }
+        // echo '<pre>'.print_r($distanceArray,1).'</pre>';
+
+
+        // echo '<pre>'.print_r($rss_parser->array,1).'</pre>';
+// -----------------------------------
+        $route = json_encode($distanceArray);
 
         DrawRoute_Model::drawRouteUpdate($event_id, $route);
         // print_r($route);
@@ -76,4 +121,51 @@ class GPXController extends Controller {
     //     // print_r($gpxData);
     //     return view('gpx-route')->with(array('event_id' => $event_id, 'gpxData'=>$gpxData));
     // }
+
+
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+/*::                                                                         :*/
+/*::  This routine calculates the distance between two points (given the     :*/
+/*::  latitude/longitude of those points). It is being used to calculate     :*/
+/*::  the distance between two locations using GeoDataSource(TM) Products    :*/
+/*::                                                                         :*/
+/*::  Definitions:                                                           :*/
+/*::    South latitudes are negative, east longitudes are positive           :*/
+/*::                                                                         :*/
+/*::  Passed to function:                                                    :*/
+/*::    lat1, lon1 = Latitude and Longitude of point 1 (in decimal degrees)  :*/
+/*::    lat2, lon2 = Latitude and Longitude of point 2 (in decimal degrees)  :*/
+/*::    unit = the unit you desire for results                               :*/
+/*::           where: 'M' is statute miles (default)                         :*/
+/*::                  'K' is kilometers                                      :*/
+/*::                  'N' is nautical miles                                  :*/
+/*::  Worldwide cities and other features databases with latitude longitude  :*/
+/*::  are available at https://www.geodatasource.com                          :*/
+/*::                                                                         :*/
+/*::  For enquiries, please contact sales@geodatasource.com                  :*/
+/*::                                                                         :*/
+/*::  Official Web site: https://www.geodatasource.com                        :*/
+/*::                                                                         :*/
+/*::         GeoDataSource.com (C) All Rights Reserved 2017		   		     :*/
+/*::                                                                         :*/
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
+// https://www.geodatasource.com/developers/php
+    public function distance_decap($lat1, $lon1, $lat2, $lon2) {
+
+        $theta = $lon1 - $lon2;
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+        $dist = acos($dist);
+        $dist = rad2deg($dist);
+        $miles = $dist * 60 * 1.1515;
+
+        return $miles * 1609.344;
+        // if ($unit == "K") {
+        //     return ($miles * 1.609344);
+        // } else if ($unit == "N") {
+        //     return ($miles * 0.8684);
+        // } else {
+        //     return $miles;
+        // }
+    }
+
 }

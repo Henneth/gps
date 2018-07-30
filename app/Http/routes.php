@@ -13,27 +13,27 @@
 
 Route::group(array('prefix' => ''), function() {
 
-    // get current event ID from 'event' table, column name 'current'
+    // get live event IDs from 'event' table, column name 'live'
     $data = DB::table('events')
     ->select('event_id')
     ->where('live', 1)
-    ->first();
+    ->get();
 
     if ($data) {
-        define('live_event', $data->event_id);
+        define('live_event', $data);
     }else {
         define('live_event', false);
     }
 
-    // get the lastest event ID from 'event' table, column name 'current'
-    $maxEventID = DB::table('events')
-    ->max('event_id');
-
-    if ($maxEventID) {
-        define('maxEventID', $maxEventID);
-    }else {
-        define('maxEventID', false);
-    }
+    // // get the lastest event ID from 'event' table, column name 'live'
+    // $maxEventID = DB::table('events')
+    // ->max('event_id');
+    //
+    // if ($maxEventID) {
+    //     define('maxEventID', $maxEventID);
+    // }else {
+    //     define('maxEventID', false);
+    // }
 
 });
 
@@ -41,17 +41,15 @@ Route::group(array('prefix' => ''), function() {
 Route::get('/', function () {
     return redirect('view-all-events');
 });
-
 Route::get('view-all-events', 'EventController@viewAllEvents');
 Route::get('event/{event_id}', function ($event_id) {
-    // get current event ID from 'event' table, column name 'current'
+    // event is live or not
     $data = DB::table('events')
-    ->select('event_id')
-    ->where('current', 1)
+    ->select('live')
+    ->where('event_id', $event_id)
     ->first();
 
-    if ($data && $data->event_id == $event_id){
-        $event_id = $data->event_id;
+    if ($data && $data->live){
         return redirect('event/'.$event_id.'/live-tracking');
     }else{
         return redirect('event/'.$event_id.'/replay-tracking');
@@ -119,8 +117,8 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 // Data import
-Route::post('data-import', 'DataImportController@import');
-Route::post('data-import-2', 'DataImportController@import2');
+// Route::post('data-import', 'DataImportController@import');
+// Route::post('data-import-2', 'DataImportController@import2');
 
 
 // Authentication routes...

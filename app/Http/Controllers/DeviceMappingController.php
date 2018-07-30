@@ -22,12 +22,12 @@ class DeviceMappingController extends Controller {
             ->where('event_id', $event_id)
             ->get();
 
-        $event = DB::table('events')
-            ->where('event_id',$event_id)
-            ->select('live')
-            ->first();
+        $is_live = DB::table('events')
+            ->select('event_type', 'live')
+        	->where('event_id',$event_id)
+        	->first();
 
-        return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes, 'event' => $event));
+        return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes, 'is_live' => $is_live->live));
     }
     public function addDeviceMapping($event_id) {
         if (empty($_POST['device_id']) || empty($_POST['athlete_bib_num'])) {

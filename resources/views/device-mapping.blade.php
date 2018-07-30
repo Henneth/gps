@@ -13,7 +13,7 @@
 @endsection
 
 @section('contentheader_right')
-<div class="pull-right"><button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$event->current? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
+<div class="pull-right"><button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$is_live? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
 @endsection
 
 @section('main-content')
@@ -43,7 +43,7 @@
                 <!-- /.box-body -->
 
                 <div class="box-footer">
-                    <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Submit</button>
+                    <button type="submit" class="btn btn-primary" {{$is_live? 'disabled' : ''}}>Submit</button>
                 </div>
             </form>
         </div>
@@ -68,9 +68,9 @@
                         <tr>
                             <form method="post" action="{{url('/')}}/event/{{$event_id}}/device-mapping/add">
                                 {{ csrf_field() }}
-                                <td><input class="form-control" name="device_id" placeholder="Device ID" {{$event->current? 'disabled' : ''}}></td>
+                                <td><input class="form-control" name="device_id" placeholder="Device ID" {{$is_live? 'disabled' : ''}}></td>
                                 <td>
-                                    <select name="athlete_bib_num" class="form-control" {{$event->current? 'disabled' : ''}}>
+                                    <select name="athlete_bib_num" class="form-control" {{$is_live? 'disabled' : ''}}>
                                         @foreach ($athletes as $athlete)
                                             <option value="{{$athlete->bib_number}}">{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}})</option>
                                         @endforeach
@@ -81,7 +81,7 @@
                                         <div class="input-group-addon">
                                             <i class="far fa-clock"></i>
                                         </div>
-                                        <input type="text" class="form-control pull-right start-time" name="start_time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm" {{$event->current? 'disabled' : ''}}>
+                                        <input type="text" class="form-control pull-right start-time" name="start_time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm" {{$is_live? 'disabled' : ''}}>
                                     </div>
                                 </td>
                                 <td>
@@ -89,16 +89,16 @@
                                         <div class="input-group-addon">
                                             <i class="far fa-clock"></i>
                                         </div>
-                                        <input type="text" class="form-control pull-right end-time" name="end_time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm" {{$event->current? 'disabled' : ''}}>
+                                        <input type="text" class="form-control pull-right end-time" name="end_time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm" {{$is_live? 'disabled' : ''}}>
                                     </div><div class="check" style="color:red; display: none;">End Time must be after Start Time!</div>
                                 </td>
                                 <td>
-                                    <select name="status" class="form-control" {{$event->current? 'disabled' : ''}}>
+                                    <select name="status" class="form-control" {{$is_live? 'disabled' : ''}}>
                                         <option value="visible">Visible</option>
                                         <option value="hidden">Hidden</option>
                                     </select>
                                 </td>
-                                <td><button type="submit" class="btn btn-primary action-btn" {{$event->current? 'disabled' : ''}}>Add</button></td>
+                                <td><button type="submit" class="btn btn-primary action-btn" {{$is_live? 'disabled' : ''}}>Add</button></td>
                             </form>
                         </tr>
                         @foreach ($devices as $key => $device)
@@ -149,7 +149,7 @@
                                             <option value="hidden" {{($device->status == 'hidden' ? 'selected' : '')}}>Hidden</option>
                                         </select>
                                     </td>
-                                    <td><button type="button" class="edit-btn btn btn-default" {{$event->current? 'disabled' : ''}}>Edit</button><button type="submit" class="btn btn-default action-btn" style="display: none;" {{$event->current? 'disabled' : ''}}>Save</button></td>
+                                    <td><button type="button" class="edit-btn btn btn-default" {{$is_live? 'disabled' : ''}}>Edit</button><button type="submit" class="btn btn-default action-btn" style="display: none;" {{$is_live? 'disabled' : ''}}>Save</button></td>
                                 </form>
                             </tr>
                         @endforeach

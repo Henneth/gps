@@ -1,4 +1,4 @@
-@extends('app')
+$event->live@extends('app')
 
 @section('htmlheader_title')
     Draw Route
@@ -48,7 +48,7 @@
             <!-- /.box-body -->
 
             <div class="box-footer">
-                <button type="submit" class="btn btn-primary" {{$event->live ? 'disabled' : ''}}>Submit</button>
+                <button type="submit" class="btn btn-primary" {{$event->live? 'disabled' : ''}}>Submit</button>
             </div>
         </form>
     </div>
@@ -66,12 +66,12 @@
         <div class="tab-content">
             <div class="map-section tab-pane active" id="tab_1">
                 <div class="form-group">
-            		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;" {{$event->live ? 'disabled' : ''}}><i class="fa fa-undo"></i> Undo</button>
+            		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;" {{$event->live? 'disabled' : ''}}><i class="fa fa-undo"></i> Undo</button>
             		<div class="data-form display-inline-block">
             			<form id="save-route" action="{{ url('/') }}/event/{{$event_id}}/save-route" method="POST">
             				{{ csrf_field() }}
             				<input type="hidden" id="route" name="route">
-            				<button type="sumbit" class="btn btn-primary" id="save" {{$event->live ? 'disabled' : ''}}><i class="far fa-save"></i> Save Route</button>
+            				<button type="sumbit" class="btn btn-primary" id="save" {{$event->live? 'disabled' : ''}}><i class="far fa-save"></i> Save Route</button>
             			</form>
             		</div>{{--
                     <div class="switchBtn">
@@ -80,7 +80,7 @@
                         <label class="tgl-btn" for="cb1"></label>
                     </div> --}}
                     <div class="pull-right">
-                        <button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$event->live ? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
+                        <button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$event->live? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
                     </div>
             	</div>
 

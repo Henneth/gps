@@ -85,15 +85,17 @@ class ReplayTracking_Model extends Model
 		return $data;
 	}
 
-	public static function getLocationsViaDeviceID($event_id, $datetime_from, $datetime_to, $deviceID, $color) {
+	public static function getLocationsViaDeviceID($event_id, $datetime_from, $datetime_to, $deviceID, $color, $elevation_chart = false) {
 		$athlete = DB::select("SELECT device_mapping.device_id, device_mapping.status, athletes.athlete_id, device_mapping.bib_number, athletes.first_name, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.is_public, athletes.colour_code, countries.country, countries.code
 			FROM device_mapping
 			INNER JOIN athletes
 			ON (athletes.bib_number = device_mapping.bib_number AND athletes.event_id = device_mapping.event_id)
 			LEFT JOIN countries
 			ON (countries.code = athletes.country_code)
-			WHERE device_mapping.device_id =:device_id AND device_mapping.event_id =:event_id LIMIT 1", ["device_id"=>$deviceID, "event_id"=>$event_id]);
-		
+			WHERE device_mapping.device_id =:device_id AND device_mapping.event_id =:event_id LIMIT 1", [
+				"device_id"=>$deviceID,
+				"event_id"=>$event_id
+			]);
 		if (!empty($athlete)) {
 			$athlete[0]->colour_code = $color;
 		}
@@ -106,7 +108,7 @@ class ReplayTracking_Model extends Model
 			ORDER BY route_progress.reached_at ASC, route_distances.route_distance_id", [
 				'event_id' => $event_id,
 				'device_id' => $deviceID
-				] );
+			]);
 
 		$checkpointData = [];
 		foreach ($distances as $distance) {
@@ -128,43 +130,34 @@ class ReplayTracking_Model extends Model
 			]);
 		$finished_at = !empty($finished_at) ? $finished_at[0]->reached_at : null;
 
-		$data = DB::select("SELECT gps_data.datetime, unix_timestamp(datetime) AS timestamp, gps_data.id, gps_data.latitude_final, gps_data.longitude_final FROM gps_data
-			INNER JOIN device_mapping
-			ON gps_data.device_id = device_mapping.device_id
-			WHERE device_mapping.event_id = :event_id
-			AND device_mapping.device_id = :device_id
-			AND datetime >= :datetime_from
-			AND datetime <= :datetime_to
-			AND (start_time IS NULL OR (start_time IS NOT NULL AND datetime >= start_time))
-			AND (end_time IS NULL OR (end_time IS NOT NULL AND datetime <= end_time))
-			AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
-			ORDER BY datetime DESC, id DESC", [
-				"event_id"=>$event_id,
-				"device_id"=>$deviceID,
-				"datetime_from"=>$datetime_from,
-				"datetime_to"=>$datetime_to,
-				"finished_at1"=>$finished_at,
-				"finished_at2"=>$finished_at,
-				"finished_at3"=>$finished_at
-			]);
+		if (!$elevation_chart) {
+			$data = DB::select("SELECT gps_data.datetime, unix_timestamp(datetime) AS timestamp, gps_data.id, gps_data.latitude_final, gps_data.longitude_final FROM gps_data
+				INNER JOIN device_mapping
+				ON gps_data.device_id = device_mapping.device_id
+				WHERE device_mapping.event_id = :event_id
+				AND device_mapping.device_id = :device_id
+				AND datetime >= :datetime_from
+				AND datetime <= :datetime_to
+				AND (start_time IS NULL OR (start_time IS NOT NULL AND datetime >= start_time))
+				AND (end_time IS NULL OR (end_time IS NOT NULL AND datetime <= end_time))
+				AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
+				ORDER BY datetime DESC, id DESC", [
+					"event_id"=>$event_id,
+					"device_id"=>$deviceID,
+					"datetime_from"=>$datetime_from,
+					"datetime_to"=>$datetime_to,
+					"finished_at1"=>$finished_at,
+					"finished_at2"=>$finished_at,
+					"finished_at3"=>$finished_at
+				]);
+		}
 
 		$array = [];
 		$array['athlete'] = !empty($athlete) ? $athlete[0] : null;
-		$array['data'] = $data;
+		$array['data'] = !$elevation_chart ? $data : null;
 		$array['distances'] = $distances;
 		$array['checkpointData'] = $checkpointData;
 		return $array;
 		// echo "<pre>".print_r($array,1)."</pre>";
 	}
-
-	// get data from route_distances & route_progress table, get the largest route_index
-	// public static function getRouteDistance($event_id){
-	// 	$data = DB::select("SELECT * FROM route_distances
-	// 	INNER JOIN route_progress ON route_distances.event_id = route_progress.event_id AND route_distances.route_index = route_progress.route_index
-	// 	-- INNER JOIN device_mapping ON route_progress.event_id = device_mapping.event_id AND route_progress.device_id = device_mapping.device_id
-	// 	-- INNER JOIN athletes ON athletes.event_id = device_mapping.event_id AND athletes.bib_number = device_mapping.bib_number
-	// 	WHERE route_distances.event_id = :event_id
-	// 	ORDER BY route_progress.reached_at ASC", ['event_id' => $event_id] );
-	// 	return $data;
-	// }
 }

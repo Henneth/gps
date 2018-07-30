@@ -16,7 +16,7 @@ Route::group(array('prefix' => ''), function() {
     // get current event ID from 'event' table, column name 'current'
     $data = DB::table('events')
     ->select('event_id')
-    ->where('current', 1)
+    ->where('live', 1)
     ->first();
 
     if ($data) {

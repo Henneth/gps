@@ -24,7 +24,7 @@ class DeviceMappingController extends Controller {
 
         $event = DB::table('events')
             ->where('event_id',$event_id)
-            ->select('current')
+            ->select('live')
             ->first();
 
         return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes, 'event' => $event));

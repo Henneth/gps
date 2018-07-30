@@ -20,7 +20,7 @@ class AthletesController extends Controller {
 
         $event = DB::table('events')
             ->where('event_id',$event_id)
-            ->select('current')
+            ->select('live')
             ->first();
         // print_r($athletes);
         return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries, 'event' => $event));

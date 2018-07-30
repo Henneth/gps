@@ -10,14 +10,11 @@ $host = '127.0.0.1';
 $user = 'root';
 $pass = ($env == 'server') ? 'rts123' : 'root';
 $charset = 'utf8mb4';
-$db = 'gps';
-
-// if ( !empty($argv[1]) && ($argv[1] == 'replay') && is_numeric($argv[2]) ){
-//     // Event IDs
-//     $event['event_id'] = $argv[2];
-//     $events = [$event];
-// } else{
-// }
+if ( !empty($argv[1]) && ($argv[1] == 'replay') && is_numeric($argv[2]) ){
+    $db = 'gps';
+} else{
+    $db = 'gps_live';
+}
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $opt = [
@@ -27,159 +24,89 @@ $opt = [
 ];
 $pdo = new PDO($dsn, $user, $pass, $opt);
 
-// Event IDs
-$events = $pdo->query('SELECT event_id FROM gps.events WHERE live = 1')->fetchAll();
-if(empty($events)){
-    echo "-- No live events --";
-    return;
+if ( !empty($argv[1]) && ($argv[1] == 'replay') && is_numeric($argv[2]) ){
+    $event['event_id'] = $argv[2];
+    $events = [$event];
+    print_r($events);
+} else {
+    // Event IDs
+    $events = $pdo->query('SELECT event_id FROM events WHERE current = 1')->fetchAll();
+    if(empty($events)){
+        echo "No live events";
+        return;
+    }
 }
+
+
 
 
 foreach ($events as $event) {
     //define event id
     $event_id = $event['event_id'];
-    $db = "gps_live_".$event['event_id'];
-    echo "== Event ID: " . $event_id . " ==\n";
+    echo $event_id . "\n";
 
     // get route data
-    $eventTimeRange_stmt = $pdo->prepare('SELECT datetime_from, datetime_to FROM gps.events WHERE event_id = :event_id');
+    $eventTimeRange_stmt = $pdo->prepare('SELECT datetime_from, datetime_to FROM events WHERE event_id = :event_id');
     $eventTimeRange_stmt->execute(array(':event_id' => $event_id));
     $eventTimeRange = $eventTimeRange_stmt->fetchAll();
     if(empty($eventTimeRange)){
-        echo "-- No event time range --\n";
+        echo "empty event time range\n";
         continue;
     }
 
     // get route
-    $route = $pdo->query('SELECT * FROM {$db}.map_point')->fetchAll();
-    if (!$route){
-        echo "-- No route --\n";
+    $route_stmt = $pdo->prepare('SELECT route FROM routes WHERE event_id = :event_id');
+    $route_stmt->execute(array(':event_id' => $event_id));
+    $route = $route_stmt->fetchAll();
+    if ($route){
+        $array = json_decode($route[0]['route'], 1);
+    } else {
+        echo "empty route\n";
         continue;
     }
 
-    // get bib numbers
-    $bib_numbers = $pdo->query('SELECT bib_number FROM {$db}.athletes')->fetchAll();
-    if(empty($bib_numbers)){
-        echo "-- No athletes --\n";
-        continue;
-    }
+    // get checkpoint data relevant
+    $checkpointData_stmt = $pdo->prepare('SELECT route_index, min_time, checkpoint FROM route_distances WHERE event_id = :event_id AND is_checkpoint = 1 ORDER BY route_index');
+    $checkpointData_stmt->execute(array(':event_id' => $event_id));
+    $checkpointData = $checkpointData_stmt->fetchAll();
+    array_unshift($checkpointData, array("route_index" => 0));
+    // echo"<pre>".print_r($checkpointData,1)."</pre>";
 
-    foreach ($bib_numbers as $bib_number) {
-
-        // get device_id(s) for this athlete
-        $device_ids_stmt = $pdo->prepare('SELECT device_id, start_time, end_time FROM {$db}.device_mapping WHERE bib_number = :bib_number');
-        $device_ids_stmt->execute(array(':bib_number' => $bib_number));
-        $device_ids = $device_ids_stmt->fetchAll();
-        if(empty($device_ids)){
-            echo "-- No device mapping for this athlete --\n";
-            continue;
-        }
-
-        // get gps data
-        $data_array = [];
-        foreach ($device_ids as $device_id) {
-            $gps_data_stmt = $pdo->prepare('SELECT * FROM {$db}.raw_data
-                WHERE :datetime_from <= gps_data.datetime AND gps_data.datetime <= :datetime_to
-                AND :start_time <= gps_data.datetime AND gps_data.datetime <= :end_time
-                AND device_id = :device_id');
-            $gps_data_stmt->execute(array(
-                ':datetime_from' => $eventTimeRange[0]['datetime_from'],
-                ':datetime_to' => $eventTimeRange[0]['datetime_to'],
-                ':device_id' => $device_id['device_id'],
-                ':start_time' => $device_id['start_time'],
-                ':end_time' => $device_id['end_time'],
-            ));
-            $gps_data = $gps_data_stmt->fetchAll();
-
-            $data_array = array_merge($data_array, $gps_data)
-        }
-
-        // get the largest distance progress map point order
-        $lastReachedPoint_stmt = $pdo->prepare('SELECT MAX(point_order) FROM {$db}.distance_data WHERE device_id = :device_id GROUP BY device_id');
-        $lastReachedPoint_stmt->execute(array(':device_id' => $device_id, ':event_id' => $event_id));
-        $lastReachedPoint_raw = $lastReachedPoint_stmt->fetchAll();
-        $lastReachedPoint = $lastReachedPoint_raw ? $lastReachedPoint_raw[0]['MAX(route_index)'] : -1;
-
-        // get the largest distance progress map point order
-        $checkpoints = $pdo->query('SELECT * FROM {$db}.checkpoint')->fetchAll();
-        $reachedCheckpoint = $lastReachedPoint != -1 ? getCurrentCheckpoint($lastReachedPoint, $checkpoints) : -1;
-
-        // initialize
-        $lastCheckpointLeft = false;
-        $finished = false;
-        $checkpointTimes[0] = $eventTimeRange[0]['datetime_from'];
-
-        foreach ($data_array as $gps_position) {
-            $lat2 = $gps_position['latitude'];
-            $lon2 = $gps_position['longitude'];
-
-            foreach ($route as $key => $routePoint) {
-                $lat1 = $routePoint['latitude'];
-                $lon1 = $routePoint['longitude'];
-
-                if (distanceUnder50m($lat1, $lon1, $lat2, $lon2) && speedCheck($lat2, $lon2, $lat3, $lon3, $previousValidDatetime, $gps_position['datetime'])) {
-                    // valid data
-
-                    // Start the transaction. PDO turns autocommit mode off depending on the driver, you don't need to implicitly say you want it off
-                    $pdo->beginTransaction();
-
-                    try {
-                        // Delete the privileges
-                        $stmt = $pdo->prepare('INSERT INTO {$db}.valid_data SELECT * FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        // Delete the group
-                        $stmt = $pdo->prepare('DELETE FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        $pdo->commit();
-                    } catch(PDOException $e) {
-                        $pdo->rollBack();
-
-                        // Report errors
-                        echo "=== MYSQL Error. Rollback. ===";
-                    }
-                } else {
-                    // invalid data
-
-                    // Start the transaction. PDO turns autocommit mode off depending on the driver, you don't need to implicitly say you want it off
-                    $pdo->beginTransaction();
-
-                    try {
-                        // Delete the privileges
-                        $stmt = $pdo->prepare('INSERT INTO {$db}.invalid_data SELECT * FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        // Delete the group
-                        $stmt = $pdo->prepare('DELETE FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        $pdo->commit();
-                    } catch(PDOException $e) {
-                        $pdo->rollBack();
-
-                        // Report errors
-                        echo "=== MYSQL Error. Rollback. ===";
-                    }
-                }
-            }
-        }
-
-    }
+    // get gps data
+    $gps_data_stmt = $pdo->prepare('SELECT * FROM gps_data WHERE :datetime_from <= gps_data.datetime AND gps_data.datetime <= :datetime_to');
+    $gps_data_stmt->execute(array(':datetime_from' => $eventTimeRange[0]['datetime_from'], ':datetime_to' => $eventTimeRange[0]['datetime_to']));
+    $gps_data = $gps_data_stmt->fetchAll();
 
     // copy the last ID from gps_data to lastID
     // $importLastID = $pdo->prepare('REPLACE INTO last_id (last_id, event_id) SELECT MAX(id), device_mapping.event_id FROM gps_data INNER JOIN device_mapping ON device_mapping.device_id = gps_data.device_id WHERE device_mapping.event_id = :event_id GROUP BY device_mapping.event_id ');
     // $importLastID->execute(array(':event_id' => $event_id));
+
+    $gps_data_by_device_id = group_by($gps_data, "device_id");
+    // echo"<pre>".print_r($gps_data_by_device_id,1)."</pre>";
 
 
     $cpArray = [];
     // looping by each device
     foreach ($gps_data_by_device_id as $device_id => $gps_row) {
         // get the largest route progress's index
+        $lastReachedPoint_stmt = $pdo->prepare('SELECT MAX(route_index) FROM route_progress WHERE route_progress.event_id = :event_id AND route_progress.device_id = :device_id GROUP BY route_progress.device_id');
+        $lastReachedPoint_stmt->execute(array(':device_id' => $device_id, ':event_id' => $event_id));
+        $lastReachedPoint_raw = $lastReachedPoint_stmt->fetchAll();
+
+        // initialize
+        $reachedCheckpoint = -1;
+        $lastCheckpointLeft = false;
+        $finished = false;
+        $checkpointTimes[0] = $eventTimeRange[0]['datetime_from'];
+
+        if ($lastReachedPoint_raw){
+            $lastReachedPoint = $lastReachedPoint_raw[0]['MAX(route_index)'];
+            $reachedCheckpoint = getCurrentCheckpoint($lastReachedPoint, $checkpointData);
+        } else {
+            $lastReachedPoint = -1;
+        }
+        // echo"<pre>".print_r($lastReachedPoint,1)."</pre>";
+
         // looping by each gps data row
         foreach ($gps_row as $key2 => $datum) {
             $lat2 = $datum['latitude_final'];
@@ -276,10 +203,10 @@ function checkMinTime($min_time, $prev_time, $current_time) {
     return $differenceInSeconds >= $time_seconds;
 }
 
-function getCurrentCheckpoint($currentRouteIndex, $checkpoints) {
-    foreach ($checkpoints as $checkpoint) {
-        if ($currentRouteIndex > $checkpoint['point_order']) {
-            $lastReachedCheckpoint = !empty($checkpoint['checkpoint']) ? $checkpoint['checkpoint'] : 0;
+function getCurrentCheckpoint($currentRouteIndex, $checkpointData) {
+    foreach ($checkpointData as $key => $value) {
+        if ($currentRouteIndex > $value['route_index']) {
+            $lastReachedCheckpoint = !empty($value['checkpoint']) ? $value['checkpoint'] : 0;
         } else {
             break;
         }
@@ -287,9 +214,13 @@ function getCurrentCheckpoint($currentRouteIndex, $checkpoints) {
     return $lastReachedCheckpoint;
 }
 
-// check speed limit
-function exceedSpeedLimit() {
-
+// group as an array by key
+function group_by($array, $key) {
+    $return = array();
+    foreach($array as $val) {
+        $return[$val[$key]][] = $val;
+    }
+    return $return;
 }
 
 /*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
@@ -336,7 +267,6 @@ function exceedSpeedLimit() {
 //         return $miles;
 //     }
 // }
-
 function distanceUnder100m($lat1, $lon1, $lat2, $lon2) {
     $theta = $lon1 - $lon2;
     $alpha = $lat1 - $lat2;

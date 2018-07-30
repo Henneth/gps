@@ -18,12 +18,12 @@ class AthletesController extends Controller {
         	->orderby('country','ASC')
             ->get();
 
-        $event = DB::table('events')
+        $is_live = DB::table('events')
+            ->select('live')
             ->where('event_id',$event_id)
-            ->select('current')
             ->first();
         // print_r($athletes);
-        return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries, 'event' => $event));
+        return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries, 'is_live' => $is_live->live));
     }
     public function addAthlete($event_id) {
         if (empty($_POST['bib_number']) || empty($_POST['first_name'])) {

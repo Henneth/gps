@@ -17,23 +17,6 @@ class EditEventController extends Controller {
         if (empty($_POST['optionsRadios'])) {
             return redirect('event/'.$event_id.'/edit-event')->with('error', 'Event type must not be empty.');
         }
-        // print_r($_POST);
-        if (isset($_POST['event-live']) && $_POST['event-live'] == 'on') {
-            // echo 'h';
-            // check does any event live now
-            $liveCheck = DB::table('events')
-                ->select('current')
-                ->where('current', 1)
-                ->first();
-            if (!empty($liveCheck)){
-                return redirect('event/'.$event_id.'/edit-event')->with('error', 'There is a live event already.');
-            }
-        }
-
-        // clear route progress
-        DB::table('route_progress')
-            ->where('event_id', $event_id)
-            ->delete();
 
         $datetime_from = $_POST['start-time'];
         $datetime_to = $_POST['end-time'];
@@ -49,14 +32,8 @@ class EditEventController extends Controller {
         if (isset($_POST['event-live']) && $_POST['event-live'] == 'on') {
             DB::table('events')
                 ->where('event_id', $event_id)
-                ->update(['current' => 1]);
+                ->update(['live' => 1]);
             EditEvent_Model::copyToLiveDB($event_id);
-        } else {
-            // DB::table('events')
-            //     ->where('event_id', $event_id)
-            //     ->update(['current' => 0]);
-            // EditEvent_Model::copyToArchiveDB($event_id);
-
         }
         return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event saved.');
     }
@@ -65,7 +42,7 @@ class EditEventController extends Controller {
         if (!isset($_POST['event-live']) || $_POST['event-live'] == '') {
             DB::table('events')
                 ->where('event_id', $event_id)
-                ->update(['current' => 0]);
+                ->update(['live' => 0]);
             EditEvent_Model::copyToArchiveDB($event_id);
             return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
         }

@@ -48,7 +48,7 @@
             <!-- /.box-body -->
 
             <div class="box-footer">
-                <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Submit</button>
+                <button type="submit" class="btn btn-primary" {{$is_live? 'disabled' : ''}}>Submit</button>
             </div>
         </form>
     </div>
@@ -66,12 +66,12 @@
         <div class="tab-content">
             <div class="map-section tab-pane active" id="tab_1">
                 <div class="form-group">
-            		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;" {{$event->current? 'disabled' : ''}}><i class="fa fa-undo"></i> Undo</button>
+            		<button type="button" class="btn btn-default" id="undo" style="margin-right:4px;" {{$is_live? 'disabled' : ''}}><i class="fa fa-undo"></i> Undo</button>
             		<div class="data-form display-inline-block">
             			<form id="save-route" action="{{ url('/') }}/event/{{$event_id}}/save-route" method="POST">
             				{{ csrf_field() }}
             				<input type="hidden" id="route" name="route">
-            				<button type="sumbit" class="btn btn-primary" id="save" {{$event->current? 'disabled' : ''}}><i class="far fa-save"></i> Save Route</button>
+            				<button type="sumbit" class="btn btn-primary" id="save" {{$is_live? 'disabled' : ''}}><i class="far fa-save"></i> Save Route</button>
             			</form>
             		</div>{{--
                     <div class="switchBtn">
@@ -80,7 +80,7 @@
                         <label class="tgl-btn" for="cb1"></label>
                     </div> --}}
                     <div class="pull-right">
-                        <button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$event->current? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
+                        <button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$is_live? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import GPX File</button>
                     </div>
             	</div>
 
@@ -96,11 +96,11 @@
                     @for ($i=0; $i < sizeof($checkpointMinTimes); $i++)
                         <div class="form-group min-times-row">
                             <label>From {{($i == 0) ? 'Start' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint - 1)}} to {{($checkpointMinTimes[$i]->checkpoint == sizeof($checkpointMinTimes)) ? 'Finish' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint)}}</label>
-                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->min_time}}" {{$event->current? 'disabled' : ''}}>
+                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->min_time}}" {{$is_live? 'disabled' : ''}}>
                         </div>
                     @endfor
                     <div>
-                        <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Save</button>
+                        <button type="submit" class="btn btn-primary" {{$is_live? 'disabled' : ''}}>Save</button>
                     </div>
                 </form>
                 @else
@@ -114,11 +114,11 @@
                     @for ($i=0; $i < sizeof($checkpointMinTimes)-1; $i++)
                         <div class="form-group">
                             <label>Name of Checkpoint {{($checkpointMinTimes[$i]->checkpoint)}}</label>
-                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->checkpoint_name}}" {{$event->current? 'disabled' : ''}}>
+                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpointMinTimes[$i]->route_distance_id}}]" value="{{$checkpointMinTimes[$i]->checkpoint_name}}" {{$is_live? 'disabled' : ''}}>
                         </div>
                     @endfor
                     <div>
-                        <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Save</button>
+                        <button type="submit" class="btn btn-primary" {{$is_live? 'disabled' : ''}}>Save</button>
                     </div>
                 </form>
                 @else

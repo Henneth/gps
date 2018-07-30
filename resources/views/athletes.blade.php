@@ -13,7 +13,7 @@
 @endsection
 
 @section('contentheader_right')
-<div class="pull-right"><button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$event->current? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
+<div class="pull-right"><button class="btn btn-primary" onclick="toggleExcelImport();return false;" {{$is_live? 'disabled' : ''}}><i class="fas fa-upload"></i>&nbsp; Import from Excel</button></div>
 @endsection
 
 @section('main-content')
@@ -43,7 +43,7 @@
                 <!-- /.box-body -->
 
                 <div class="box-footer">
-                    <button type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Submit</button>
+                    <button type="submit" class="btn btn-primary" {{$is_live? 'disabled' : ''}}>Submit</button>
                 </div>
             </form>
         </div>
@@ -69,19 +69,19 @@
                             <form id="form_add" method="post" action="{{url('/')}}/event/{{$event_id}}/athletes/add">
                                 {{ csrf_field() }}
                                 <td>&nbsp;</td>
-                                <td><input form="form_add" class="form-control" name="bib_number" placeholder="Bib Number" {{$event->current? 'disabled' : ''}}></td>
-                                <td><input form="form_add" class="form-control" name="first_name" placeholder="First Name" {{$event->current? 'disabled' : ''}}></td>
-                                <td><input form="form_add" class="form-control" name="last_name" placeholder="Last Name" {{$event->current? 'disabled' : ''}}></td>
+                                <td><input form="form_add" class="form-control" name="bib_number" placeholder="Bib Number" {{$is_live? 'disabled' : ''}}></td>
+                                <td><input form="form_add" class="form-control" name="first_name" placeholder="First Name" {{$is_live? 'disabled' : ''}}></td>
+                                <td><input form="form_add" class="form-control" name="last_name" placeholder="Last Name" {{$is_live? 'disabled' : ''}}></td>
                                 {{-- <td>@include('partials/countries-dropdown')</td> --}}
-                                <td><input form="form_add" class="form-control" name="zh_full_name" placeholder="Chinese Full Name" {{$event->current? 'disabled' : ''}}></td>
+                                <td><input form="form_add" class="form-control" name="zh_full_name" placeholder="Chinese Full Name" {{$is_live? 'disabled' : ''}}></td>
                                 <td>
                                     <div>
-                                        <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox" checked="checked" {{$event->current? 'disabled' : ''}}/>
+                                        <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox" checked="checked" {{$is_live? 'disabled' : ''}}/>
                                         <label class="tgl-btn" for="1"></label>
                                     </div>
                                 </td>
                                 <td>
-                                    <select name="country_code" class="form-control" {{$event->current? 'disabled' : ''}}>
+                                    <select name="country_code" class="form-control" {{$is_live? 'disabled' : ''}}>
                                         <option disabled selected>---- Select a country ----</option>
                                         @foreach($countries as $country)
                                             <option value="{{$country->code}}">{{$country->country}}</option>
@@ -90,10 +90,10 @@
                                 </td>
 
                                 <td>
-                                    <input type="text" form="form_add" name="colour_code" class="pick-a-color form-control" {{$event->current? 'disabled' : ''}}>
+                                    <input type="text" form="form_add" name="colour_code" class="pick-a-color form-control" {{$is_live? 'disabled' : ''}}>
                                 </td>
                                 {{-- <td><input form="form_add" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="#0000ff" style="width:100%;"></td> --}}
-                                <td><button form="form_add" type="submit" class="btn btn-primary" {{$event->current? 'disabled' : ''}}>Add</button></td>
+                                <td><button form="form_add" type="submit" class="btn btn-primary" {{$is_live? 'disabled' : ''}}>Add</button></td>
                             </form>
                         </tr>
                         <?php $count = 2 ?>
@@ -134,7 +134,7 @@
 
                                        {{--  <input form="form_edit_{{$athlete->athlete_id}}" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}" style="display: none; width:100%;"> --}}
                                     </td>
-                                    <td><button type="button" class="edit-btn btn btn-default" {{$event->current? 'disabled' : ''}}>Edit</button><button form="form_edit_{{$athlete->athlete_id}}" type="submit" class="btn btn-default" style="display: none;" {{$event->current? 'disabled' : ''}}>Save</button></td>
+                                    <td><button type="button" class="edit-btn btn btn-default" {{$is_live? 'disabled' : ''}}>Edit</button><button form="form_edit_{{$athlete->athlete_id}}" type="submit" class="btn btn-default" style="display: none;" {{$is_live? 'disabled' : ''}}>Save</button></td>
                                 </form>
                             </tr>
                         <?php $count++ ?>

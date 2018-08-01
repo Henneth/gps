@@ -55,20 +55,21 @@ class GPXController extends Controller {
         xml_parser_free($xml_parser);
 
 
-// working on it
         $gpxArray = $rss_parser->array;
-        $distanceArray = [];
 
+        $distanceArray = [];
         foreach ($gpxArray as $key => $value) {
             if ($key == 0) {
                 $lat2 = $value['lat'];
                 $lon2 = $value['lon'];
-                $distanceArray[] = array("lat" => $lat2, "lon" => $lon2);
+                $distanceArray[] = array("latitude" => $lat2, "longitude" => $lon2, "distance_from_last_point" => 0, "distance_from_start" => 0);
+
             } else {
                 $lat2 = $value['lat'];
                 $lon2 = $value['lon'];
                 // the distance between two points, if it greater than "50m", will be seperate to cut into multiple parts
-                $point_distance = $this->distance_decap($lat1, $lon1, $lat2, $lon2);
+                $point_distance = $this->distance($lat1, $lon1, $lat2, $lon2);
+
                 // below "2" means two point that used to calculate the distance, should ignore them
                 $number_of_sections = ceil($point_distance / 50);
 
@@ -78,7 +79,7 @@ class GPXController extends Controller {
                         $other = $number_of_sections - $x;
                         $add_lat = ( ($lat2 * $x) + ($lat1 * $other) ) / $number_of_sections;
                         $add_lon = ( ($lon2 * $x) + ($lon1 * $other) ) / $number_of_sections;
-                        $distanceArray[] = array("lat" => $add_lat, "lon" => $add_lon);
+                        $distanceArray[] = array("latitude" => $add_lat, "longitude" => $add_lon, "distance_from_last_point" => 0, "distance_from_start" => 0);
 
 
                         // echo "add lat ".$add_lat;
@@ -87,27 +88,30 @@ class GPXController extends Controller {
                     } while ($x <= $number_of_sections - 1);
 
                 }
-                
-                $distanceArray[] = array("lat" => $lat2, "lon" => $lon2);
+
+                $distanceArray[] = array("latitude" => $lat2, "longitude" => $lon2, "distance_from_last_point" => 0, "distance_from_start" => 0);
+
             }
 
             // store the value of former checkpoint
             $lat1 = $lat2;
             $lon1 = $lon2;
         }
-        // echo '<pre>'.print_r($distanceArray,1).'</pre>';
-
 
         // echo '<pre>'.print_r($rss_parser->array,1).'</pre>';
-// -----------------------------------
-        $route = json_encode($distanceArray);
+        // echo '<pre>'.print_r($distanceArray,1).'</pre>';
+        // $route = json_encode($distanceArray);
 
-        DrawRoute_Model::drawRouteUpdate($event_id, $route);
-        // print_r($route);
-        // DB::table('routes')->insert(
-        //     ['event_id'=> $event_id, 'route' =>$route]
-        // );
-        // DB::unprepared($rss_parser->sql);
+        DB::table('gps_live_'.$event_id.'.map_point')->truncate();
+        DB::table('gps_live_'.$event_id.'.map_point')
+            ->insert($distanceArray);
+
+        // DrawRoute_Model::drawRouteUpdate($event_id, $route);
+        // // print_r($route);
+        // // DB::table('routes')->insert(
+        // //     ['event_id'=> $event_id, 'route' =>$route]
+        // // );
+        // // DB::unprepared($rss_parser->sql);
         return redirect('event/'.$event_id.'/draw-route?gpx=1')->with('success', 'Excel file imported.');
     }
 
@@ -150,7 +154,7 @@ class GPXController extends Controller {
 /*::                                                                         :*/
 /*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 // https://www.geodatasource.com/developers/php
-    public function distance_decap($lat1, $lon1, $lat2, $lon2) {
+    public function distance($lat1, $lon1, $lat2, $lon2) {
 
         $theta = $lon1 - $lon2;
         $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));

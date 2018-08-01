@@ -11,21 +11,24 @@ use DateTime;
 class DrawRouteController extends Controller {
 
     public function index($event_id) {
-        $data = DB::table('routes')
-        	->where('event_id',$event_id)
-        	->select('route')
+
+        $event = DB::table('events')
+        	->where('event_id', $event_id)
+        	->select('event_type', 'live')
         	->first();
-        $is_live = DB::table('events')
-            ->select('event_type', 'live')
-        	->where('event_id',$event_id)
-        	->first();
-        $checkpointMinTimes = DB::table('route_distances')
-        	->where('event_id',$event_id)
+
+        $route = DB::table('gps_live_'.$event_id.'.map_point')
+            ->select('latitude', 'longitude', 'is_checkpoint')
+        	->get();
+        $data = json_encode($route);
+
+        $checkpointMinTimes = DB::table('gps_live_'.$event_id.'.map_point')
+            ->select('checkpoint_no', 'checkpoint_name', 'point_order', 'min_time')
         	->where('is_checkpoint',1)
             ->get();
 
-        // echo "<pre>".print_r($data,1)."</pre>";
-        return view('draw-route')->with(array('event_id'=>$event_id, 'data'=>$data, 'is_live'=>$is_live->live, 'checkpointMinTimes'=>$checkpointMinTimes));
+        echo "<pre>".print_r($checkpointMinTimes,1)."</pre>";
+        return view('draw-route')->with(array('event_id' => $event_id, 'data'=>$data, 'event'=>$event, 'checkpointMinTimes'=>$checkpointMinTimes));
     }
 
     public function saveRoute($event_id) {
@@ -33,10 +36,11 @@ class DrawRouteController extends Controller {
 		$route = $_POST['route'];
 
         $routeDecode = json_decode($route);
+
         $index = 0;
         $totalDistance = 0;
         $distanceArray = [];
-        $checkpoint = 1;
+        $checkpoint_no = 1; // checkpoint number
         foreach ($routeDecode as $key => $value) {
             if ($index != 0){
                 $lat1 = $routeDecode[$index-1]->lat;
@@ -46,28 +50,33 @@ class DrawRouteController extends Controller {
                 $currentDistance = round($this->distance($lat1, $lon1, $lat2, $lon2, "K") * 1000);
                 $totalDistance += $currentDistance;
 
-                $tempArray ['route_index'] = $key;
-                $tempArray ['distance'] = $totalDistance;
-                $tempArray ['is_checkpoint'] = property_exists($value, 'isCheckpoint') ? $value->isCheckpoint : 0;
-                if (property_exists($value, 'isCheckpoint') && $value->isCheckpoint == 1) {
-                    $tempArray ['checkpoint'] = $checkpoint;
-                    $checkpoint++;
+                $tempArray ['latitude'] = $lat2;
+                $tempArray ['longitude'] = $lon2;
+                $tempArray ['distance_from_last_point'] = $currentDistance;
+                $tempArray ['distance_from_start'] = $totalDistance;
+
+                $tempArray ['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
+                if (property_exists($value, 'is_checkpoint') && $value->is_checkpoint == 1) {
+                    $tempArray ['checkpoint_no'] = $checkpoint_no;
+                    $checkpoint_no++;
                 } else {
-                    $tempArray ['checkpoint'] = NULL;
+                    $tempArray ['checkpoint_no'] = NULL;
                 }
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
 
             } else {
                 $currentDistance = 0;
-                $tempArray ['route_index'] = $key;
-                $tempArray ['distance'] = $currentDistance;
-                $tempArray ['is_checkpoint'] = property_exists($value, 'isCheckpoint') ? $value->isCheckpoint : 0;
-                $tempArray ['checkpoint'] = 0;
+                $tempArray ['latitude'] = $routeDecode[$index]->lat;
+                $tempArray ['longitude'] = $routeDecode[$index]->lon;
+                $tempArray ['distance_from_last_point'] = $currentDistance;
+                $tempArray ['distance_from_start'] = 0;
+                $tempArray ['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
+                $tempArray ['checkpoint_no'] = 0;
 
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
             }
             $tempArray ['checkpoint_name'] = NULL;
-            $tempArray ['event_id'] = $event_id;
+
             $distanceArray [] = $tempArray;
 
             $index++;
@@ -78,12 +87,65 @@ class DrawRouteController extends Controller {
 
         $distanceArray[sizeof($distanceArray)-1]['checkpoint_name'] = 'Finish';
         // echo "<pre>".print_r($distanceArray,1)."</pre>";
-        DB::table('route_distances')->where('event_id', $event_id)->delete();
-		DB::table('route_distances')
-			->insert($distanceArray);
 
-        DrawRoute_Model::drawRouteUpdate($event_id, $route);
-		return redirect('event/'.$event_id.'/draw-route')->with('success', 'Route updated.');
+        DB::table('gps_live_'.$event_id.'.map_point')->truncate();
+        DB::table('gps_live_'.$event_id.'.map_point')
+            ->insert($distanceArray);
+
+        return redirect('event/'.$event_id.'/draw-route')->with('success', 'Route updated.');
+
+
+        // $index = 0;
+        // $totalDistance = 0;
+        // $distanceArray = [];
+        // $checkpoint = 1;
+        // foreach ($routeDecode as $key => $value) {
+        //     if ($index != 0){
+        //         $lat1 = $routeDecode[$index-1]->lat;
+        //         $lon1 = $routeDecode[$index-1]->lon;
+        //         $lat2 = $routeDecode[$index]->lat;
+        //         $lon2 = $routeDecode[$index]->lon;
+        //         $currentDistance = round($this->distance($lat1, $lon1, $lat2, $lon2, "K") * 1000);
+        //         $totalDistance += $currentDistance;
+        //
+        //         $tempArray ['route_index'] = $key;
+        //         $tempArray ['distance'] = $totalDistance;
+        //         $tempArray ['is_checkpoint'] = property_exists($value, 'isCheckpoint') ? $value->isCheckpoint : 0;
+        //         if (property_exists($value, 'isCheckpoint') && $value->isCheckpoint == 1) {
+        //             $tempArray ['checkpoint'] = $checkpoint;
+        //             $checkpoint++;
+        //         } else {
+        //             $tempArray ['checkpoint'] = NULL;
+        //         }
+        //         // echo "<pre>".print_r($tempArray,1)."</pre>";
+        //
+        //     } else {
+        //         $currentDistance = 0;
+        //         $tempArray ['route_index'] = $key;
+        //         $tempArray ['distance'] = $currentDistance;
+        //         $tempArray ['is_checkpoint'] = property_exists($value, 'isCheckpoint') ? $value->isCheckpoint : 0;
+        //         $tempArray ['checkpoint'] = 0;
+        //
+        //         // echo "<pre>".print_r($tempArray,1)."</pre>";
+        //     }
+        //     $tempArray ['checkpoint_name'] = NULL;
+        //     $tempArray ['event_id'] = $event_id;
+        //     $distanceArray [] = $tempArray;
+        //
+        //     $index++;
+        //     // echo $key;
+        //     // echo "<pre>".print_r($routeDecode[$key],1)."</pre>";
+        //     // echo "<pre>".print_r($routeDecode[$key]->lon,1)."</pre>";
+        // }
+        //
+        // $distanceArray[sizeof($distanceArray)-1]['checkpoint_name'] = 'Finish';
+        // // echo "<pre>".print_r($distanceArray,1)."</pre>";
+        // DB::table('route_distances')->where('event_id', $event_id)->delete();
+		// DB::table('route_distances')
+		// 	->insert($distanceArray);
+        //
+        // DrawRoute_Model::drawRouteUpdate($event_id, $route);
+		// return redirect('event/'.$event_id.'/draw-route')->with('success', 'Route updated.');
     }
 
     public function saveMinimumTimes($event_id) {

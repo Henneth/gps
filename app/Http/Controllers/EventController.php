@@ -11,27 +11,16 @@ class EventController extends Controller {
 
     public function viewAllEvents() {
         $events = DB::table('events')->orderby('event_id', 'desc')->get();
-        // echo '<pre>'.print_r($events,1).'</pre>';
 
-        if (Auth::check()) {
-            // user login
-            // read the file
-            $mapping_file_path = storage_path('/')."ports_events_mapping.txt";
-            $mapping_file = fopen($mapping_file_path, "r") or die("Unable to open file!");
-            $mappingJson = fread($mapping_file,filesize($mapping_file_path));
-            $mappingArray = (array) json_decode($mappingJson);
-            // echo '<pre>'.print_r($mappingArray,1).'</pre>';
-            fclose($mapping_file);
-            return view('view-all-events')->with(array('events' => $events, 'mappingArray' => $mappingArray));
-        } else {
-            // without user login
-            return view('view-all-events')->with(array('events' => $events));
-        }
+        // without user login
+        return view('view-all-events')->with(array('events' => $events));
     }
+
 
     public function createNewEvent() {
         return view('create-new-event');
     }
+
 
     public function createNewEventPost() {
         if (empty($_POST['event-name'])) {
@@ -64,6 +53,23 @@ class EventController extends Controller {
         // return redirect('create-new-event')->with('success', 'Event Created.');
     }
 
+
+    public function portEventMapping(){
+        $events = DB::table('events')->orderby('event_id', 'desc')->get();
+        // echo '<pre>'.print_r($events,1).'</pre>';
+
+        // read the file
+        $mapping_file_path = storage_path('/')."ports_events_mapping.txt";
+        $mapping_file = fopen($mapping_file_path, "r") or die("Unable to open file!");
+        $mappingJson = fread($mapping_file,filesize($mapping_file_path));
+        $mappingArray = (array) json_decode($mappingJson);
+        // echo '<pre>'.print_r($mappingArray,1).'</pre>';
+        fclose($mapping_file);
+
+        return view('port-event-mapping')->with(array('events' => $events, 'mappingArray' => $mappingArray));
+    }
+
+
     public function portEventMappingPost(){
         // create an empty array to store the port(key) and event_id (value)
         $mappingArray = [];
@@ -90,7 +96,7 @@ class EventController extends Controller {
         fwrite($mapping_file, $mappingJson);
         fclose($mapping_file);
 
-        return redirect('view-all-events')->with('success', 'Ports and Events have been mapped.');
+        return redirect('port-event-mapping')->with('success', 'Ports and Events have been mapped.');
     }
 
 

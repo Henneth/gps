@@ -104,7 +104,10 @@
                                 <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                             @endforeach
                         @endif
+                    @endif
 
+
+                    @if(empty($current_event) || $current_event->live != 1)
                         <script>var live_event_off = true;</script>
                     @endif
                 @endif
@@ -123,7 +126,7 @@
                 @endforeach
 
                 @if (Auth::check())
-                    @foreach ([['Create new event', 'fa-plus'], ['Raw Data', 'fa-database']] as $item)
+                    @foreach ([['Create new event', 'fa-plus'],['Port / event mapping', 'fa-sitemap'] ,['Raw data', 'fa-database']] as $item)
                         <li class="{{Request::is( str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( str_slug($item[0], '-') ) }}"><i class='fa {{$item[1]}}'></i> <span>{{$item[0]}}</span></a></li>
                     @endforeach
                 @endif

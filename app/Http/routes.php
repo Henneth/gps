@@ -44,6 +44,11 @@ Route::group(['middleware' => 'auth'], function () {
         return view('home')->with(array('events' => $events));
     });
 
+    // Port Event Mapping
+    Route::get('port-event-mapping', 'EventController@portEventMapping');
+    Route::post('port-event-mapping/post', 'EventController@portEventMappingPost');
+
+
     // Raw Data
     Route::get('raw-data', 'RawDataController@index');
     Route::post('raw-data/export-raw-data', 'RawDataController@exportRawData');
@@ -52,8 +57,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('create-new-event', 'EventController@createNewEvent');
     Route::post('create-new-event/post', 'EventController@createNewEventPost');
 
-    // View all events
-    Route::post('view-all-events/post', 'EventController@portEventMappingPost');
 
     // Athletes
     Route::get('event/{event_id}/athletes', 'AthletesController@index')->name('athletes');

@@ -66,17 +66,14 @@
         var distance = 0;
         var elevations_global;
         var currentRouteIndex;
-        var checkpointDistances;
         var showOffKey; // store "ON" device_id, data retrive from localStorage
         var data;
         var route;
 
         function initial() {
 
-            checkpointDistances = {!! $checkpointDistances !!};
-
             @if ($route)
-                route = {!!$route->route!!};
+                route = {!!$route!!};
             @endif
 
             // check device_id in localStorage, "ON" data will be save in localStorage
@@ -118,8 +115,8 @@
         function displayPathElevation(elevator) {
             var tempArray = [];
             for(var key in route){
-                gpxLat = parseFloat(route[key]["lat"]);
-                gpxLng = parseFloat(route[key]["lon"]);
+                gpxLat = parseFloat(route[key]["latitude"]);
+                gpxLng = parseFloat(route[key]["longitude"]);
                 tempArray.push({'lat' : gpxLat, 'lng' : gpxLng});
             }
 
@@ -284,12 +281,12 @@
                 }
                 // strDist = strDist.slice(0, -1);
                 checkpoint = null;
-                for (var key in checkpointDistances) {
-                    if (dist <= checkpointDistances[key]['distance'] && checkpointDistances[key]['distance'] < nextDist){
-                        if (checkpointDistances[key]['checkpoint_name']) {
-                            var checkpoint = String(checkpointDistances[key]['checkpoint_name']);
+                for (var key in route) {
+                    if (dist <= route[key]['distance'] && route[key]['distance'] < nextDist){
+                        if (route[key]['checkpoint_name']) {
+                            var checkpoint = String(route[key]['checkpoint_name']);
                         }else {
-                            var checkpoint = String('CP'+checkpointDistances[key]['checkpoint']);
+                            var checkpoint = String('CP'+route[key]['checkpoint']);
                         }
                         break;
                     }
@@ -477,7 +474,7 @@
         height:80vh;
         width: 100%;
     }
-    
+
     .label_content{
         position:relative;
         border-radius: 4px;

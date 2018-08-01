@@ -37,7 +37,7 @@
                         <input type="file" id="excelFile" name="fileToUpload">
 
                         <p class="help-block">.xls or .xlsx files only.</p>
-                        <p class="help-block">Please refer to this example excel file for the required format: <a href={{ asset('examples/athletes_example.xls') }}>athletes_example.xls</a>.</p>
+                        <p class="help-block">Please refer to this example excel file for the required format: <a href={{ asset('examples/athletes_example.xlsx') }}>athletes_example.xlsx</a>.</p>
                     </div>
                 </div>
                 <!-- /.box-body -->
@@ -59,7 +59,6 @@
                             <th>Chinese Full Name</th>
                             <th>Is Public</th>
                             <th>Country</th>
-                            <th>Colour Code</th>
                             <th style="width: 64px;">&nbsp;</th>
                             {{-- <th style="width: 40px">Label</th> --}}
                         </tr>
@@ -89,9 +88,9 @@
                                     </select>
                                 </td>
 
-                                <td>
+                                {{-- <td>
                                     <input type="text" form="form_add" name="colour_code" class="pick-a-color form-control" {{$is_live? 'disabled' : ''}}>
-                                </td>
+                                </td> --}}
                                 {{-- <td><input form="form_add" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="#0000ff" style="width:100%;"></td> --}}
                                 <td><button form="form_add" type="submit" class="btn btn-primary" {{$is_live? 'disabled' : ''}}>Add</button></td>
                             </form>
@@ -124,16 +123,14 @@
                                             </select>
                                         </div>
                                     </td>
-                                    <td class="colour_code">
-                                        @if ($athlete->colour_code)
+                                    {{-- <td class="colour_code"> --}}
+                                        {{-- @if ($athlete->colour_code)
                                             <div class="read-only" style="padding-left: 4px; background: #{{$athlete->colour_code}}">#{{$athlete->colour_code}}</div>
                                         @endif
                                         <div class="editable" style="display: none; width:100%;">
                                             <input type="text" form="form_edit_{{$athlete->athlete_id}}" name="colour_code" class="pick-a-color form-control" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}">
-                                        </div>
-
-                                       {{--  <input form="form_edit_{{$athlete->athlete_id}}" type="color" id="html5colorpicker" class="form-control" onchange="clickColor(0, -1, -1, 5)" name="colour_code" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}" style="display: none; width:100%;"> --}}
-                                    </td>
+                                        </div> --}}
+                                    {{-- </td> --}}
                                     <td><button type="button" class="edit-btn btn btn-default" {{$is_live? 'disabled' : ''}}>Edit</button><button form="form_edit_{{$athlete->athlete_id}}" type="submit" class="btn btn-default" style="display: none;" {{$is_live? 'disabled' : ''}}>Save</button></td>
                                 </form>
                             </tr>
@@ -174,8 +171,8 @@
             form.find('.country_code span').hide();
             form.find('.country_code div').show();
             form.find('.country_code div select').val(countryCode);
-            form.find('.colour_code div.read-only').hide();
-            form.find('.colour_code div.editable').show();
+            // form.find('.colour_code div.read-only').hide();
+            // form.find('.colour_code div.editable').show();
             $(this).next().show();
         })
         function toggleExcelImport() {

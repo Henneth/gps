@@ -11,31 +11,32 @@
 |
 */
 
-Route::group(array('prefix' => ''), function() {
-
-    // get live event IDs from 'event' table, column name 'live'
-    $data = DB::table('events')
-    ->select('event_id')
-    ->where('live', 1)
-    ->get();
-
-    if ($data) {
-        define('live_event', $data);
-    }else {
-        define('live_event', false);
-    }
-
-    // // get the lastest event ID from 'event' table, column name 'live'
-    // $maxEventID = DB::table('events')
-    // ->max('event_id');
-    //
-    // if ($maxEventID) {
-    //     define('maxEventID', $maxEventID);
-    // }else {
-    //     define('maxEventID', false);
-    // }
-
-});
+// Route::group(array('prefix' => ''), function() {
+//
+//     // get live event IDs from 'event' table, column name 'live'
+//     $data = DB::table('events')
+//     ->select('event_id')
+//     ->where('live', 1)
+//     ->get();
+//
+// // echo '<pre>'.print_r($data,1).'</pre>';
+//     if ($data) {
+//         define('live_event', serialize($data));
+//     }else {
+//         define('live_event', false);
+//     }
+//
+//     // // get the lastest event ID from 'event' table, column name 'live'
+//     // $maxEventID = DB::table('events')
+//     // ->max('event_id');
+//     //
+//     // if ($maxEventID) {
+//     //     define('maxEventID', $maxEventID);
+//     // }else {
+//     //     define('maxEventID', false);
+//     // }
+//
+// });
 
 // Public
 Route::get('/', function () {
@@ -46,9 +47,10 @@ Route::get('event/{event_id}', function ($event_id) {
     // event is live or not
     $data = DB::table('events')
     ->select('live')
+    ->where('live', 1)
     ->where('event_id', $event_id)
     ->first();
-
+    // '<pre>'.print_r($data,1).'</pre>';
     if ($data && $data->live){
         return redirect('event/'.$event_id.'/live-tracking');
     }else{
@@ -65,7 +67,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Home
     Route::get('home', function () {
-        $events = DB::table('events')->orderby('event_id', 'desc')->get();
+        $events = DB::table('events')->orderby('datetime_from', 'desc')->get();
         return view('home')->with(array('events' => $events));
     });
 

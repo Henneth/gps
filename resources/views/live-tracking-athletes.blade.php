@@ -5,7 +5,7 @@
 @endsection
 
 @section('contentheader_title')
-    Live Tracking <small>{{$event->event_id == live_event ? $event->event_name : '' }}</small>
+    Live Tracking <small>{{$event->event_name}}</small>
 @endsection
 
 @section('main-content')
@@ -41,7 +41,7 @@
                             <td>{{$i->country_code}}</td>
                             <td>
                                 <div>
-                                    <input class="tgl tgl-ios check" data-id="{{$i->device_id}}" id="{{$count}}" type="checkbox"  {{($i->status == "visible") ? ' checked="checked" ' :''}}/>
+                                    <input class="tgl tgl-ios check" data-id="{{$i->bib_number}}" id="{{$count}}" type="checkbox"  {{($i->status == "visible") ? ' checked="checked" ' :''}}/>
                                     <label class="tgl-btn" for="{{$count}}"></label>
                                 </div>
                             </td>
@@ -155,12 +155,12 @@
 
         $('.check').click(function(){
             var array = [];
-            // check device_id in localStorage, "ON" data will be save in localStorage
+            // check bib_number in localStorage, "ON" data will be save in localStorage
             var temp = localStorage.getItem("visibility{{$event_id}}");
             if(temp == null) {
                 for (var i = 0; i < profile.length; i++) {
                     if (profile[i]['status'] == 'visible'){
-                        array.push(profile[i]['device_id']);
+                        array.push(profile[i]['bib_number']);
                     }
                 }
 
@@ -169,15 +169,15 @@
             }
 
             if ($(this).is(':checked')) {
-                var device_id = this.getAttribute("data-id");
-                var index = array.indexOf(device_id);
+                var bib_number = this.getAttribute("data-id");
+                var index = array.indexOf(bib_number);
                 if (index < 0) {
-                    array.push(device_id);
+                    array.push(bib_number);
                 }
                 // console.log(array);
             } else {
-                var device_id = this.getAttribute("data-id");
-                var index = array.indexOf(device_id);
+                var bib_number = this.getAttribute("data-id");
+                var index = array.indexOf(bib_number);
                 if (index >= 0) {
                     array.splice(index, 1);
                 }
@@ -186,7 +186,6 @@
 
             // json encode
             var json = JSON.stringify(array);
-
             // store in localStorage
             localStorage.setItem("visibility{{$event_id}}", json);
         })

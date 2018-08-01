@@ -5,7 +5,7 @@
 @endsection
 
 @section('contentheader_title')
-    Live Tracking <small>{{$event->event_id == live_event ? $event->event_name : '' }}</small>
+    Live Tracking <small>{{$event->event_name}}</small>
 @endsection
 
 @section('main-content')
@@ -297,12 +297,12 @@
                         strokeWeight: 3,
                         map: map
                     });
-                    var route = {!!$route->route!!};
+                    var route = {!!$route!!};
                     // console.log(route);
                     for(var key in route){
-                        gpxLat = parseFloat(route[key]["lat"]);
-                        gpxLng = parseFloat(route[key]["lon"]);
-                        IsCP = route[key]["isCheckpoint"] || key == 0;
+                        gpxLat = parseFloat(route[key]["latitude"]);
+                        gpxLng = parseFloat(route[key]["longitude"]);
+                        IsCP = route[key]["is_checkpoint"] || key == 0;
                         addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
@@ -406,7 +406,7 @@
                 $.ajax({
                     type:"get",
                     url:"{{url('/')}}/event/{{$event_id}}/live-tracking/poll",
-                    data: {'device_ids': showOffKey ? JSON.stringify(showOffKey) : null},
+                    data: {'bib_numbers': showOffKey ? JSON.stringify(showOffKey) : null},
                     dataType:"json",
                     success:function(ajax_data) {
                         if (firstTime) {

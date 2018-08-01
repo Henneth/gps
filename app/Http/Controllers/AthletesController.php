@@ -8,13 +8,12 @@ use App\Http\Controllers\Controller;
 class AthletesController extends Controller {
 
     public function index($event_id) {
-        $athletes = DB::table('athletes')
+        $athletes = DB::table('gps_live_'.$event_id.'.athletes')
             ->leftJoin('countries', 'athletes.country_code', '=', 'countries.code')
-            ->where('event_id', $event_id)
-            ->orderby('athlete_id', 'desc')
+            ->orderby('bib_number', 'desc')
             ->get();
 
-        $countries = DB::table('countries')
+        $countries = DB::table('gps_live_'.$event_id.'.countries')
         	->orderby('country','ASC')
             ->get();
 
@@ -25,31 +24,33 @@ class AthletesController extends Controller {
         // print_r($athletes);
         return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries, 'is_live' => $is_live->live));
     }
+
+
     public function addAthlete($event_id) {
         if (empty($_POST['bib_number']) || empty($_POST['first_name'])) {
             return redirect('event/'.$event_id.'/athletes')->with('error', 'Bib number and first name must not be empty.');
         }
-        // echo $_POST['is_public'];
-        DB::table('athletes')->insert([
-            'event_id' => $event_id,
+        // echo '<pre>'.print_r($_POST, 1).'</pre>';
+        DB::table('gps_live_'.$event_id.'.athletes')->insert([
             'bib_number' => $_POST['bib_number'],
             'first_name' => $_POST['first_name'],
             'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
             'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
             'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
-            'colour_code' => !empty($_POST['colour_code']) ? $_POST['colour_code'] : NULL,
         ]);
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is added.');
     }
+
+
     public function editAthlete($event_id) {
-        print_r($_POST);
-        if (empty($_POST['athlete_id']) || empty($_POST['bib_number']) || empty($_POST['first_name'])) {
+        // echo '<pre>'.print_r($_POST, 1).'</pre>';
+        if ( empty($_POST['bib_number']) || empty($_POST['first_name'])) {
             return redirect('event/'.$event_id.'/athletes')->with('error', 'Athlete ID, bib number and first name must not be empty.');
         }
 
-        DB::table('athletes')
-            ->where('athlete_id', $_POST['athlete_id'])
+        DB::table('gps_live_'.$event_id.'.athletes')
+            ->where('bib_number', $_POST['bib_number'])
             ->update([
             'bib_number' => $_POST['bib_number'],
             'first_name' => $_POST['first_name'],
@@ -57,10 +58,11 @@ class AthletesController extends Controller {
             'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
             'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
-            'colour_code' => !empty($_POST['colour_code']) ? $_POST['colour_code'] : NULL,
         ]);
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is edited.');
     }
+
+
     public function importFromExcel($event_id) {
 
         $target_dir = storage_path('app/athletes/');
@@ -88,7 +90,7 @@ class AthletesController extends Controller {
 			require_once base_path().'/libs/Excel.php';
 			$data = importAsExcel($target_file);
 	        // print_r($data);
-            $countries_sql = DB::table('countries')
+            $countries_sql = DB::table('gps_live_'.$event_id.'.countries')
                 ->select('code')
                 ->get();
 
@@ -97,9 +99,8 @@ class AthletesController extends Controller {
                 $countries[] = $temp->code;
             }
 
-            $bib_numbers_sql = DB::table('athletes')
+            $bib_numbers_sql = DB::table('gps_live_'.$event_id.'.athletes')
                 ->select('bib_number')
-                ->where('event_id', $event_id)
                 ->get();
 
             $bib_numbers = [];
@@ -120,27 +121,32 @@ class AthletesController extends Controller {
                     $errors[] = "#".$count." - Country code \"$temp[4]\" is not vaild!";
                     $hasError = true;
                 }
-
-                else if (!empty($temp[5]) && !preg_match('/^[a-f0-9]{6}$/i', $temp[5])) { //hex color is valid
-                    $errors[] = "#".$count." - Color code \"$temp[5]\" is not vaild!";
-                    $hasError = true;
+                if (!empty($temp[5]) && $temp[5] == '1') {
+                    $status = "visible";
+                } else {
+                    $status = "hidden";
                 }
+
+                // else if (!empty($temp[5]) && !preg_match('/^[a-f0-9]{6}$/i', $temp[5])) { //hex color is valid
+                //     $errors[] = "#".$count." - Color code \"$temp[5]\" is not vaild!";
+                //     $hasError = true;
+                // }
 
                 if (!$hasError){
     	        	$array[] = array(
-                        'event_id' => $event_id,
     	        		'bib_number' => !empty($temp[0]) ? $temp[0] : NULL,
     	        		'first_name' => !empty($temp[1]) ? $temp[1] : NULL,
     	        		'last_name' => !empty($temp[2]) ? $temp[2] : NULL,
     	        		'zh_full_name' => !empty($temp[3]) ? $temp[3] : NULL,
     	        		'country_code' => !empty($temp[4]) ? $temp[4] : NULL,
-    	        		'colour_code' => !empty($temp[5]) ? $temp[5] : NULL
+                        'status' => $status
+    	        		// 'colour_code' => !empty($temp[5]) ? $temp[5] : NULL
     	        	);
                 }
 
                 $count++;
 	        }
-        	DB::table('athletes')->insert($array);
+        	DB::table('gps_live_'.$event_id.'.athletes')->insert($array);
             return redirect('event/'.$event_id.'/athletes')->with('success', count($array).' '.'records have been imported.')
             ->with('errors', $errors);
 	    } else {

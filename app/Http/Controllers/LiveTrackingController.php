@@ -92,14 +92,12 @@ class LiveTrackingController extends Controller {
         // shell_exec("php ".public_path()."/calculation.php 'alert' >> ".public_path()."/calculation.log");
         // shell_exec("php ".public_path()."/calculation.php");
 
-        $event = DB::table('gps_live.events')->where('event_id', $event_id)->first();
-        $route = DB::table('gps_live.routes')
-            ->where('event_id',$event_id)
-            ->select('route')
-            ->first();
+        $event = DB::table('events')->where('event_id', $event_id)->first();
+        $route = DB::table('gps_live_'.$event_id.'.map_point')->get();
+        $route = json_encode($route);
 
         // get checkpoint distances
-        $tempCheckpointDistances = DB::table('gps_live.route_distances')->where('event_id', $event_id)->where('is_checkpoint', 1)->get();
+        $tempCheckpointDistances = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
         $checkpointDistances = json_encode($tempCheckpointDistances);
         // echo "<pre>".print_r($route,1)."</pre>";
 
@@ -154,29 +152,29 @@ class LiveTrackingController extends Controller {
         $event = DB::table('events')->where('event_id', $event_id)->first();
         $colorArray = ["00FF00","0000FF","FF0000","FFFF00","00FFFF","FF00FF","00FF80","8000FF","FF8000","80FF00","0080FF","FF0080","80FF80","8080FF","FF8080","FFFF80","80FFFF","FF80FF","80FFBF","BF80FF","FFBF80","BFFF80","80BFFF","FF80BF"];
 
-        if ( !empty($_GET['device_ids']) ){
-            $deviceIDs = json_decode($_GET['device_ids']);
+        if ( !empty($_GET['bib_numbers']) ){
+            $bib_numbers = json_decode($_GET['bib_numbers']);
             $data = [];
 
             $count = 0; // count index of $colorArray
-            foreach ($deviceIDs as $key => $deviceID) {
-                $deviceData = LiveTracking_Model::getLocationsViaDeviceID($event_id, $event->datetime_from, $event->datetime_to, $deviceID, $colorArray[$count]);
-                $data[$deviceID] = $deviceData;
+            foreach ($bib_numbers as $key => $bib_number) {
+                $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $bib_number, $colorArray[$count]);
+                $data[$bib_number] = $deviceData;
                 $count++;
             }
         } else {
             // get 20 athletes from db
             if (Auth::check()){
-                $deviceIDs = DeviceMapping_Model::getAthletesProfile($event_id, true, true);
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true);
             } else {
-                $deviceIDs = DeviceMapping_Model::getAthletesProfile($event_id, false, true);
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true);
             }
             $data = [];
 
             $count = 0; // count index of $colorArray
-            foreach ($deviceIDs as $key => $deviceID) {
-                $deviceData = LiveTracking_Model::getLocationsViaDeviceID($event_id, $event->datetime_from, $event->datetime_to, $deviceID->device_id, $colorArray[$count]);
-                $data[$deviceID->device_id] = $deviceData;
+            foreach ($athletes as $key => $athlete) {
+                $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $athlete->bib_number, $colorArray[$count]);
+                $data[$athlete->bib_number] = $deviceData;
                 $count++;
             }
         }

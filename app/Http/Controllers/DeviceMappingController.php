@@ -18,9 +18,7 @@ class DeviceMappingController extends Controller {
         //     ->orderby('device_mapping_id', 'desc')
         //     ->get();
         // print_r($devices);
-        $athletes = DB::table('athletes')
-            ->where('event_id', $event_id)
-            ->get();
+        $athletes = DB::table('gps_live_'.$event_id.'.athletes')->get();
 
         $is_live = DB::table('events')
             ->select('event_type', 'live')
@@ -29,15 +27,17 @@ class DeviceMappingController extends Controller {
 
         return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes, 'is_live' => $is_live->live));
     }
+
+
     public function addDeviceMapping($event_id) {
+
         if (empty($_POST['device_id']) || empty($_POST['athlete_bib_num'])) {
             return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Device ID and Bib Number must not be empty.');
         }
-
+        // echo '<pre>'.print_r($_POST, 1).'</pre>';
         // check duplicate
         $device_id = $_POST['device_id'];
-        $mapping = DB::table('device_mapping')
-            ->where('event_id', $event_id)
+        $mapping = DB::table('gps_live_'.$event_id.'.device_mapping')
             ->where('device_id', $device_id)
             ->first();
 
@@ -47,9 +47,8 @@ class DeviceMappingController extends Controller {
 
         // check duplicate
         $bib_number = $_POST['athlete_bib_num'];
-        $bib_number_sql = DB::table('device_mapping')
+        $bib_number_sql = DB::table('gps_live_'.$event_id.'.device_mapping')
             ->where('bib_number', $bib_number)
-            ->where('event_id', $event_id)
             ->first();
         if (!empty($bib_number_sql)){
             return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Bib Number has already mapped.');
@@ -62,17 +61,28 @@ class DeviceMappingController extends Controller {
 
         $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
 
-        DB::table('device_mapping')->insert(
-            ['device_id' => $device_id, 'event_id' => $event_id, 'bib_number' => $bib_number, 'status' => $status, 'start_time' => ($start_time != '') ? $start_time : NULL, 'end_time' => ($end_time != '') ? $end_time : NULL]
-        );
+        DB::transaction(function() use($event_id, $device_id, $bib_number, $start_time, $end_time, $status) {
+            DB::table('gps_live_'.$event_id.'.device_mapping')->insert([
+                'device_id' => $device_id,
+                'bib_number' => $bib_number,
+                'start_time' => ($start_time != '') ? $start_time : NULL,
+                'end_time' => ($end_time != '') ? $end_time : NULL
+            ]);
+
+            DB::table('gps_live_'.$event_id.'.athletes')
+                ->where('bib_number', $bib_number)
+                ->update(['status' => $status]);
+        });
 
         return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Device and athlete is mapped.');
     }
+
+
     public function editDeviceMapping($event_id) {
         if (empty($_POST['device_id']) || empty($_POST['athlete_bib_num'])) {
             return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Device ID and Bib Number must not be empty.');
         }
-
+        echo '<pre>'.print_r($_POST ,1).'</pre>';
         $device_mapping_id = $_POST['device_mapping_id'];
         $device_id = $_POST['device_id'];
         $bib_number = $_POST['athlete_bib_num'];
@@ -80,9 +90,19 @@ class DeviceMappingController extends Controller {
         $end_time = $_POST['end_time'];
         $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
 
-        DB::table('device_mapping')->where('device_mapping_id', $device_mapping_id)->update(
-            ['device_id' => $device_id, 'bib_number' => $bib_number, 'status' => $status, 'start_time' => ($start_time != '') ? $start_time : NULL, 'end_time' => ($end_time != '') ? $end_time : NULL]
-        );
+        DB::transaction(function() use($event_id, $device_id, $bib_number, $start_time, $end_time, $status) {
+            DB::table('gps_live_'.$event_id.'.device_mapping')->insert([
+                'device_id' => $device_id,
+                'bib_number' => $bib_number,
+                'start_time' => ($start_time != '') ? $start_time : NULL,
+                'end_time' => ($end_time != '') ? $end_time : NULL
+            ]);
+
+            DB::table('gps_live_'.$event_id.'.athletes')
+                ->where('bib_number', $bib_number)
+                ->update(['status' => $status]);
+        });
+
         return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Mapping is edited.');
     }
     // public function addDeviceMapping($event_id) {
@@ -139,9 +159,8 @@ class DeviceMappingController extends Controller {
 
 
             // check duplicate
-            $device_ids_sql = DB::table('device_mapping')
+            $device_ids_sql = DB::table('gps_live_'.$event_id.'.device_mapping')
                 ->select('device_id')
-                ->where('event_id', $event_id)
                 ->get();
 
             $device_ids = [];
@@ -149,9 +168,8 @@ class DeviceMappingController extends Controller {
                 $device_ids[] = $temp->device_id;
             }
 
-            $bib_numbers_sql = DB::table('device_mapping')
+            $bib_numbers_sql = DB::table('gps_live_'.$event_id.'.device_mapping')
                 ->select('bib_number')
-                ->where('event_id', $event_id)
                 ->get();
 
             $bib_numbers = [];
@@ -170,11 +188,11 @@ class DeviceMappingController extends Controller {
                 $startTime3 = NULL;
                 $endTime3 = NULL;
 
-                if (!empty($temp[4]) && $temp[4] == '1') {
-                    $status = "visible";
-                } else {
-                    $status = "hidden";
-                }
+                // if (!empty($temp[4]) && $temp[4] == '1') {
+                //     $status = "visible";
+                // } else {
+                //     $status = "hidden";
+                // }
 
 
                 // create DateTime object from timestamp
@@ -207,13 +225,14 @@ class DeviceMappingController extends Controller {
                 }
 
                 if (!$hasError) {
+                    $bib_number = $temp[1];
+
                     $array[] = array(
                         'device_id' => $temp[0],
                         'bib_number' => $temp[1],
-                        'event_id' => $event_id,
                         'start_time' => !empty($startTime3) ? $startTime3 : NULL,
                         'end_time' => !empty($endTime3) ? $endTime3 : NULL,
-                        'status' => $status
+                        // 'status' => $status
                     );
                 }
 

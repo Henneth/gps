@@ -1,4 +1,4 @@
-$event->live@extends('app')
+@extends('app')
 
 @section('htmlheader_title')
     Draw Route
@@ -58,7 +58,9 @@ $event->live@extends('app')
         <ul class="nav nav-tabs">
             <li id="map-tab" class="active"><a href="#tab_1" data-toggle="tab">Draw Route</a></li>
             <li id="min-time-tab"><a href="#tab_2" data-toggle="tab">Set Minimum Times</a></li>
-            <li id="set-checkpoint-name-tab"><a href="#tab_3" data-toggle="tab">Set Checkpoint Name</a></li>
+            @if($checkpoints && count($checkpoints)>2)
+                <li id="set-checkpoint-name-tab"><a href="#tab_3" data-toggle="tab">Set Checkpoint Name</a></li>
+            @endif
         </ul>
     @else
     <div class="nav-tabs-custom box">
@@ -90,13 +92,13 @@ $event->live@extends('app')
             </div>
         @if ($event && $event->event_type == "fixed route")
             <div class="min-time-section tab-pane" id="tab_2">
-                @if ($checkpointMinTimes && $checkpointMinTimes[sizeof($checkpointMinTimes)-1]->checkpoint_no != 0)
+                @if ($checkpoints && $checkpoints[sizeof($checkpoints)-1]->checkpoint_no != 0)
                 <form action="{{url('/')}}/event/{{$event_id}}/save-minimum-times" method="post">
                     {{ csrf_field() }}
-                    @for ($i=0; $i < sizeof($checkpointMinTimes); $i++)
+                    @for ($i=1; $i < sizeof($checkpoints); $i++)
                         <div class="form-group min-times-row">
-                            <label>From {{($i == 0) ? 'Start' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint_no - 1)}} to {{($checkpointMinTimes[$i]->checkpoint_no == sizeof($checkpointMinTimes)) ? 'Finish' : 'Checkpoint'.($checkpointMinTimes[$i]->checkpoint_no)}}</label>
-                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpointMinTimes[$i]->point_order}}]" value="{{$checkpointMinTimes[$i]->min_time}}" {{$event->live ? 'disabled' : ''}}>
+                            <label>From {{($i == 1) ? 'Start' : 'Checkpoint'.($checkpoints[$i]->checkpoint_no - 1)}} to {{($checkpoints[$i]->checkpoint_no == (sizeof($checkpoints)-1)) ? 'Finish' : 'Checkpoint'.($checkpoints[$i]->checkpoint_no)}}</label>
+                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpoints[$i]->checkpoint_no}}]" value="{{$checkpoints[$i]->min_time}}" {{$event->live ? 'disabled' : ''}}>
                         </div>
                     @endfor
                     <div>
@@ -108,13 +110,13 @@ $event->live@extends('app')
                 @endif
             </div>
             <div class="set-checkpoint-name tab-pane" id="tab_3">
-                @if ($checkpointMinTimes && $checkpointMinTimes[sizeof($checkpointMinTimes)-1]->checkpoint_no != 0)
+                @if ($checkpoints && $checkpoints[sizeof($checkpoints)-1]->checkpoint_no != 0)
                 <form action="{{url('/')}}/event/{{$event_id}}/save-checkpoint-name" method="post">
                     {{ csrf_field() }}
-                    @for ($i=0; $i < sizeof($checkpointMinTimes)-1; $i++)
+                    @for ($i=2; $i < sizeof($checkpoints); $i++)
                         <div class="form-group">
-                            <label>Name of Checkpoint {{($checkpointMinTimes[$i]->checkpoint_no)}}</label>
-                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpointMinTimes[$i]->point_order}}]" value="{{$checkpointMinTimes[$i]->checkpoint_name}}" {{$event->live ? 'disabled' : ''}}>
+                            <label>Name of Checkpoint {{($checkpoints[$i-1]->checkpoint_no)}}</label>
+                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpoints[$i-1]->checkpoint_no}}]" value="{{$checkpoints[$i-1]->checkpoint_name}}" {{$event->live ? 'disabled' : ''}}>
                         </div>
                     @endfor
                     <div>

@@ -5,7 +5,7 @@
 @endsection
 
 @section('contentheader_title')
-    Live Tracking <small>{{$event->event_id == live_event ? $event->event_name : '' }}</small>
+    Live Tracking <small>{{$event->event_name}}</small>
 @endsection
 
 @section('main-content')
@@ -108,7 +108,7 @@
         checkpointDistances = {!! $checkpointDistances !!};
 
         @if ($route)
-            route = {!!$route->route!!};
+            route = {!!$route!!};
         @endif
 
         // check device_id in localStorage, "ON" data will be save in localStorage
@@ -158,8 +158,8 @@
             var tempArray = [];
 
             for(var key in route){
-                gpxLat = parseFloat(route[key]["lat"]);
-                gpxLng = parseFloat(route[key]["lon"]);
+                gpxLat = parseFloat(route[key]["latitude"]);
+                gpxLng = parseFloat(route[key]["longitude"]);
                 tempArray.push({'lat' : gpxLat, 'lng' : gpxLng});
             }
 

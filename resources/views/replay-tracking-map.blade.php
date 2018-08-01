@@ -80,10 +80,8 @@
 
         // init global variables
         var map;
-        // var distance = 0;
         var infowindow, infowindow2;
         var currentRouteIndex;
-        var checkpointDistances;
         var markerList = []; //array to store marker
         var showOffKey; // store "ON" device_id, data retrive from localStorage
         var data;
@@ -94,11 +92,7 @@
 
         function initMap() {
 
-
-            // console.log(data);
-            checkpointDistances = {!! $checkpointDistances !!};
-
-            @if ($checkpointDistances)
+            @if ($route)
 
                 // Function to add a marker to the map.
                 function addMarker(map, content) {
@@ -182,13 +176,15 @@
                         strokeWeight: 3,
                         map: map
                     });
+                    // console.log(route);
                     // show checkpoint labels
-                    var route = {!!$route->route!!};
+                    var route = {!!$route!!};
+
                     var lastCP = route.length - 1;
                     for(var key in route){
-                        gpxLat = parseFloat(route[key]["lat"]);
-                        gpxLng = parseFloat(route[key]["lon"]);
-                        IsCP = route[key]["isCheckpoint"] || key == 0;
+                        gpxLat = parseFloat(route[key]["latitude"]);
+                        gpxLng = parseFloat(route[key]["longitude"]);
+                        IsCP = route[key]["is_checkpoint"] || key == 0;
                         // console.log(IsCP);
                         // set last point to checkpoint
                         // if (key == lastCP){
@@ -204,7 +200,7 @@
                         if (markerList[i].isCheckpoint) {
                             var marker = markerList[i];
 
-                            cpName = checkpointDistances[CPIndex-1]['checkpoint_name'];
+                            cpName = route[CPIndex-1]['checkpoint_name'];
                             marker.checkpointName = cpName;
                             marker.checkpointIndex = CPIndex;
                             marker.setLabel({text: ""+CPIndex, color: "white"});
@@ -250,13 +246,13 @@
                 var temp = localStorage.getItem("visibility{{$event_id}}");
                 var array = jQuery.parseJSON( temp );
                 showOffKey = array;
-                // console.log(showOffKey);
+                console.log(showOffKey);
 
                 $('#loading').show();
                 $.ajax({
                     type:'get',
                     url:'{{url("/")}}/event/{{$event_id}}/replay-tracking/poll',
-                    data: {'device_ids': showOffKey ? JSON.stringify(showOffKey) : null},
+                    data: {'bib_numbers': showOffKey ? JSON.stringify(showOffKey) : null},
                     dataType: "json",
                     success:function(ajax_data) {
                         console.log(ajax_data);

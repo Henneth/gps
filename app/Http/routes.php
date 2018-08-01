@@ -17,10 +17,10 @@ Route::group(array('prefix' => ''), function() {
     $data = DB::table('events')
     ->select('event_id')
     ->where('live', 1)
-    ->get();
+    ->first();
 
     if ($data) {
-        define('live_event', $data);
+        define('live_event', $data->event_id);
     }else {
         define('live_event', false);
     }

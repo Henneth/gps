@@ -5,16 +5,9 @@ namespace App\Http\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 
-
 class RawDataController extends Controller {
 
     public function index() {
-        // if (isset($_GET['live']) && $_GET['live'] == 1){
-        //     $data = DB::table('gps_live.gps_data')->orderby('datetime', 'desc')->limit(3000)->get();
-        // }else {
-        //     $data = DB::table('gps_data')->orderby('datetime', 'desc')->limit(3000)->get();
-        // }
-        // // print_r($data);
         // foreach ($data as &$value) {
         //     $datetime1 = date_create($value->datetime);
         //     $datetime2 = date_create($value->created_at);
@@ -28,20 +21,24 @@ class RawDataController extends Controller {
         //     }
         // }
 
-        if (isset($_GET['live']) && $_GET['live'] == 1){
-            $deviceID = DB::table('gps_live.gps_data')
+        if (isset($_GET['live'])){
+            $device_ids = DB::table('gps_live_'.$_GET['live'].'.raw_data')
                         ->select('device_id')
                         ->orderBy('device_id', 'asc')
                         ->groupBy('device_id')
                         ->get();
-        }else {
-            $deviceID = DB::table('gps_data')
+        } else {
+            $device_ids = DB::table('raw_data')
                         ->select('device_id')
                         ->orderBy('device_id', 'asc')
                         ->groupBy('device_id')
                         ->get();
         }
-        return view('raw-data')->with(array('deviceID' => $deviceID));
+        $live_event_ids = DB::table('events')
+                    ->select('event_id', 'event_name')
+                    ->where('live', 1)
+                    ->get();
+        return view('raw-data')->with(array('device_ids' => $device_ids, 'live_event_ids' => $live_event_ids));
     }
 
     public function exportRawData() {
@@ -51,7 +48,7 @@ class RawDataController extends Controller {
         $deviceID =  $_POST['deviceID'];
 
         if (!empty($timeFrom) && !empty($timeTo) && empty($deviceID)){
-            $data = DB::table('gps_data')
+            $data = DB::table('raw_data')
                 ->select('datetime', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
                 ->where('datetime', '>=', $timeFrom)
                 ->where('datetime', '<=', $timeTo)
@@ -60,7 +57,7 @@ class RawDataController extends Controller {
                 ->get();
         }
         if (!empty($timeFrom) && !empty($timeTo) && !empty($deviceID)){
-            $data = DB::table('gps_data')
+            $data = DB::table('raw_data')
                 ->select('datetime', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
                 ->where('datetime', '>=', $timeFrom)
                 ->where('datetime', '<=', $timeTo)
@@ -70,7 +67,7 @@ class RawDataController extends Controller {
                 ->get();
         }
         if (empty($timeFrom) && empty($timeTo) && !empty($deviceID)){
-            $data = DB::table('gps_data')
+            $data = DB::table('raw_data')
                 ->select('datetime', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
                 ->where('device_id', $deviceID)
                 ->orderby('datetime', 'desc')
@@ -82,7 +79,7 @@ class RawDataController extends Controller {
         // echo "<pre>".print_r($timeFrom)."<pre>";
         // echo "<pre>".print_r($timeTo)."<pre>";
         // echo "<pre>".print_r($deviceID)."<pre>";
-        // $data = DB::table('gps_data')
+        // $data = DB::table('raw_data')
         //     ->select('datetime', 'created_at', 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
         //     ->orderby('datetime', 'desc')
         //     ->orderby('created_at', 'desc')

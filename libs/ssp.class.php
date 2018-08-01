@@ -216,7 +216,7 @@ class SSP {
 		// Low battery filtering
 		if ( isset( $request['low_battery_filter'] ) && $request['low_battery_filter'] == 'true') {
 			// $columnSearch[] = "`battery_level` = '20%' OR `battery_level` = '10%'";
-			$columnSearch[] = "(device_id, datetime) IN (SELECT device_id, MAX(datetime) FROM gps_data WHERE `battery_level` = '20%' OR `battery_level` = '10%' GROUP BY `device_id`, `battery_level`)";
+			$columnSearch[] = "(device_id, datetime) IN (SELECT device_id, MAX(datetime) FROM raw_data WHERE `battery_level` = '20%' OR `battery_level` = '10%' GROUP BY `device_id`, `battery_level`)";
 		}
 
 		// Combine the filters into a single string

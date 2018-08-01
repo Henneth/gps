@@ -19,7 +19,7 @@
  */
 
 // DB table to use
-$table = 'gps_data';
+$table = 'raw_data';
 
 // Table's primary key
 $primaryKey = 'id';
@@ -33,8 +33,8 @@ $columns = array(
     array( 'db' => 'created_at', 'dt' => 1 ),
     array( 'db' => 'TIMEDIFF(datetime, created_at)', 'dt' => 2 ),
     array( 'db' => 'device_id', 'dt' => 3 ),
-    array( 'db' => 'longitude_final', 'dt' => 4 ),
-    array( 'db' => 'latitude_final', 'dt' => 5 ),
+    array( 'db' => 'longitude', 'dt' => 4 ),
+    array( 'db' => 'latitude', 'dt' => 5 ),
     array( 'db' => 'battery_level', 'dt' => 6 )
 );
 
@@ -42,7 +42,7 @@ $columns = array(
 $sql_details = array(
     'user' => 'root',
     'pass' => 'root',
-    'db'   => !empty($_GET['live']) && $_GET['live'] == 1 ? 'gps_live' : 'gps',
+    'db'   => !empty($_GET['live']) ? "gps_live_".$_GET['live'] : 'gps',
     'host' => '127.0.0.1'
 );
 

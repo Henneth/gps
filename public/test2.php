@@ -31,56 +31,84 @@ function distanceUnder100m($lat1, $lon1, $lat2, $lon2) {
     return $dist;
 }
 
-
-
-$before = microtime(true);
-
-for ($i=0 ; $i<100000 ; $i++) {
-    distance1(22.245135, 114.245482, 22.245018, 114.245491);
-    distance1(22.253487, 114.245402, 22.253487, 114.244505);
-    distance1(22.254485, 114.243057, 22.253487, 114.244505);
-    distance1(22.254485, 114.243057, 22.253537, 114.245438);
-    distance1(22.242106, 114.245722, 22.229925, 114.251210);
-    distance1(22.257268, 114.236726, 22.229925, 114.251210);
+function distanceUnder50m($lat1, $lon1, $lat2, $lon2) {
+    $theta = $lon1 - $lon2;
+    $alpha = $lat1 - $lat2;
+    $dist = pow(deg2rad($theta),2) + pow(deg2rad($alpha),2) <= 6.159206976E-11;
+    return $dist;
 }
 
-$after = microtime(true);
-echo ($after-$before)/$i . " sec/serialize\n";
 
-$before = microtime(true);
 
-for ($i=0 ; $i<100000 ; $i++) {
-    distanceUnder100m(22.245135, 114.245482, 22.245018, 114.245491);
-    distanceUnder100m(22.253487, 114.245402, 22.253487, 114.244505);
-    distanceUnder100m(22.254485, 114.243057, 22.253487, 114.244505);
-    distanceUnder100m(22.254485, 114.243057, 22.253537, 114.245438);
-    distanceUnder100m(22.242106, 114.245722, 22.229925, 114.251210);
-    distanceUnder100m(22.257268, 114.236726, 22.229925, 114.251210);
-}
+// $before = microtime(true);
+//
+// for ($i=0 ; $i<100000 ; $i++) {
+//     distance1(22.245135, 114.245482, 22.245018, 114.245491);
+//     distance1(22.253487, 114.245402, 22.253487, 114.244505);
+//     distance1(22.254485, 114.243057, 22.253487, 114.244505);
+//     distance1(22.254485, 114.243057, 22.253537, 114.245438);
+//     distance1(22.242106, 114.245722, 22.229925, 114.251210);
+//     distance1(22.257268, 114.236726, 22.229925, 114.251210);
+// }
+//
+// $after = microtime(true);
+// echo ($after-$before)/$i . " sec/serialize\n";
+//
+// $before = microtime(true);
+//
+// for ($i=0 ; $i<100000 ; $i++) {
+//     distanceUnder100m(22.245135, 114.245482, 22.245018, 114.245491);
+//     distanceUnder100m(22.253487, 114.245402, 22.253487, 114.244505);
+//     distanceUnder100m(22.254485, 114.243057, 22.253487, 114.244505);
+//     distanceUnder100m(22.254485, 114.243057, 22.253537, 114.245438);
+//     distanceUnder100m(22.242106, 114.245722, 22.229925, 114.251210);
+//     distanceUnder100m(22.257268, 114.236726, 22.229925, 114.251210);
+// }
+//
+// $after = microtime(true);
+// echo ($after-$before)/$i . " sec/serialize\n";
 
-$after = microtime(true);
-echo ($after-$before)/$i . " sec/serialize\n";
+$arr = [22.245135, 114.245482, 22.245018, 114.245491];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
 
-// echo distance1(22.245135, 114.245482, 22.245018, 114.245491).' ';
-// echo distance2(22.245135, 114.245482, 22.245018, 114.245491).' ';
-// echo distanceUnder100m(22.245135, 114.245482, 22.245018, 114.245491).' <br>';
-//
-// echo distance1(22.253487, 114.245402, 22.253487, 114.244505).' ';
-// echo distance2(22.253487, 114.245402, 22.253487, 114.244505).' ';
-// echo distanceUnder100m(22.253487, 114.245402, 22.253487, 114.244505).' <br>';
-//
-// echo distance1(22.254485, 114.243057, 22.253487, 114.244505).' ';
-// echo distance2(22.254485, 114.243057, 22.253487, 114.244505).' ';
-// echo distanceUnder100m(22.254485, 114.243057, 22.253487, 114.244505).' <br>';
-//
-// echo distance1(22.254485, 114.243057, 22.253537, 114.245438).' ';
-// echo distance2(22.254485, 114.243057, 22.253537, 114.245438).' ';
-// echo distanceUnder100m(22.254485, 114.243057, 22.253537, 114.245438).' <br>';
-//
-// echo distance1(22.242106, 114.245722, 22.229925, 114.251210).' ';
-// echo distance2(22.242106, 114.245722, 22.229925, 114.251210).' ';
-// echo distanceUnder100m(22.242106, 114.245722, 22.229925, 114.251210).' <br>';
-//
-// echo distance1(22.257268, 114.236726, 22.229925, 114.251210).' ';
-// echo distance2(22.257268, 114.236726, 22.229925, 114.251210).' ';
-// echo distanceUnder100m(22.257268, 114.236726, 22.229925, 114.251210).' <br>';
+$arr = [22.253487, 114.244402, 22.253487, 114.244505];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
+
+$arr = [22.253482, 114.244462, 22.253487, 114.244505];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
+
+$arr = [22.253487, 114.245402, 22.253487, 114.245005];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
+
+$arr = [22.253487, 114.245402, 22.253487, 114.244505];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
+
+$arr = [22.254485, 114.243057, 22.253487, 114.244505];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
+
+$arr = [22.254485, 114.243057, 22.253537, 114.245438];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
+
+$arr = [22.242106, 114.245722, 22.229925, 114.251210];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';
+
+$arr = [22.257268, 114.236726, 22.229925, 114.251210];
+echo distance1($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distance2($arr[0], $arr[1], $arr[2], $arr[3]).' ';
+echo distanceUnder50m($arr[0], $arr[1], $arr[2], $arr[3]).' <br>';

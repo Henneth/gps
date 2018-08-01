@@ -11,33 +11,6 @@
 |
 */
 
-// Route::group(array('prefix' => ''), function() {
-//
-//     // get live event IDs from 'event' table, column name 'live'
-//     $data = DB::table('events')
-//     ->select('event_id')
-//     ->where('live', 1)
-//     ->get();
-//
-// // echo '<pre>'.print_r($data,1).'</pre>';
-//     if ($data) {
-//         define('live_event', serialize($data));
-//     }else {
-//         define('live_event', false);
-//     }
-//
-//     // // get the lastest event ID from 'event' table, column name 'live'
-//     // $maxEventID = DB::table('events')
-//     // ->max('event_id');
-//     //
-//     // if ($maxEventID) {
-//     //     define('maxEventID', $maxEventID);
-//     // }else {
-//     //     define('maxEventID', false);
-//     // }
-//
-// });
-
 // Public
 Route::get('/', function () {
     return redirect('view-all-events');

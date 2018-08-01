@@ -42,10 +42,10 @@ foreach ($events as $event) {
     echo "== Event ID: " . $event_id . " ==\n";
 
     // get route data
-    $eventTimeRange_stmt = $pdo->prepare('SELECT datetime_from, datetime_to FROM gps.events WHERE event_id = :event_id');
-    $eventTimeRange_stmt->execute(array(':event_id' => $event_id));
-    $eventTimeRange = $eventTimeRange_stmt->fetchAll();
-    if(empty($eventTimeRange)){
+    $eventInfo_stmt = $pdo->prepare('SELECT datetime_from, datetime_to, event_type FROM gps.events WHERE event_id = :event_id');
+    $eventInfo_stmt->execute(array(':event_id' => $event_id));
+    $eventInfo = $eventInfo_stmt->fetchAll();
+    if(empty($eventInfo)){
         echo "-- No event time range --\n";
         continue;
     }
@@ -81,179 +81,198 @@ foreach ($events as $event) {
             $gps_data_stmt = $pdo->prepare('SELECT * FROM {$db}.raw_data
                 WHERE :datetime_from <= gps_data.datetime AND gps_data.datetime <= :datetime_to
                 AND :start_time <= gps_data.datetime AND gps_data.datetime <= :end_time
-                AND device_id = :device_id');
+                AND device_id = :device_id AND processed = 0');
             $gps_data_stmt->execute(array(
-                ':datetime_from' => $eventTimeRange[0]['datetime_from'],
-                ':datetime_to' => $eventTimeRange[0]['datetime_to'],
+                ':datetime_from' => $eventInfo[0]['datetime_from'],
+                ':datetime_to' => $eventInfo[0]['datetime_to'],
                 ':device_id' => $device_id['device_id'],
                 ':start_time' => $device_id['start_time'],
                 ':end_time' => $device_id['end_time'],
             ));
             $gps_data = $gps_data_stmt->fetchAll();
 
-            $data_array = array_merge($data_array, $gps_data)
+            $data_array = array_merge($data_array, $gps_data);
         }
 
-        // get the largest distance progress map point order
-        $lastReachedPoint_stmt = $pdo->prepare('SELECT MAX(point_order) FROM {$db}.distance_data WHERE device_id = :device_id GROUP BY device_id');
-        $lastReachedPoint_stmt->execute(array(':device_id' => $device_id, ':event_id' => $event_id));
-        $lastReachedPoint_raw = $lastReachedPoint_stmt->fetchAll();
-        $lastReachedPoint = $lastReachedPoint_raw ? $lastReachedPoint_raw[0]['MAX(route_index)'] : -1;
+        if ($eventInfo[0]['event_type'] == 'fixed route') {
 
-        // get the largest distance progress map point order
-        $checkpoints = $pdo->query('SELECT * FROM {$db}.checkpoint')->fetchAll();
-        $reachedCheckpoint = $lastReachedPoint != -1 ? getCurrentCheckpoint($lastReachedPoint, $checkpoints) : -1;
+            // get checkpoints and last reached checkpoint
+            $checkpoints = $pdo->query('SELECT * FROM {$db}.checkpoint')->fetchAll();
 
-        // initialize
-        $lastCheckpointLeft = false;
-        $finished = false;
-        $checkpointTimes[0] = $eventTimeRange[0]['datetime_from'];
+            // variables that are from db and will change on the go
+            $lastReachedPoint = [];
+            $lastReachedPointNo = 0;
+            $reachedCkpt = [];
+            $reachedCkptNo = 0;
+            $reachedCkptID = $reachedCkptNo + 1;
+            $finished = false;
+            // $nextCkpt
+            $accumulated_distance_since_last_ckpt = 0;
 
-        foreach ($data_array as $gps_position) {
-            $lat2 = $gps_position['latitude'];
-            $lon2 = $gps_position['longitude'];
-
-            foreach ($route as $key => $routePoint) {
-                $lat1 = $routePoint['latitude'];
-                $lon1 = $routePoint['longitude'];
-
-                if (distanceUnder50m($lat1, $lon1, $lat2, $lon2) && speedCheck($lat2, $lon2, $lat3, $lon3, $previousValidDatetime, $gps_position['datetime'])) {
-                    // valid data
-
-                    // Start the transaction. PDO turns autocommit mode off depending on the driver, you don't need to implicitly say you want it off
-                    $pdo->beginTransaction();
-
-                    try {
-                        // Delete the privileges
-                        $stmt = $pdo->prepare('INSERT INTO {$db}.valid_data SELECT * FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        // Delete the group
-                        $stmt = $pdo->prepare('DELETE FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        $pdo->commit();
-                    } catch(PDOException $e) {
-                        $pdo->rollBack();
-
-                        // Report errors
-                        echo "=== MYSQL Error. Rollback. ===";
-                    }
-                } else {
-                    // invalid data
-
-                    // Start the transaction. PDO turns autocommit mode off depending on the driver, you don't need to implicitly say you want it off
-                    $pdo->beginTransaction();
-
-                    try {
-                        // Delete the privileges
-                        $stmt = $pdo->prepare('INSERT INTO {$db}.invalid_data SELECT * FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        // Delete the group
-                        $stmt = $pdo->prepare('DELETE FROM {$db}.raw_data WHERE id = :id');
-                        $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        $pdo->commit();
-                    } catch(PDOException $e) {
-                        $pdo->rollBack();
-
-                        // Report errors
-                        echo "=== MYSQL Error. Rollback. ===";
-                    }
-                }
+            // get the last reached map point
+            $lastReachedPoint_stmt = $pdo->prepare('SELECT * FROM {$db}.distance_data WHERE bib_number = :bib_number AND point_order = (SELECT MAX(point_order) FROM {$db}.distance_data WHERE bib_number = :bib_number) LIMIT 1');
+            $lastReachedPoint_stmt->execute(array(':bib_number' => $bib_number));
+            $lastReachedPoint = $lastReachedPoint_stmt->fetchAll();
+            if (empty($lastReachedPoint)) {
+                $lastReachedPoint['distance_from_start'] = 0;
+                $lastReachedPoint['datetime'] = $eventInfo[0]['datetime_from'];
             }
-        }
+            $lastReachedPointNo = !empty($lastReachedPoint) ? $lastReachedPoint[0]['point_order'] : 0;
 
-    }
+            // get the last reached checkpoint
+            $reachedCkpt_stmt = $pdo->prepare('SELECT * FROM {$db}.reached_checkpoint WHERE bib_number = :bib_number AND checkpoint_id = (SELECT MAX(checkpoint_id) FROM {$db}.reached_checkpoint WHERE bib_number = :bib_number) LIMIT 1');
+            $reachedCkpt_stmt->execute(array(':bib_number' => $bib_number));
+            $reachedCkpt = $reachedCkpt_stmt->fetchAll();
+            if (empty($reachedCkpt)) {
+                $reachedCkpt['datetime'] = $eventInfo[0]['datetime_from'];
+            }
+            $reachedCkptNo = !empty($reachedCkpt) ? $reachedCkpt[0]['checkpoint_id'] - 1 : 0;
 
-    // copy the last ID from gps_data to lastID
-    // $importLastID = $pdo->prepare('REPLACE INTO last_id (last_id, event_id) SELECT MAX(id), device_mapping.event_id FROM gps_data INNER JOIN device_mapping ON device_mapping.device_id = gps_data.device_id WHERE device_mapping.event_id = :event_id GROUP BY device_mapping.event_id ');
-    // $importLastID->execute(array(':event_id' => $event_id));
+            // get accumulated distance
+            $nextCkpt_stmt = $pdo->prepare('SELECT * FROM {$db}.next_checkpoint WHERE bib_number = :bib_number LIMIT 1');
+            $nextCkpt_stmt->execute(array(':bib_number' => $bib_number));
+            $nextCkpt = $nextCkpt_stmt->fetchAll();
+            $accumulated_distance_since_last_ckpt = !empty($nextCkpt) ? $nextCkpt[0]['accumulated_distance_since_last_ckpt'] : 0;
 
+            // initialize
+            // $lastCheckpointLeft = false;
 
-    $cpArray = [];
-    // looping by each device
-    foreach ($gps_data_by_device_id as $device_id => $gps_row) {
-        // get the largest route progress's index
-        // looping by each gps data row
-        foreach ($gps_row as $key2 => $datum) {
-            $lat2 = $datum['latitude_final'];
-            $lon2 = $datum['longitude_final'];
+            foreach ($data_array as $gps_position) {
+                $lat2 = $gps_position['latitude'];
+                $lon2 = $gps_position['longitude'];
 
-            // looping by each route point
-            foreach ($array as $key => $routePoint) {
-                // echo $key.'<br/>';
-                $lat1 = $routePoint['lat'];
-                $lon1 = $routePoint['lon'];
-                // echo $datum['latitude_final'].'<br/>';
-                $result = distanceUnder100m($lat1, $lon1, $lat2, $lon2);
+                $validated = false;
+                foreach ($route as $point_order => $routePoint) {
+                    $lat1 = $routePoint['latitude'];
+                    $lon1 = $routePoint['longitude'];
 
-                if ($result && !$finished) {
-                    if ($lastCheckpointLeft) {
-                        if ($key > $lastReachedPoint && $key <= $checkpointData[$reachedCheckpoint+1]['route_index']){
-                            if ($key == $checkpointData[$reachedCheckpoint+1]['route_index']) {
-                                if (!empty($checkpointData[$reachedCheckpoint+1]['min_time']) && !checkMinTime($checkpointData[$reachedCheckpoint+1]['min_time'], $checkpointTimes[$reachedCheckpoint], $datum['datetime'])) {
-                                    $finished = true;
-                                    break;
-                                }
-                                $reachedCheckpoint++;
-                                // echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
-                                $finished = true;
-                            }
-
-                            $tempArray['event_id'] = $event_id;
-                            $tempArray['route_index'] = $key;
-                            $tempArray['device_id'] = $device_id;
-                            $tempArray['reached_at'] = $datum['datetime'];
-                            $lastReachedPoint = $key;
-                            $cpArray[] = $tempArray;
-                            // echo"<pre>".print_r($tempArray,1)."</pre>";
+                    $validData = false;
+                    if (distanceUnder50m($lat1, $lon1, $lat2, $lon2)) {
+                        $distance_covered = $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
+                        $elapsed_time = elapsed_time($gps_position['datetime'], $lastReachedPoint['datetime']);
+                        if (speedCheck($distance_covered, $elapsed_time)) {
+                            $validData = true;
+                            $validated = true;
                         }
-                    } else {
-                        if ($key > $lastReachedPoint && $key < $checkpointData[$reachedCheckpoint+2]['route_index']){
-                            if ($key >= $checkpointData[$reachedCheckpoint+1]['route_index']) {
-                                if (!empty($checkpointData[$reachedCheckpoint+1]['min_time']) && !checkMinTime($checkpointData[$reachedCheckpoint+1]['min_time'], $checkpointTimes[$reachedCheckpoint], $datum['datetime'])) {
-                                    $finished = true;
-                                    break;
-                                }
-                                $reachedCheckpoint++;
-                                // echo"<pre>".print_r($reachedCheckpoint,1)."</pre>";
-                                if ($reachedCheckpoint == sizeof($checkpointData)-2) {
-                                    $lastCheckpointLeft = true;
-                                }
+                    }
+
+                    if ($validData && !$validated) {
+                        // Start the transaction. PDO turns autocommit mode off depending on the driver, you don't need to implicitly say you want it off
+                        $pdo->beginTransaction();
+
+                        try {
+                            $table = $validData ? 'valid_data':'invalid_data';
+
+                            // Copy to valid/invalid data table
+                            $stmt = $pdo->prepare('INSERT INTO {$db}.{$table} (id, bib_number, latitude, longitude, distance_covered, elapsed_time, datetime) SELECT (id, :bib_number, latitude, longitude, :distance_covered, :elapsed_time, datetime) FROM {$db}.raw_data WHERE id = :id');
+                            $stmt->bindValue(':id', $gps_position['id']);
+                            $stmt->bindValue(':bib_number', $bib_number);
+                            $stmt->bindValue(':distance_covered', $distance_covered);
+                            $stmt->bindValue(':elapsed_time', $elapsed_time);
+                            $stmt->execute();
+
+                            // Flag the raw data
+                            $stmt = $pdo->prepare('UPDATE {$db}.raw_data SET processed = 1 WHERE id = :id');
+                            $stmt->bindValue(':id', $gps_position['id'], PDO::PARAM_INT);
+                            $stmt->execute();
+
+                            $pdo->commit();
+                        } catch(PDOException $e) {
+                            $pdo->rollBack();
+
+                            // Report errors
+                            echo "=== MYSQL Error. Rollback. ===";
+                        }
+                    }
+
+                    if ($validData){
+                        // Check if distance has progress
+                        if (!finished && $point_order > $lastReachedPointNo) {
+                            if (getCurrentCheckpoint($point_order, $checkpoints) > $reachedCkptNo + 1) {
+                                continue;
                             }
 
-                            if ($key == $checkpointData[$reachedCheckpoint]['route_index']) {
-                                $checkpointTimes[$reachedCheckpoint] = $datum['datetime'];
+                            // reached map point
+                            $lastReachedPointNo = $point_order;
+
+                            // update distances
+                            $accumulated_distance_since_last_ckpt = $accumulated_distance_since_last_ckpt + $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
+                            $distance_to_next_ckpt = $checkpoints[$reachedCkptNo]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
+
+                            // insert into distance_data
+                            $stmt = $pdo->prepare('INSERT INTO {$db}.distance_data (bib_number, point_order, distance, datetime) VALUES (:bib_number, :point_order, :distance, :datetime)');
+                            $stmt->bindValue(':bib_number', $bib_number);
+                            $stmt->bindValue(':point_order', $point_order);
+                            $stmt->bindValue(':distance_from_start', $routePoint['distance_from_start']);
+                            $stmt->bindValue(':datetime', $gps_position['datetime']);
+                            $stmt->execute();
+
+                            // if ($distance_to_next_ckpt <= 100 && checkMinTime($checkpoints[$reachedCkptNo + 1]['min_time'], $reachedCkpt['datetime'], $gps_position['datetime'])) {
+                            if ($distance_to_next_ckpt <= 100) {
+                                // reached checkpoint
+                                $reachedCkptNo = $reachedCkptNo + 1;
+                                $reachedCkptID = $reachedCkptNo + 1;
+
+                                // update distances
+                                $distance_to_next_ckpt = $checkpoints[$reachedCkptIndex]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
+                                $accumulated_distance_since_last_ckpt = $distance_to_next_ckpt * -1;
+
+                                // insert into reached_checkpoint
+                                $stmt = $pdo->prepare('INSERT INTO {$db}.reached_checkpoint (bib_number, checkpoint_id, datetime, elapsed_time_btwn_ckpts) VALUES (:bib_number, :checkpoint_id, :datetime, :elapsed_time_btwn_ckpts)');
+                                $stmt->bindValue(':bib_number', $bib_number);
+                                $stmt->bindValue(':checkpoint_id', $reachedCkptID);
+                                $stmt->bindValue(':datetime', $gps_position['datetime']);
+                                $stmt->bindValue(':elapsed_time_btwn_ckpts', elapsed_time($reachedCkpt['datetime'], $gps_position['datetime']));
+                                $stmt->execute();
+
+                                // update $reachedCkpt
+                                $reachedCkpt['checkpoint_id'] = $reachedCkptID;
+                                $reachedCkpt['datetime'] = $gps_position['datetime'];
+                                $reachedCkpt['elapsed_time_btwn_ckpts'] = elapsed_time($reachedCkpt['datetime'], $gps_position['datetime']);
+
+                                // check finished
+                                if (sizeof($checkpoints) == $reachedCkptID) {
+                                    $finished = true;
+
+                                    // insert into distance_data
+                                    $stmt = $pdo->prepare('INSERT INTO {$db}.distance_data (bib_number, point_order, distance, datetime) VALUES (:bib_number, :point_order, :distance, :datetime)');
+                                    $stmt->bindValue(':bib_number', $bib_number);
+                                    $stmt->bindValue(':point_order', sizeof($route));
+                                    $stmt->bindValue(':distance_from_start', $route[sizeof($route) - 1]['distance_from_start']);
+                                    $stmt->bindValue(':datetime', $gps_position['datetime']);
+                                    $stmt->execute();
+
+                                    continue;
+                                }
+
+                                // reset next_checkpoint
+                                $stmt = $pdo->prepare('INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt');
+                                $stmt->bindValue(':bib_number', $bib_number);
+                                $stmt->bindValue(':checkpoint_id', $reachedCkptID + 1);
+                                $stmt->bindValue(':accumulated_distance_since_last_ckpt', $accumulated_distance_since_last_ckpt);
+                                $stmt->bindValue(':accumulated_time_since_last_ckpt', 0);
+                                $stmt->bindValue(':distance_to_next_ckpt', $distance_to_next_ckpt);
+                                $stmt->execute();
                             } else {
-                                $checkpointTimes[$reachedCheckpoint+1] = $datum['datetime'];
+                                // update next_checkpoint
+                                $stmt = $pdo->prepare('INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt');
+                                $stmt->bindValue(':bib_number', $bib_number);
+                                $stmt->bindValue(':checkpoint_id', $reachedCkptID + 1);
+                                $stmt->bindValue(':accumulated_distance_since_last_ckpt', $accumulated_distance_since_last_ckpt);
+                                $stmt->bindValue(':accumulated_time_since_last_ckpt', elapsed_time($reachedCkpt['datetime'], $gps_position['datetime']));
+                                $stmt->bindValue(':distance_to_next_ckpt', $distance_to_next_ckpt);
+                                $stmt->execute();
                             }
 
-                            $tempArray['event_id'] = $event_id;
-                            $tempArray['route_index'] = $key;
-                            $tempArray['device_id'] = $device_id;
-                            $tempArray['reached_at'] = $datum['datetime'];
-                            $lastReachedPoint = $key;
-                            $cpArray[] = $tempArray;
-                            // echo"<pre>".print_r($tempArray,1)."</pre>";
                         }
                     }
                 }
-
             }
-        }
-        // echo"<pre>".print_r($cpArray,1)."</pre>";
-        // insert into DB
-        if ($cpArray){
-            pdoMultiInsert('route_progress', $cpArray, $pdo);
+
+        } else {
+
         }
 
-        $cpArray = [];
     }
 }
 
@@ -261,35 +280,39 @@ foreach ($events as $event) {
 // $after = microtime(true);
 // echo ($after-$before) . " sec\n";
 
-function checkMinTime($min_time, $prev_time, $current_time) {
-    $timeFirst  = strtotime($prev_time);
-    $timeSecond = strtotime($current_time);
-    $differenceInSeconds = $timeSecond - $timeFirst;
-    // echo $differenceInSeconds.' ';
+// function checkMinTime($min_time, $prev_time, $current_time) {
+//     $timeFirst  = strtotime($prev_time);
+//     $timeSecond = strtotime($current_time);
+//     $differenceInSeconds = $timeSecond - $timeFirst;
+//     // echo $differenceInSeconds.' ';
+//
+//     $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", $min_time);
+//     sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
+//     $time_seconds = $hours * 3600 + $minutes * 60 + $seconds;
+//     // echo $time_seconds;
+//
+//     return $differenceInSeconds >= $time_seconds;
+// }
 
-    $str_time = $min_time;
-    $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", $str_time);
-    sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
-    $time_seconds = $hours * 3600 + $minutes * 60 + $seconds;
-    // echo $time_seconds;
-
-    return $differenceInSeconds >= $time_seconds;
+function elapsed_time($new_time, $old_time) {
+    $timeFirst  = strtotime($old_time);
+    $timeSecond = strtotime($new_time);
+    return $timeSecond - $timeFirst;
 }
 
-function getCurrentCheckpoint($currentRouteIndex, $checkpoints) {
+function speedCheck($distance_covered, $elapsed_time) {
+    return $distance_covered / $elapsed_time <= 5;
+}
+
+function getCurrentCheckpoint($currentPointOrder, $checkpoints) {
     foreach ($checkpoints as $checkpoint) {
-        if ($currentRouteIndex > $checkpoint['point_order']) {
-            $lastReachedCheckpoint = !empty($checkpoint['checkpoint']) ? $checkpoint['checkpoint'] : 0;
+        if ($currentPointOrder > $checkpoint['point_order']) {
+            $lastReachedCheckpoint = !empty($checkpoint['checkpoint_no']) ? $checkpoint['checkpoint_no'] : 0;
         } else {
             break;
         }
     }
     return $lastReachedCheckpoint;
-}
-
-// check speed limit
-function exceedSpeedLimit() {
-
 }
 
 /*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
@@ -341,6 +364,13 @@ function distanceUnder100m($lat1, $lon1, $lat2, $lon2) {
     $theta = $lon1 - $lon2;
     $alpha = $lat1 - $lat2;
     $dist = pow(deg2rad($theta),2) + pow(deg2rad($alpha),2) <= 0.000000000246368;
+    return $dist;
+}
+
+function distanceUnder50m($lat1, $lon1, $lat2, $lon2) {
+    $theta = $lon1 - $lon2;
+    $alpha = $lat1 - $lat2;
+    $dist = pow(deg2rad($theta),2) + pow(deg2rad($alpha),2) <= 6.159206976E-11;
     return $dist;
 }
 

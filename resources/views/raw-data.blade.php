@@ -15,7 +15,7 @@
 <div class="pull-right">
     <form role="form" action="{{url('/')}}/raw-data/export-raw-data" method="post" enctype="multipart/form-data">
         {{ csrf_field() }}
-        <button type="submit" class="btn btn-success exportToExcel disabled" style="{{ (isset($_GET['live']) && $_GET['live'] == 1) ? 'display:none' : ''}}"><i class="fas fa-download"></i>&nbsp; Export to Excel</button>
+        <button type="submit" class="btn btn-success exportToExcel disabled" style="{{ isset($_GET['live']) ? 'display:none' : ''}}"><i class="fas fa-download"></i>&nbsp; Export to Excel</button>
         <input type="hidden" id="time-from-value" name="time-from">
         <input type="hidden" id="time-to-value" name="time-to">
         <input type="hidden" id="deviceID-value" name="deviceID">
@@ -29,8 +29,10 @@
             <!-- /.box-header -->
             <div class="box-body">
                 <ul class="nav nav-tabs">
-                    <li class="{{ (!isset($_GET['live'])) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data">Achive Data</a></li>
-                    <li class="{{ (isset($_GET['live']) && $_GET['live'] == 1) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data?live=1">Live Data</a></li>
+                    <li class="{{ !isset($_GET['live']) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data">Achive</a></li>
+                    @foreach ($live_event_ids as $live_event_id)
+                        <li class="{{ (isset($_GET['live']) && $_GET['live'] == $live_event_id->event_id) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data?live={{$live_event_id->event_id}}">{{$live_event_id->event_name}}</a></li>
+                    @endforeach
                 </ul>
                 <table id="table1" class="table table-bordered table-striped display responsive no-wrap" width="100%">
                     <thead>
@@ -58,7 +60,7 @@
                             <th>
                                 <select class="device_list form-control" style="width: 100%;">
                                     <option></option>
-                                    @foreach($deviceID as $id)
+                                    @foreach($device_ids as $id)
                                         <option>{{$id->device_id}}</option>
                                     @endforeach
                                 </select>
@@ -101,16 +103,16 @@
             </div>
             <!-- /.box-body -->
             {{-- <div class="box-footer clearfix">
-            <ul class="pagination pagination-sm no-margin pull-right">
-            <li><a href="#">«</a></li>
-            <li><a href="#">1</a></li>
-            <li><a href="#">2</a></li>
-            <li><a href="#">3</a></li>
-            <li><a href="#">»</a></li>
-        </ul>
-    </div> --}}
-</div>
-</div>
+                <ul class="pagination pagination-sm no-margin pull-right">
+                    <li><a href="#">«</a></li>
+                    <li><a href="#">1</a></li>
+                    <li><a href="#">2</a></li>
+                    <li><a href="#">3</a></li>
+                    <li><a href="#">»</a></li>
+                </ul>
+            </div> --}}
+        </div>
+    </div>
 @endsection
 
 @section('js')
@@ -143,7 +145,7 @@
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": '{{url('/')}}{{ (isset($_GET['live']) && $_GET['live'] == 1) ? "/datatables-processing.php?live=1" : "/datatables-processing.php"}}',
+                "url": '{{url('/')}}{{ isset($_GET['live']) ? "/datatables-processing.php?live=".$_GET['live'] : "/datatables-processing.php"}}',
                 "data": function ( d ) {
                     d.datetime_from = $('#time-from').val(),
                     d.datetime_to = $('#time-to').val(),

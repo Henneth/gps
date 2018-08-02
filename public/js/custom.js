@@ -1,5 +1,18 @@
 $(function() {
-    $('.sidebar-select').change(function() {
+    $('.live-events.sidebar-select').change(function() {
+        var url = window.location.href; // or window.location.toString()
+        // var currentPath = (url.split("/")[5]);
+        var getUrl = window.location;
+        var currentPath = getUrl.pathname.split("/")[3];
+        var baseUrl = getUrl.protocol + "//" + getUrl.host;
+
+        if (currentPath && currentPath != "checkpoint" && currentPath != "replay-tracking"){
+            window.location.replace(baseUrl + '/event/' + $(this).val() + '/' + currentPath);
+        } else {
+            window.location.replace(baseUrl + '/event/' + $(this).val() + '/' + 'live-tracking');
+        }
+    })
+    $('.archive-events.sidebar-select').change(function() {
         var url = window.location.href; // or window.location.toString()
         // var currentPath = (url.split("/")[5]);
         var getUrl = window.location;
@@ -11,7 +24,6 @@ $(function() {
         } else {
             window.location.replace(baseUrl + '/event/' + $(this).val() + '/' + 'replay-tracking');
         }
-
     })
 
     $('section.sidebar .sidebar-menu li.header').click(function(e) {
@@ -22,10 +34,4 @@ $(function() {
         $(this).find(".fa-plus").toggle();
         $(this).find(".fa-minus").toggle();
     })
-    if (typeof live_event_off != 'undefined' && live_event_off) {
-        var live_event_header = $('section.sidebar .sidebar-menu li.header.live-event');
-        live_event_header.nextUntil(".header").toggle();
-        live_event_header.find(".fa-plus").toggle();
-        live_event_header.find(".fa-minus").toggle();
-    }
 });

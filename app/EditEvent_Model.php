@@ -23,10 +23,10 @@ class EditEvent_Model extends Model
 			foreach ($tables as $table) {
 				$target = "gps.archive_{$table}";
 				$origin = "gps_live_{$event_id}.{$table}";
-				DB::insert("INSERT INTO {$target} SELECT ':event_id' AS event_id, {$origin}.* FROM {$origin}", ["event_id"=>$event_id]);
+				DB::insert("INSERT INTO {$target} SELECT {$event_id}, {$origin}.* FROM {$origin}");
 			}
 		});
 
-		DB::insert("INSERT INTO raw_data (event_id, device_id, latitude, longitude, battery_level, datetime, created_at) SELECT ':event_id', device_id, latitude, longitude, battery_level, datetime, created_at FROM gps_live_{$event_id}.raw_data", ["event_id"=>$event_id]);
+		DB::insert("INSERT INTO raw_data (event_id, device_id, latitude, longitude, battery_level, datetime, created_at) SELECT {$event_id}, device_id, latitude, longitude, battery_level, datetime, created_at FROM gps_live_{$event_id}.raw_data");
 	}
 }

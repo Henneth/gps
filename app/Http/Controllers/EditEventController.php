@@ -28,6 +28,13 @@ class EditEventController extends Controller {
                 ['datetime_from' => $datetime_from, 'datetime_to' => $datetime_to, 'event_type' => $event_type, 'hide_others' => $hide_others]
             );
 
+        if ($event_type == 'shortest route') {
+			DB::table("gps_live_".$event_id.".checkpoint")->truncate();
+			DB::table("gps_live_".$event_id.".map_point")
+                ->where('is_checkpoint', 1)
+                ->update(['is_checkpoint' => 0, 'display' => 1, 'checkpoint_no' => null, 'checkpoint_name' => null, 'min_time' => null]);
+        }
+
         // clear current column value to zero first if event-live is ticked(1)
         if (isset($_POST['event-live']) && $_POST['event-live'] == 'on') {
             DB::table('events')
@@ -42,7 +49,7 @@ class EditEventController extends Controller {
         if (!isset($_POST['event-live']) || $_POST['event-live'] == '') {
             DB::table('events')
                 ->where('event_id', $event_id)
-                ->update(['live' => 0]);
+                ->update(['live' => 2]);
             EditEvent_Model::copyToArchiveDB($event_id);
             return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
         }

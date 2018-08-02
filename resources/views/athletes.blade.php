@@ -58,6 +58,7 @@
                             <th>Last Name</th>
                             <th>Chinese Full Name</th>
                             <th>Is Public</th>
+                            <th>Default Visibility</th>
                             <th>Country</th>
                             <th style="width: 64px;">&nbsp;</th>
                             {{-- <th style="width: 40px">Label</th> --}}
@@ -78,6 +79,12 @@
                                         <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox" checked="checked" {{$is_live? 'disabled' : ''}}/>
                                         <label class="tgl-btn" for="1"></label>
                                     </div>
+                                </td>
+                                <td>
+                                    <select name="status" class="form-control" {{$is_live? 'disabled' : ''}}>
+                                        <option value="visible">Visible</option>
+                                        <option value="hidden">Hidden</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <select name="country_code" class="form-control" {{$is_live? 'disabled' : ''}}>
@@ -112,6 +119,13 @@
                                             <input class="tgl tgl-ios" name="is_public" id="{{$count}}" type="checkbox"  {{($athlete->is_public == 1) ? ' checked="checked" ' :''}}/>
                                             <label class="tgl-btn" for="{{$count}}"></label>
                                         </div>
+                                    </td>
+                                    <td class="status">
+                                        <span><i class="fas fa-{{($athlete->status == 'visible' ? 'eye' : 'eye-slash')}}"></i> {{ucfirst($athlete->status)}}</span>
+                                        <select name="status" class="form-control" style="display: none;">
+                                            <option value="visible" {{($athlete->status == 'visible' ? 'selected' : '')}}>Visible</option>
+                                            <option value="hidden" {{($athlete->status == 'hidden' ? 'selected' : '')}}>Hidden</option>
+                                        </select>
                                     </td>
                                     <td class="country_code" data-code="{{$athlete->country_code}}">
                                         <span>{{$athlete->country}}</span>
@@ -168,6 +182,8 @@
             form.find('.is_public span').hide();
             form.find('.is_public div').show();
             var countryCode = form.find('.country_code').attr('data-code');
+            form.find('.status span').hide();
+            form.find('.status select').show();
             form.find('.country_code span').hide();
             form.find('.country_code div').show();
             form.find('.country_code div select').val(countryCode);

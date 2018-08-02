@@ -24,7 +24,7 @@ class DeviceMappingController extends Controller {
             ->select('event_type', 'live')
         	->where('event_id',$event_id)
         	->first();
-
+        // echo '<pre>'.print_r($devices, 1).'</pre>';
         return view('device-mapping')->with(array('devices' => $devices, 'event_id' => $event_id, 'athletes' => $athletes, 'is_live' => $is_live->live));
     }
 
@@ -44,35 +44,30 @@ class DeviceMappingController extends Controller {
         if (!empty($mapping)) {
             return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Device ID has already mapped.');
         }
-
-        // check duplicate
-        $bib_number = $_POST['athlete_bib_num'];
-        $bib_number_sql = DB::table('gps_live_'.$event_id.'.device_mapping')
-            ->where('bib_number', $bib_number)
-            ->first();
-        if (!empty($bib_number_sql)){
-            return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Bib Number has already mapped.');
-        }
+// // bib_number can repeat, but device_id cannot
+//         // check duplicate
+//         $bib_number = $_POST['athlete_bib_num'];
+//         $bib_number_sql = DB::table('gps_live_'.$event_id.'.device_mapping')
+//             ->where('bib_number', $bib_number)
+//             ->first();
+//
+//         if (!empty($bib_number_sql)){
+//             return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Bib Number has already mapped.');
+//         }
 
 
         // insert data after above go thru checking
         $start_time = $_POST['start_time'];
         $end_time = $_POST['end_time'];
 
-        $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
+        // $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
 
-        DB::transaction(function() use($event_id, $device_id, $bib_number, $start_time, $end_time, $status) {
-            DB::table('gps_live_'.$event_id.'.device_mapping')->insert([
-                'device_id' => $device_id,
-                'bib_number' => $bib_number,
-                'start_time' => ($start_time != '') ? $start_time : NULL,
-                'end_time' => ($end_time != '') ? $end_time : NULL
-            ]);
-
-            DB::table('gps_live_'.$event_id.'.athletes')
-                ->where('bib_number', $bib_number)
-                ->update(['status' => $status]);
-        });
+        DB::table('gps_live_'.$event_id.'.device_mapping')->insert([
+            'device_id' => $device_id,
+            'bib_number' => $bib_number,
+            'start_time' => ($start_time != '') ? $start_time : NULL,
+            'end_time' => ($end_time != '') ? $end_time : NULL
+        ]);
 
         return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Device and athlete is mapped.');
     }
@@ -82,26 +77,19 @@ class DeviceMappingController extends Controller {
         if (empty($_POST['device_id']) || empty($_POST['athlete_bib_num'])) {
             return redirect('event/'.$event_id.'/device-mapping')->with('error', 'Device ID and Bib Number must not be empty.');
         }
-        echo '<pre>'.print_r($_POST ,1).'</pre>';
+        // echo '<pre>'.print_r($_POST ,1).'</pre>';
         $device_mapping_id = $_POST['device_mapping_id'];
         $device_id = $_POST['device_id'];
         $bib_number = $_POST['athlete_bib_num'];
         $start_time = $_POST['start_time'];
         $end_time = $_POST['end_time'];
-        $status = !empty($_POST['status']) ? $_POST['status'] : 'visible';
 
-        DB::transaction(function() use($event_id, $device_id, $bib_number, $start_time, $end_time, $status) {
-            DB::table('gps_live_'.$event_id.'.device_mapping')->insert([
-                'device_id' => $device_id,
-                'bib_number' => $bib_number,
-                'start_time' => ($start_time != '') ? $start_time : NULL,
-                'end_time' => ($end_time != '') ? $end_time : NULL
-            ]);
-
-            DB::table('gps_live_'.$event_id.'.athletes')
-                ->where('bib_number', $bib_number)
-                ->update(['status' => $status]);
-        });
+        DB::table('gps_live_'.$event_id.'.device_mapping')->insert([
+            'device_id' => $device_id,
+            'bib_number' => $bib_number,
+            'start_time' => ($start_time != '') ? $start_time : NULL,
+            'end_time' => ($end_time != '') ? $end_time : NULL
+        ]);
 
         return redirect('event/'.$event_id.'/device-mapping')->with('success', 'Mapping is edited.');
     }
@@ -167,17 +155,16 @@ class DeviceMappingController extends Controller {
             foreach ($device_ids_sql as $temp) {
                 $device_ids[] = $temp->device_id;
             }
-
-            $bib_numbers_sql = DB::table('gps_live_'.$event_id.'.device_mapping')
-                ->select('bib_number')
-                ->get();
-
-            $bib_numbers = [];
-            foreach ($bib_numbers_sql as $temp) {
-                $bib_numbers[] = $temp->bib_number;
-            }
-
-            // print_r($bib_numbers);
+// // bib_number can repeat, but device_id cannot
+//             // check duplicate
+//             $bib_numbers_sql = DB::table('gps_live_'.$event_id.'.device_mapping')
+//                 ->select('bib_number')
+//                 ->get();
+//
+//             $bib_numbers = [];
+//             foreach ($bib_numbers_sql as $temp) {
+//                 $bib_numbers[] = $temp->bib_number;
+//             }
 
             // print_r($data);
             $errors= [];
@@ -219,9 +206,13 @@ class DeviceMappingController extends Controller {
                     $hasError = true;
                 }
 
-                else if( !empty($temp[1]) && in_array($temp[1], $bib_numbers) ){
-                    $errors[] = "#".$count." - Bib Number \"$temp[1]\" already exists!";
-                    $hasError = true;
+                // else if( !empty($temp[1]) && in_array($temp[1], $bib_numbers) ){
+                //     $errors[] = "#".$count." - Bib Number \"$temp[1]\" already exists!";
+                //     $hasError = true;
+                // }
+                else if ( empty($temp[1]) ){
+                        $errors[] = "#".$count." - Bib Number \"$temp[1]\" must not be empty!";
+                        $hasError = true;
                 }
 
                 if (!$hasError) {
@@ -240,7 +231,7 @@ class DeviceMappingController extends Controller {
             }
 
             // print_r($array);
-            DB::table('device_mapping')->insert($array);
+            DB::table('gps_live_'.$event_id.'.device_mapping')->insert($array);
 
             return redirect('event/'.$event_id.'/device-mapping')->with('success', count($array).' '.'records have been imported.')
             ->with('errors', $errors);;
@@ -250,6 +241,7 @@ class DeviceMappingController extends Controller {
             return redirect('event/'.$event_id.'/device-mapping')->with('error', $error_msg);
         }
     }
+
 
     private function convertDate($dateValue) {
       $unixDate = ($dateValue - 25569) * 86400;

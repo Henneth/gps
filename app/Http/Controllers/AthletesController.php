@@ -37,6 +37,7 @@ class AthletesController extends Controller {
             'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
             'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
             'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
+            'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
         ]);
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is added.');
@@ -57,6 +58,7 @@ class AthletesController extends Controller {
             'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
             'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
             'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
+            'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
         ]);
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is edited.');

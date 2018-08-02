@@ -59,7 +59,7 @@
                             <th>Last Name</th> --}}
                             <th>Start Time</th>
                             <th>End Time</th>
-                            <th>Default Visibility</th>
+                            {{-- <th>Default Visibility</th> --}}
                             <th style="width: 64px;">&nbsp;</th>
                             {{-- <th style="width: 40px">Label</th> --}}
                         </tr>
@@ -92,12 +92,12 @@
                                         <input type="text" class="form-control pull-right end-time" name="end_time" autocomplete="off" placeholder="yyyy-mm-dd hh:mm" {{$is_live? 'disabled' : ''}}>
                                     </div><div class="check" style="color:red; display: none;">End Time must be after Start Time!</div>
                                 </td>
-                                <td>
+                                {{-- <td>
                                     <select name="status" class="form-control" {{$is_live? 'disabled' : ''}}>
                                         <option value="visible">Visible</option>
                                         <option value="hidden">Hidden</option>
                                     </select>
-                                </td>
+                                </td> --}}
                                 <td><button type="submit" class="btn btn-primary action-btn" {{$is_live? 'disabled' : ''}}>Add</button></td>
                             </form>
                         </tr>
@@ -142,13 +142,13 @@
                                         </div>
                                         <div class="check" style="color:red; display: none;">End Time must be after Start Time!</div>
                                     </td>
-                                    <td class="status">
+                                    {{-- <td class="status">
                                         <span><i class="fas fa-{{($device->status == 'visible' ? 'eye' : 'eye-slash')}}"></i> {{ucfirst($device->status)}}</span>
                                         <select name="status" class="form-control" style="display: none;">
                                             <option value="visible" {{($device->status == 'visible' ? 'selected' : '')}}>Visible</option>
                                             <option value="hidden" {{($device->status == 'hidden' ? 'selected' : '')}}>Hidden</option>
                                         </select>
-                                    </td>
+                                    </td> --}}
                                     <td><button type="button" class="edit-btn btn btn-default" {{$is_live? 'disabled' : ''}}>Edit</button><button type="submit" class="btn btn-default action-btn" style="display: none;" {{$is_live? 'disabled' : ''}}>Save</button></td>
                                 </form>
                             </tr>
@@ -188,8 +188,8 @@
                 var countryCode = form.find('.country_code').attr('data-code');
                 form.find('.athlete_tds').hide();
                 form.find('.athlete_select').show();
-                form.find('.status span').hide();
-                form.find('.status select').show();
+                // form.find('.status span').hide();
+                // form.find('.status select').show();
                 form.find('.start-time-td span').hide();
                 form.find('.start-time-td div.input-group').show();
                 form.find('.end-time-td span').hide();

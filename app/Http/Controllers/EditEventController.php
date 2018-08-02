@@ -44,9 +44,9 @@ class EditEventController extends Controller {
                 ->where('event_id', $event_id)
                 ->update(['live' => 0]);
             EditEvent_Model::copyToArchiveDB($event_id);
-            return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
+            // return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
         }
-        return redirect('event/'.$event_id.'/edit-event');
+        // return redirect('event/'.$event_id.'/edit-event');
     }
 
 }

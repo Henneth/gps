@@ -11,10 +11,10 @@ class EditEvent_Model extends Model
 {
 	// Tables will be copied to live DB
 	public static function copyToLiveDB($event_id) {
-		DB::transaction(function () use ($event_id) {
-			DB::table("gps_live_".$event_id.".events")->truncate();
-			DB::insert("INSERT INTO gps_live_".$event_id.".events SELECT * FROM gps.events WHERE event_id = :event_id", ["event_id"=>$event_id]);
-		});
+		// DB::transaction(function () use ($event_id) {
+		// 	DB::table("gps_live_".$event_id.".events")->truncate();
+		// 	DB::insert("INSERT INTO gps_live_".$event_id.".events SELECT * FROM gps.events WHERE event_id = :event_id", ["event_id"=>$event_id]);
+		// });
 
 	}
 	// Tables will be copied to archive DB

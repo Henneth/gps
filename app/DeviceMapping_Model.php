@@ -55,13 +55,13 @@ class DeviceMapping_Model extends Model
 
 // ------
 		if (!$auth) {
-			$checkIsPublic = "WHERE is_public = 1 ";
+			$checkIsPublic = "AND is_public = 1 ";
 		} else {
 			$checkIsPublic = "";
 		}
 
 		if ($visible_only) {
-			$checkIsVisible = "WHERE status = 'visible' ";
+			$checkIsVisible = "AND status = 'visible' ";
 		} else {
 			$checkIsVisible = "";
 		}

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 30, 2018 at 02:14 AM
+-- Generation Time: Aug 02, 2018 at 07:40 AM
 -- Server version: 5.6.38
 -- PHP Version: 7.2.1
 
@@ -21,14 +21,13 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `athletes` (
-  `athlete_id` int(11) NOT NULL,
-  `bib_number` varchar(64) DEFAULT NULL,
+  `bib_number` varchar(32) DEFAULT NULL,
   `first_name` varchar(128) DEFAULT NULL,
   `last_name` varchar(128) DEFAULT NULL,
   `zh_full_name` varchar(255) DEFAULT NULL,
   `is_public` tinyint(1) NOT NULL DEFAULT '1',
   `status` enum('visible','hidden') NOT NULL DEFAULT 'visible',
-  `country_code` varchar(128) DEFAULT NULL
+  `country_code` varchar(64) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -39,9 +38,12 @@ CREATE TABLE `athletes` (
 
 CREATE TABLE `checkpoint` (
   `checkpoint_id` int(11) NOT NULL,
+  `point_order` int(11) NOT NULL,
+  `checkpoint_no` int(11) NOT NULL,
   `checkpoint_name` varchar(255) DEFAULT NULL,
   `latitude` varchar(255) NOT NULL,
   `longitude` varchar(255) NOT NULL,
+  `distance_to_next_ckpt` int(11) NOT NULL,
   `display` tinyint(1) NOT NULL DEFAULT '1',
   `min_time` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -280,7 +282,7 @@ INSERT INTO `countries` (`code`, `country`, `country_zh_hk`) VALUES
 CREATE TABLE `device_mapping` (
   `device_mapping_id` int(11) NOT NULL,
   `device_id` varchar(64) NOT NULL,
-  `bib_number` varchar(64) NOT NULL,
+  `bib_number` varchar(32) NOT NULL,
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -288,19 +290,15 @@ CREATE TABLE `device_mapping` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `events`
+-- Table structure for table `distance_data`
 --
 
-CREATE TABLE `events` (
-  `event_id` int(11) NOT NULL,
-  `event_name` varchar(128) NOT NULL,
-  `event_type` enum('fixed route','shortest route','no route') NOT NULL,
-  `live` tinyint(1) NOT NULL DEFAULT '0',
-  `hide_others` tinyint(1) NOT NULL DEFAULT '0',
-  `datetime_from` datetime NOT NULL,
-  `datetime_to` datetime NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+CREATE TABLE `distance_data` (
+  `distance_data_id` int(11) NOT NULL,
+  `bib_number` varchar(32) NOT NULL,
+  `point_order` int(11) NOT NULL,
+  `distance_from_start` int(11) NOT NULL,
+  `datetime` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -311,12 +309,12 @@ CREATE TABLE `events` (
 
 CREATE TABLE `invalid_data` (
   `id` int(11) NOT NULL,
-  `device_id` varchar(32) NOT NULL,
+  `bib_number` varchar(32) NOT NULL,
   `latitude` varchar(255) DEFAULT NULL,
   `longitude` varchar(255) DEFAULT NULL,
-  `battery_level` varchar(64) NOT NULL,
-  `datetime` datetime DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `distance_covered` int(11) NOT NULL,
+  `elapsed_time` int(11) NOT NULL,
+  `datetime` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -329,10 +327,11 @@ CREATE TABLE `map_point` (
   `point_order` int(11) NOT NULL,
   `latitude` varchar(255) NOT NULL,
   `longitude` varchar(255) NOT NULL,
-  `distance_from_last_point` varchar(64) NOT NULL,
-  `distance_from_start` varchar(64) NOT NULL,
+  `distance_from_last_point` int(11) NOT NULL,
+  `distance_from_start` int(11) NOT NULL,
   `is_checkpoint` tinyint(1) NOT NULL DEFAULT '0',
   `display` tinyint(1) NOT NULL DEFAULT '1',
+  `checkpoint_no` int(11) DEFAULT NULL,
   `checkpoint_name` varchar(255) DEFAULT NULL,
   `min_time` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -344,11 +343,11 @@ CREATE TABLE `map_point` (
 --
 
 CREATE TABLE `next_checkpoint` (
-  `bib_number` varchar(64) NOT NULL,
+  `bib_number` varchar(32) NOT NULL,
   `checkpoint_id` int(11) NOT NULL,
-  `accumulated_distance_since_last_ckpt` varchar(64) NOT NULL,
+  `accumulated_distance_since_last_ckpt` int(11) NOT NULL,
   `accumulated_time_since_last_ckpt` time NOT NULL,
-  `distance_to_next_ckpt` varchar(64) NOT NULL
+  `distance_to_next_ckpt` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -358,7 +357,7 @@ CREATE TABLE `next_checkpoint` (
 --
 
 CREATE TABLE `participants` (
-  `bib_number` varchar(64) DEFAULT NULL,
+  `bib_number` varchar(32) DEFAULT NULL,
   `first_name` varchar(128) DEFAULT NULL,
   `last_name` varchar(128) DEFAULT NULL,
   `zh_full_name` varchar(255) DEFAULT NULL,
@@ -379,12 +378,13 @@ CREATE TABLE `participants` (
 
 CREATE TABLE `raw_data` (
   `id` int(11) NOT NULL,
-  `device_id` varchar(32) NOT NULL,
+  `device_id` varchar(64) NOT NULL,
   `latitude` varchar(255) NOT NULL,
   `longitude` varchar(255) NOT NULL,
   `battery_level` varchar(64) NOT NULL,
   `datetime` datetime DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `processed` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -394,7 +394,7 @@ CREATE TABLE `raw_data` (
 --
 
 CREATE TABLE `reached_checkpoint` (
-  `bib_number` varchar(64) NOT NULL,
+  `bib_number` varchar(32) NOT NULL,
   `checkpoint_id` int(11) NOT NULL,
   `datetime` datetime NOT NULL,
   `elapsed_time_btwn_ckpts` time NOT NULL
@@ -408,13 +408,12 @@ CREATE TABLE `reached_checkpoint` (
 
 CREATE TABLE `valid_data` (
   `id` int(11) NOT NULL,
-  `device_id` varchar(32) NOT NULL,
+  `bib_number` varchar(32) NOT NULL,
   `latitude` varchar(255) DEFAULT NULL,
   `longitude` varchar(255) DEFAULT NULL,
-  `distance` varchar(64) NOT NULL,
-  `battery_level` varchar(64) NOT NULL,
-  `datetime` datetime DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `distance_covered` int(11) NOT NULL,
+  `elapsed_time` int(11) NOT NULL,
+  `datetime` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -425,7 +424,6 @@ CREATE TABLE `valid_data` (
 -- Indexes for table `athletes`
 --
 ALTER TABLE `athletes`
-  ADD PRIMARY KEY (`athlete_id`),
   ADD UNIQUE KEY `bib_number` (`bib_number`);
 
 --
@@ -441,10 +439,10 @@ ALTER TABLE `device_mapping`
   ADD PRIMARY KEY (`device_mapping_id`);
 
 --
--- Indexes for table `events`
+-- Indexes for table `distance_data`
 --
-ALTER TABLE `events`
-  ADD PRIMARY KEY (`event_id`);
+ALTER TABLE `distance_data`
+  ADD PRIMARY KEY (`distance_data_id`);
 
 --
 -- Indexes for table `invalid_data`
@@ -459,6 +457,12 @@ ALTER TABLE `map_point`
   ADD PRIMARY KEY (`point_order`);
 
 --
+-- Indexes for table `next_checkpoint`
+--
+ALTER TABLE `next_checkpoint`
+  ADD UNIQUE KEY `bib_number` (`bib_number`,`checkpoint_id`);
+
+--
 -- Indexes for table `participants`
 --
 ALTER TABLE `participants`
@@ -471,6 +475,12 @@ ALTER TABLE `raw_data`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `reached_checkpoint`
+--
+ALTER TABLE `reached_checkpoint`
+  ADD UNIQUE KEY `bib_number` (`bib_number`,`checkpoint_id`);
+
+--
 -- Indexes for table `valid_data`
 --
 ALTER TABLE `valid_data`
@@ -479,12 +489,6 @@ ALTER TABLE `valid_data`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `athletes`
---
-ALTER TABLE `athletes`
-  MODIFY `athlete_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `checkpoint`
@@ -499,16 +503,10 @@ ALTER TABLE `device_mapping`
   MODIFY `device_mapping_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `events`
+-- AUTO_INCREMENT for table `distance_data`
 --
-ALTER TABLE `events`
-  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `invalid_data`
---
-ALTER TABLE `invalid_data`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `distance_data`
+  MODIFY `distance_data_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `map_point`
@@ -520,10 +518,4 @@ ALTER TABLE `map_point`
 -- AUTO_INCREMENT for table `raw_data`
 --
 ALTER TABLE `raw_data`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `valid_data`
---
-ALTER TABLE `valid_data`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;

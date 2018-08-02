@@ -18,7 +18,8 @@ class DeviceMapping_Model extends Model
 		// 		"event_id"=>$event_id
 	    //     ]);
 		$data = DB::select("SELECT * FROM gps_live_{$event_id}.device_mapping
-			LEFT JOIN gps_live_{$event_id}.athletes ON (athletes.bib_number = device_mapping.bib_number)
+			LEFT JOIN gps_live_{$event_id}.athletes
+			ON athletes.bib_number = device_mapping.bib_number
 			ORDER BY device_mapping_id DESC");
 		return $data;
 	}

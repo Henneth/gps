@@ -132,7 +132,7 @@
     top: 0; /* Stay at the top */
     left: 0;
     background-color: #fefefe; /* White*/
-    box-shadow: 2px 0px 4px rgba(0,0,0,.2);
+    box-shadow: 1px 2px 6px rgba(0,0,0,.3);
     overflow-x: hidden; /* Disable horizontal scroll */
     transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
     max-width: 100%;
@@ -172,6 +172,10 @@
 @media screen and (max-height: 450px) {
     .sidenav {padding-top: 15px;}
     .sidenav a {font-size: 18px;}
+}
+
+#mySidenavBtn {
+    cursor: pointer;
 }
 
 #mySidenavBtn span {

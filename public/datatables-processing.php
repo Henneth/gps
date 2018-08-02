@@ -38,10 +38,12 @@ $columns = array(
     array( 'db' => 'battery_level', 'dt' => 6 )
 );
 
+require_once('../setEnv.php');
+
 // SQL server connection information
 $sql_details = array(
     'user' => 'root',
-    'pass' => 'root',
+    'pass' => ($env == 'server') ? 'rts123' : 'root',
     'db'   => !empty($_GET['live']) ? "gps_live_".$_GET['live'] : 'gps',
     'host' => '127.0.0.1'
 );

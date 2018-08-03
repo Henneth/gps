@@ -75,7 +75,6 @@ class LiveTracking_Model extends Model
 		// 		'event_id' => $event_id,
 		// 		'device_id' => $deviceID
 		// 		] );
-
 		$distances = DB::select("SELECT * FROM gps_live_{$event_id}.distance_data
 			WHERE bib_number = :bib_number ORDER BY datetime ASC",
 			['bib_number'=>$bib_number]);

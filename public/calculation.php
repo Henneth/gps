@@ -66,6 +66,8 @@ foreach ($events as $event) {
 
     foreach ($bib_numbers as $bib_number) {
 
+        echo "==== {$bib_number['bib_number']} ====<br>";
+
         // get device_id(s) for this athlete
         $device_ids_stmt = $pdo->prepare("SELECT device_id, start_time, end_time FROM {$db}.device_mapping WHERE bib_number = :bib_number");
         $device_ids_stmt->execute(array(':bib_number' => $bib_number['bib_number']));
@@ -160,8 +162,6 @@ foreach ($events as $event) {
                     $lon1 = $routePoint['longitude'];
 
                     $validData = false;
-
-                    // echo $lat2.' '.$lon2.' '.$lat1.' '.$lon1;
                     if (distanceUnder50m($lat1, $lon1, $lat2, $lon2)) {
                         $distance_covered = $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
                         $elapsed_time = elapsed_time($gps_position['datetime'], $lastReachedPoint['datetime']);
@@ -211,14 +211,18 @@ foreach ($events as $event) {
                                 continue;
                             }
 
-                            echo "Has progress";
-
                             // reached map point
                             $lastReachedPointNo = $point_order;
+                            echo "last reached: {$lastReachedPointNo}<br>";
 
                             // update distances
                             $accumulated_distance_since_last_ckpt = $accumulated_distance_since_last_ckpt + $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
+                            echo "current distance: {$routePoint['distance_from_start']}<br>";
+                            echo "previous distance: {$lastReachedPoint['distance_from_start']}<br>";
+                            // echo "difference: {($routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'])}<br>";
+                            echo "accumulated_distance_since_last_ckpt: {$accumulated_distance_since_last_ckpt}<br>";
                             $distance_to_next_ckpt = $checkpoints[$reachedCkptNo]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
+                            echo "distance_to_next_ckpt: {$distance_to_next_ckpt}<br>";
 
                             try {
                                 // insert into distance_data
@@ -233,16 +237,23 @@ foreach ($events as $event) {
                                 echo "<pre>".print_r($e,1)."</pre>";
                             }
 
+                            // update $lastReachedPoint
+                            $lastReachedPoint['distance_from_start'] = $routePoint['distance_from_start'];
+                            $lastReachedPoint['datetime'] = $gps_position['datetime'];
+
                             // if ($distance_to_next_ckpt <= 100 && checkMinTime($checkpoints[$reachedCkptNo + 1]['min_time'], $reachedCkpt['datetime'], $gps_position['datetime'])) {
                             if ($distance_to_next_ckpt <= 100) {
 
                                 // reached checkpoint
                                 $reachedCkptNo = $reachedCkptNo + 1;
                                 $reachedCkptID = $reachedCkptNo + 1;
+                                echo "reachedCkptID: {$reachedCkptID}<br>";
 
                                 // update distances
-                                $distance_to_next_ckpt = $checkpoints[$reachedCkptIndex]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
                                 $accumulated_distance_since_last_ckpt = $distance_to_next_ckpt * -1;
+                                echo "accumulated_distance_since_last_ckpt: {$accumulated_distance_since_last_ckpt}<br>";
+                                $distance_to_next_ckpt = $checkpoints[$reachedCkptNo]['distance_to_next_ckpt'] - $distance_to_next_ckpt;
+                                echo "distance_to_next_ckpt: {$distance_to_next_ckpt}<br>";
 
                                 try {
                                     // insert into reached_checkpoint
@@ -264,7 +275,7 @@ foreach ($events as $event) {
 
                                 // check if finished
                                 if (sizeof($checkpoints) == $reachedCkptID) {
-                                    echo "finished";
+                                    echo "finished<br>";
                                     // this athlete has finished
                                     $finished = true;
 

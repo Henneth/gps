@@ -104,9 +104,9 @@ class LiveTrackingController extends Controller {
 
         if (!empty($_GET['tab']) && $_GET['tab'] == 2) {
             if (Auth::check()) {
-                $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false, true);
+                $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
             } else{
-                $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true);
+                $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
             }
             return view('live-tracking-athletes')->with(array('profile' => $profile, 'event_id' => $event_id, 'event'=>$event));
         }
@@ -156,8 +156,8 @@ class LiveTrackingController extends Controller {
         // if not empty localstorage
         if ( !empty($_GET['bib_numbers']) ){
             $bib_numbers = json_decode($_GET['bib_numbers']);
-            $data = [];
 
+            $data = [];
             $count = 0; // count index of $colorArray
             foreach ($bib_numbers as $key => $bib_number) {
                 $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $bib_number, $colorArray[$count]);
@@ -168,13 +168,12 @@ class LiveTrackingController extends Controller {
         } else {
             // get 20 athletes from db
             if (Auth::check()){
-                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true);
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
             } else {
-                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true);
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
             }
+
             $data = [];
-
-
             $count = 0; // count index of $colorArray
             foreach ($athletes as $key => $athlete) {
                 $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $athlete->bib_number, $colorArray[$count]);
@@ -184,7 +183,6 @@ class LiveTrackingController extends Controller {
         }
 
         return response()->json($data);
-
     }
 
 

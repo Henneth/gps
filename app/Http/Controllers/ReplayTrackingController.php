@@ -30,7 +30,7 @@ class ReplayTrackingController extends Controller {
         $timestamp_to = strtotime($event->datetime_to." HKT");
 
         $route = DB::table('archive_map_point')
-            ->where('event_id', $event_id)  
+            ->where('event_id', $event_id)
             ->get();
         // echo '<pre>'.print_r($route, 1).'</pre>';
         $route = json_encode($route);

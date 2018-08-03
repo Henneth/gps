@@ -22,12 +22,12 @@
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
-                            <th>Bib Number</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Chinese Name</th>
-                            <th>Country Code</th>
-                            <th>Visibility (Max:20)<button id='resetLocalstorage' type="button" class="btn btn-primary">Reset</button></th>
+                            <th style="line-height: 32px;">Bib Number</th>
+                            <th style="line-height: 32px;">First Name</th>
+                            <th style="line-height: 32px;">Last Name</th>
+                            <th style="line-height: 32px;">Chinese Name</th>
+                            <th style="line-height: 32px;">Country Code</th>
+                            <th style="line-height: 32px;">Visibility (Max:20)&nbsp;&nbsp;<button id='resetLocalstorage' type="button" class="btn btn-default" style="padding: 1px 7px;">Reset</button></th>
                         </tr>
                     </thead>
                     <tbody>

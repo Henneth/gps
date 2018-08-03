@@ -11,12 +11,6 @@ class DeviceMapping_Model extends Model
 {
 	// used on device mapping page
 	public static function getDeviceMappings($event_id) {
-		// $data = DB::select("SELECT * FROM device_mapping
-		// 	LEFT JOIN athletes ON (athletes.bib_number = device_mapping.bib_number AND athletes.event_id = device_mapping.event_id)
-		// 	WHERE device_mapping.event_id = :event_id
-		// 	ORDER BY device_mapping_id DESC", [
-		// 		"event_id"=>$event_id
-	    //     ]);
 		$data = DB::select("SELECT * FROM gps_live_{$event_id}.device_mapping T1
 			LEFT JOIN gps_live_{$event_id}.athletes T2
 			ON T2.bib_number = T1.bib_number
@@ -26,8 +20,6 @@ class DeviceMapping_Model extends Model
 
 
 	public static function getAthletesProfile($event_id, $auth, $visible_only, $live = false) {
-
-
 
 		if (!$auth) {
 			$checkIsPublic = "AND is_public = 1 ";

@@ -223,7 +223,7 @@ foreach ($events as $event) {
                             try {
                                 // insert into distance_data
                                 $stmt = $pdo->prepare("INSERT INTO {$db}.distance_data (bib_number, point_order, distance_from_start, datetime) VALUES (:bib_number, :point_order, :distance_from_start, :datetime)");
-                                $stmt->bindValue(':bib_number', $bib_number);
+                                $stmt->bindValue(':bib_number', $bib_number['bib_number']);
                                 $stmt->bindValue(':point_order', $point_order);
                                 $stmt->bindValue(':distance_from_start', $routePoint['distance_from_start']);
                                 $stmt->bindValue(':datetime', $gps_position['datetime']);

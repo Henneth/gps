@@ -49,16 +49,17 @@ class DrawRouteController extends Controller {
                 $currentDistance = round($this->distance($lat1, $lon1, $lat2, $lon2, "K") * 1000);
                 $totalDistance += $currentDistance;
 
-                $tempArray ['latitude'] = $lat2;
-                $tempArray ['longitude'] = $lon2;
-                $tempArray ['distance_from_last_point'] = $currentDistance;
-                $tempArray ['distance_from_start'] = $totalDistance;
+                $tempArray['latitude'] = $lat2;
+                $tempArray['longitude'] = $lon2;
+                $tempArray['distance_from_last_point'] = $currentDistance;
+                $tempArray['distance_from_start'] = $totalDistance;
 
                 $tempArray ['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
                 if (property_exists($value, 'is_checkpoint') && $value->is_checkpoint == 1) {
-                    $tempArray ['checkpoint_no'] = $checkpoint_no;
-                    $checkpointArray[] = $tempArray;
-                    $checkpointArray['point_order'] = $index + 1;
+                    $tempArray['checkpoint_no'] = $checkpoint_no;
+                    $checkpointRow = $tempArray;
+                    $checkpointRow['point_order'] = $index + 1;
+                    $checkpointArray[] = $checkpointRow;
                     $checkpoint_no++;
                 } else {
                     $tempArray ['checkpoint_no'] = NULL;
@@ -66,12 +67,12 @@ class DrawRouteController extends Controller {
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
 
             } else {
-                $tempArray ['latitude'] = $routeDecode[$index]->lat;
-                $tempArray ['longitude'] = $routeDecode[$index]->lon;
-                $tempArray ['distance_from_last_point'] = 0;
-                $tempArray ['distance_from_start'] = 0;
-                $tempArray ['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
-                $tempArray ['checkpoint_no'] = 0;
+                $tempArray['latitude'] = $routeDecode[$index]->lat;
+                $tempArray['longitude'] = $routeDecode[$index]->lon;
+                $tempArray['distance_from_last_point'] = 0;
+                $tempArray['distance_from_start'] = 0;
+                $tempArray['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
+                $tempArray['checkpoint_no'] = 0;
                 $checkpointArray[] = $tempArray;
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
             }
@@ -92,14 +93,14 @@ class DrawRouteController extends Controller {
                     $ckptRow['checkpoint_no'] = $checkpoint['checkpoint_no'];
                     $ckptRow['latitude'] = $checkpoint['latitude'];
                     $ckptRow['longitude'] = $checkpoint['longitude'];
-                    $ckptRow['point_order'] = $checkpointArray['point_order'];
+                    $ckptRow['point_order'] = $checkpoint['point_order'];
                     $ckptRow['distance_to_next_ckpt'] = NULL;
                     $ckptArray[] = $ckptRow;
                 }else{
                     $ckptRow['checkpoint_no'] = $checkpoint['checkpoint_no'];
                     $ckptRow['latitude'] = $checkpoint['latitude'];
                     $ckptRow['longitude'] = $checkpoint['longitude'];
-                    $ckptRow['point_order'] = $checkpointArray['point_order'];
+                    $ckptRow['point_order'] = $checkpoint['point_order'];
                     $ckptRow['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'] - $checkpoint['distance_from_start'];
                     $ckptArray[] = $ckptRow;
                 }
@@ -108,7 +109,7 @@ class DrawRouteController extends Controller {
                 $ckptRow['latitude'] = $checkpoint['latitude'];
                 $ckptRow['longitude'] = $checkpoint['longitude'];
                 $ckptRow['point_order'] = 1;
-                $ckptRow['distance_to_next_ckpt'] = !empty($checkpointArray[$index+1]['distance_from_start']) ? $checkpointArray[$index+1]['distance_from_start'] : 0;
+                $ckptRow['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'];
                 $ckptArray[] = $ckptRow;
             }
         }

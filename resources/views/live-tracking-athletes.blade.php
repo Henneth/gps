@@ -27,7 +27,7 @@
                             <th>Last Name</th>
                             <th>Chinese Name</th>
                             <th>Country Code</th>
-                            <th>Visibility (Max:20)</th>
+                            <th>Visibility (Max:20)<button id='resetLocalstorage' type="button" class="btn btn-primary">Reset</button></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,21 +174,24 @@
                 if (index < 0) {
                     array.push(bib_number);
                 }
-                // console.log(array);
             } else {
                 var bib_number = this.getAttribute("data-id");
                 var index = array.indexOf(bib_number);
                 if (index >= 0) {
                     array.splice(index, 1);
                 }
-                // console.log(array);
             }
-
             // json encode
             var json = JSON.stringify(array);
             // store in localStorage
             localStorage.setItem("visibility{{$event_id}}", json);
-        })
+        });
+
+        // empty localStorage and redirect to map tab
+        $('#resetLocalstorage').click(function(){
+            localStorage.removeItem("visibility{{$event_id}}");
+            $( "#home-tab" ).trigger( "click" );
+        });
 
     </script>
 

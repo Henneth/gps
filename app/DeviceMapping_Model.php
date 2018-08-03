@@ -17,15 +17,57 @@ class DeviceMapping_Model extends Model
 		// 	ORDER BY device_mapping_id DESC", [
 		// 		"event_id"=>$event_id
 	    //     ]);
-		$data = DB::select("SELECT * FROM gps_live_{$event_id}.device_mapping
-			LEFT JOIN gps_live_{$event_id}.athletes
-			ON athletes.bib_number = device_mapping.bib_number
-			ORDER BY device_mapping_id DESC");
+		$data = DB::select("SELECT * FROM gps_live_{$event_id}.device_mapping T1
+			LEFT JOIN gps_live_{$event_id}.athletes T2
+			ON T2.bib_number = T1.bib_number
+			ORDER BY T1.device_mapping_id DESC");
 		return $data;
 	}
 
 
 	public static function getAthletesProfile($event_id, $auth, $visible_only, $live = false) {
+
+
+
+		if (!$auth) {
+			$checkIsPublic = "AND is_public = 1 ";
+		} else {
+			$checkIsPublic = "";
+		}
+
+		if ($visible_only) {
+			$checkIsVisible = "AND status = 'visible' ";
+		} else {
+			$checkIsVisible = "";
+		}
+
+		if ($live) {
+			$profile = DB::select("SELECT * FROM gps_live_{$event_id}.participants WHERE 1=1 ".$checkIsPublic.$checkIsVisible);
+			// echo '<pre>'.print_r($profile, 1).'</pre>';
+
+		} else {
+			$profile = DB::select("SELECT * FROM archive_participants
+				WHERE event_id = :event_id ".$checkIsPublic.$checkIsVisible, [
+					"event_id"=>$event_id
+				]);
+			// echo '<pre>'.print_r($profile, 1).'</pre>';
+		}
+
+		$count = 1;
+		foreach ($profile as $key => &$athlete) {
+			if ($athlete->status == 'visible'){
+				if ($count > 20) {
+					if ($visible_only) {
+						unset($profile[$key]);
+					} else {
+						$athlete->status = 'hidden';
+					}
+				}
+				$count++;
+			}
+		}
+		return $profile;
+// ------
 		// if (!$auth) {
 		// 	$checkIsPublic = "AND athletes.is_public = 1 ";
 		// } else {
@@ -53,46 +95,6 @@ class DeviceMapping_Model extends Model
 		// 			"event_id"=>$event_id
 		// 		]);
 		// }
-
-// ------
-		if (!$auth) {
-			$checkIsPublic = "AND is_public = 1 ";
-		} else {
-			$checkIsPublic = "";
-		}
-
-		if ($visible_only) {
-			$checkIsVisible = "AND status = 'visible' ";
-		} else {
-			$checkIsVisible = "";
-		}
-
-		if ($live) {
-			$profile = DB::select("SELECT * FROM gps_live_{$event_id}.participants ".$checkIsPublic.$checkIsVisible);
-			// echo '<pre>'.print_r($profile, 1).'</pre>';
-
-		} else {
-			$profile = DB::select("SELECT * FROM archive_participants
-				WHERE event_id = :event_id ".$checkIsPublic.$checkIsVisible, [
-					"event_id"=>$event_id
-				]);
-			// echo '<pre>'.print_r($profile, 1).'</pre>';
-		}
-
-		$count = 1;
-		foreach ($profile as $key => &$athlete) {
-			if ($athlete->status == 'visible'){
-				if ($count > 20) {
-					if ($visible_only) {
-						unset($profile[$key]);
-					} else {
-						$athlete->status = 'hidden';
-					}
-				}
-				$count++;
-			}
-		}
-		return $profile;
 	}
 
 }

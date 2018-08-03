@@ -54,8 +54,8 @@ class LiveTracking_Model extends Model
 		// 	ON (countries.code = athletes.country_code)
 		// 	WHERE device_mapping.device_id =:device_id AND device_mapping.event_id =:event_id", ["device_id"=>$deviceID, "event_id"=>$event_id]);
 		$athlete = DB::select("SELECT * FROM gps_live_{$event_id}.participants
-			WHERE event_id = :event_id AND bib_number = :bib_number LIMIT 1",
-			['event_id'=>$event_id, 'bib_number'=>$bib_number ]);
+			WHERE bib_number = :bib_number LIMIT 1",
+			['bib_number'=>$bib_number ]);
 
 			if (!empty($athlete)) {
 				$athlete[0]->colour_code = $color;
@@ -77,8 +77,8 @@ class LiveTracking_Model extends Model
 		// 		] );
 
 		$distances = DB::select("SELECT * FROM gps_live_{$event_id}.distance_data
-			WHERE event_id = :event_id AND bib_number = :bib_number ORDER BY datetime ASC",
-			['event_id'=>$event_id, 'bib_number'=>$bib_number]);
+			WHERE bib_number = :bib_number ORDER BY datetime ASC",
+			['bib_number'=>$bib_number]);
 
 		// can be improved
 		// $checkpointData = DB::connection('gps_live')->select("SELECT checkpoint, reached_at, checkpoint_name, device_id, min_time FROM route_distances
@@ -91,27 +91,41 @@ class LiveTracking_Model extends Model
 		// 		'device_id'=>$deviceID
 		// 		] );
 		$checkpointData = DB::select("SELECT * FROM gps_live_{$event_id}.reached_checkpoint
-			WHERE event_id = :event_id AND bib_number = :bib_number ORDER BY datetime ASC",
-			['event_id'=>$event_id, 'bib_number'=>$bib_number]);
+			WHERE bib_number = :bib_number ORDER BY datetime ASC",
+			['bib_number'=>$bib_number]);
 
-		$finished_at = DB::select("SELECT datetime FROM gps_live_{$event_id}.reached_checkpoint
-			WHERE event_id = :event_id1
-			AND bib_number = :bib_number
-			AND checkpoint_id = (SELECT max(checkpoint_id) AS max_checkpoint_id FROM checkpoint WHERE event_id = :event_id2) LIMIT 1", [
-				"event_id1"=>$event_id,
-				"event_id2"=>$event_id,
-				"bib_number"=>$bib_number
+
+		$finished_at = DB::select("SELECT datetime AS reached_at FROM gps_live_{$event_id}.reached_checkpoint
+			WHERE bib_number = :bib_number
+			AND checkpoint_id = (SELECT max(checkpoint_id) AS max_checkpoint_id FROM gps_live_{$event_id}.checkpoint) LIMIT 1", [
+				"bib_number"=>$bib_number,
 			]);
 		$finished_at = !empty($finished_at) ? $finished_at[0]->reached_at : null;
 
-		$data = DB::select("SELECT * FROM gps_live_{$event_id}.reached_checkpoint
-			WHERE event_id = :event_id
-			AND bib_number = :bib_number
+		// $data = DB::select("SELECT * FROM gps_live_{$event_id}.valid_data
+		// 	WHERE bib_number = :bib_number
+		// 	AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))
+		// 	AND (:end_time IS NULL OR (:end_time1 IS NOT NULL AND datetime <= :end_time2))
+		// 	AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
+		// 	ORDER BY datetime DESC", [
+		// 		"bib_number"=>$bib_number,
+		// 		"start_time"=>$start_time,
+		// 		"end_time"=>$end_time,
+		// 		"start_time1"=>$start_time,
+		// 		"end_time1"=>$end_time,
+		// 		"start_time2"=>$start_time,
+		// 		"end_time2"=>$end_time,
+		// 		"finished_at1"=>$finished_at,
+		// 		"finished_at2"=>$finished_at,
+		// 		"finished_at3"=>$finished_at
+		// 	]);
+
+		$data = DB::select("SELECT * FROM gps_live_{$event_id}.valid_data
+			WHERE bib_number = :bib_number
 			AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))
 			AND (:end_time IS NULL OR (:end_time1 IS NOT NULL AND datetime <= :end_time2))
 			AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
 			ORDER BY datetime DESC", [
-				"event_id"=>$event_id,
 				"bib_number"=>$bib_number,
 				"start_time"=>$start_time,
 				"end_time"=>$end_time,
@@ -123,6 +137,8 @@ class LiveTracking_Model extends Model
 				"finished_at2"=>$finished_at,
 				"finished_at3"=>$finished_at
 			]);
+		// echo '<pre>'.print_r($data, 1).'</pre>';
+
 
 		// $data = DB::connection('gps_live')->select("SELECT gps_data.datetime, unix_timestamp(datetime) AS timestamp, gps_data.id, gps_data.latitude_final, gps_data.longitude_final FROM gps_data
 		// 	INNER JOIN device_mapping

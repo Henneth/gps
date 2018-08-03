@@ -150,8 +150,10 @@ class LiveTrackingController extends Controller {
     // automatically update data from server
     public function poll($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
+        
         $colorArray = ["00FF00","0000FF","FF0000","FFFF00","00FFFF","FF00FF","00FF80","8000FF","FF8000","80FF00","0080FF","FF0080","80FF80","8080FF","FF8080","FFFF80","80FFFF","FF80FF","80FFBF","BF80FF","FFBF80","BFFF80","80BFFF","FF80BF"];
 
+        // if not empty localstorage
         if ( !empty($_GET['bib_numbers']) ){
             $bib_numbers = json_decode($_GET['bib_numbers']);
             $data = [];
@@ -170,6 +172,7 @@ class LiveTrackingController extends Controller {
                 $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true);
             }
             $data = [];
+            // echo '<pre>'.print_r($athletes, 1).'</pre>';
 
             $count = 0; // count index of $colorArray
             foreach ($athletes as $key => $athlete) {
@@ -178,6 +181,7 @@ class LiveTrackingController extends Controller {
                 $count++;
             }
         }
+
         return response()->json($data);
 
     }

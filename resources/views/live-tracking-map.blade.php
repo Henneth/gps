@@ -314,8 +314,8 @@
                         if (markerList[i].isCheckpoint) {
                             var marker = markerList[i];
 
-                            cpName = checkpoint[CPIndex-1]['checkpoint_name'];
-                            // console.log(cpName);
+                            cpName = checkpoint[CPIndex]['checkpoint_name'];
+
                             marker.checkpointName = cpName;
                             marker.checkpointIndex = CPIndex;
                             marker.setLabel({text: ""+CPIndex, color: "white"});

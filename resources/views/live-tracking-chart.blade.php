@@ -327,7 +327,7 @@
                 // strDist = strDist.slice(0, -1);
                 checkpoint = null;
                 for (var key in checkpointData) {
-                    if (dist <= checkpointData[key]['distance_to_next_ckpt'] && checkpointData[key]['distance_to_next_ckpt'] < nextDist){
+                    if (dist <= checkpointData[key]['distance_from_start'] && checkpointData[key]['distance_from_start'] < nextDist){
 
                         if (checkpointData[key]['checkpoint_name']) {
                             var checkpoint = String(checkpointData[key]['checkpoint_name']);
@@ -335,7 +335,11 @@
                             if (key == checkpointData.length -1) {
                                 var checkpoint = String('Finish');
                             } else {
-                                var checkpoint = String('CP'+checkpointData[key]['checkpoint_no']);
+                                if(key == 0){
+                                    
+                                }else{
+                                    var checkpoint = String('CP'+checkpointData[key]['checkpoint_no']);
+                                }
                             }
                         }
                         break;

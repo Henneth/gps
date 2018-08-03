@@ -21,7 +21,7 @@ class AthletesController extends Controller {
             ->select('live')
             ->where('event_id',$event_id)
             ->first();
-        // print_r($athletes);
+
         return view('athletes')->with(array('athletes' => $athletes, 'event_id' => $event_id, 'countries' => $countries, 'is_live' => $is_live->live));
     }
 
@@ -30,6 +30,15 @@ class AthletesController extends Controller {
         if (empty($_POST['bib_number']) || empty($_POST['first_name'])) {
             return redirect('event/'.$event_id.'/athletes')->with('error', 'Bib number and first name must not be empty.');
         }
+
+        // check duplicate
+        $bib_number = DB::table('gps_live_'.$event_id.'.athletes')
+            ->where('bib_number', $_POST['bib_number'])
+            ->first();
+        if (!empty($bib_number)){
+            return redirect('event/'.$event_id.'/athletes')->with('error', 'Bib number exists already.');
+        }
+
         // echo '<pre>'.print_r($_POST, 1).'</pre>';
         DB::table('gps_live_'.$event_id.'.athletes')->insert([
             'bib_number' => $_POST['bib_number'],
@@ -40,27 +49,27 @@ class AthletesController extends Controller {
             'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
         ]);
+        
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is added.');
     }
 
 
     public function editAthlete($event_id) {
-        // echo '<pre>'.print_r($_POST, 1).'</pre>';
-        if ( empty($_POST['bib_number']) || empty($_POST['first_name'])) {
-            return redirect('event/'.$event_id.'/athletes')->with('error', 'Athlete ID, bib number and first name must not be empty.');
+        if (empty($_POST['bib_number']) || empty($_POST['first_name'])) {
+            return redirect('event/'.$event_id.'/athletes')->with('error', 'Bib number and first name must not be empty.');
         }
 
         DB::table('gps_live_'.$event_id.'.athletes')
             ->where('bib_number', $_POST['bib_number'])
             ->update([
-            'bib_number' => $_POST['bib_number'],
-            'first_name' => $_POST['first_name'],
-            'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
-            'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
-            'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
-            'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
-            'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
-        ]);
+                'first_name' => $_POST['first_name'],
+                'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
+                'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
+                'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
+                'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
+                'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
+            ]);
+
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is edited.');
     }
 

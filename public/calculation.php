@@ -287,7 +287,7 @@ foreach ($events as $event) {
 
                                 try {
                                     // reset next_checkpoint
-                                    $stmt = $pdo->prepare("INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt");
+                                    $stmt = $pdo->prepare("INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = VALUES(accumulated_distance_since_last_ckpt), accumulated_time_since_last_ckpt = VALUES(accumulated_time_since_last_ckpt), distance_to_next_ckpt = VALUES(distance_to_next_ckpt)");
                                     $stmt->bindValue(':bib_number', $bib_number['bib_number']);
                                     $stmt->bindValue(':checkpoint_id', $reachedCkptID + 1);
                                     $stmt->bindValue(':accumulated_distance_since_last_ckpt', $accumulated_distance_since_last_ckpt);

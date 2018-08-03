@@ -47,11 +47,7 @@
             </form>
         </div> --}}
         <div class="box box-primary">
-        @if($event->live && $event->live == 1)
-            <form method="post" action="{{url('/')}}/event/{{$event->event_id}}/edit-event/unset-live">
-        @else
             <form method="post" action="{{url('/')}}/event/{{$event->event_id}}/edit-event/post">
-        @endif
                 {{ csrf_field() }}
                 <div class="box-body">
                     <div class="form-group">
@@ -109,14 +105,37 @@
                     </div>
                     <div class="form-group">
                         <label for="set-event-live">Event Status:</label>
-                        @if (empty($event->live) || $event->live == 1)
-                            <div class="checkbox">
-                                <label><input type="checkbox" name="event-live" {{$event->live === 1 ? 'checked':''}}>Set as live event</label>
-                                {{-- <div style="color: red;">• There can only be ONE live event.</div> --}}
+                        @if (empty($event->live))
+                            <div style="margin-bottom: 4px;">
+                                <span style="color: #666;">● NOT LIVE</span>
+                            </div>
+                            <div>
+                                <a href="{{url('/')}}/event/{{$event->event_id}}/edit-event/turn-on-live">
+                                    <button type="button" class="btn btn-default" style="text-transform: capitalize;">Turn on live</button>
+                                </a>
+                            </div>
+                        @endif
+                        @if (!empty($event->live) && $event->live == 1)
+                            <div style="margin-bottom: 4px;">
+                                <span style="color: red;">● LIVE</span>
+                            </div>
+                            {{-- <label><input type="checkbox" name="event-live" {{$event->live === 1 ? 'checked':''}}>Set as live event</label> --}}
+                            <div style="display: inline-block;">
+                                <a href="{{url('/')}}/event/{{$event->event_id}}/edit-event/archive">
+                                    <button type="button" class="btn btn-default" style="text-transform: capitalize;">Archive this event</button>
+                                </a>
+                            </div>
+                            <div style="display: inline-block;">
+                                <a href="{{url('/')}}/event/{{$event->event_id}}/edit-event/revert-to-original">
+                                    <button type="button" class="btn btn-default" style="text-transform: capitalize;">Turn off live & clear processed data</button>
+                                </a>
                             </div>
                         @endif
                         @if (!empty($event->live) && $event->live == 2)
-                            <div>
+                            <div style="margin-bottom: 4px;">
+                                <span style="color: #666;">● ARCHIVED</span>
+                            </div>
+                            <div style="color: #999;">
                                 This event is finished and archived.
                             </div>
                         @endif
@@ -124,7 +143,7 @@
                 </div>
                 <!-- /.box-body -->
                 <div class="box-footer">
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="submit" class="btn btn-primary" {{!empty($event->live) ? 'disabled' : ''}}>Save</button>
                 </div>
             </form>
         </div>

@@ -23,8 +23,19 @@ class EditEvent_Model extends Model
 				$origin = "gps_live_{$event_id}.{$table}";
 				DB::insert("INSERT INTO {$target} SELECT {$event_id}, {$origin}.* FROM {$origin}");
 			}
-		});
 
-		DB::insert("INSERT INTO raw_data (event_id, device_id, latitude, longitude, battery_level, datetime, created_at) SELECT {$event_id}, device_id, latitude, longitude, battery_level, datetime, created_at FROM gps_live_{$event_id}.raw_data");
+			DB::insert("INSERT INTO raw_data (event_id, device_id, latitude, longitude, battery_level, datetime, created_at) SELECT {$event_id}, device_id, latitude, longitude, battery_level, datetime, created_at FROM gps_live_{$event_id}.raw_data");
+		});
+	}
+
+	public static function revertToOriginal($event_id) {
+		DB::transaction(function () use ($event_id) {
+			$tables = ["distance_data", "invalid_data", "next_checkpoint", "participants", "reached_checkpoint", "valid_data"];
+			foreach ($tables as $table) {
+				DB::table("gps_live_{$event_id}.{$table}")->truncate();
+			}
+
+			DB::update("UPDATE gps_live_{$event_id}.raw_data SET processed = 0");
+		});
 	}
 }

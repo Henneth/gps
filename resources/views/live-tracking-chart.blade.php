@@ -104,9 +104,9 @@
         var showOffKey; // store "ON" bib_number, data retrive from localStorage
         var data;
         var route;
-
+        
         checkpointData = {!! $checkpoint !!};
-        console.log(checkpointData);
+
 
         @if ($route)
             route = {!!$route!!};
@@ -336,7 +336,7 @@
                                 var checkpoint = String('Finish');
                             } else {
                                 if(key == 0){
-                                    
+
                                 }else{
                                     var checkpoint = String('CP'+checkpointData[key]['checkpoint_no']);
                                 }

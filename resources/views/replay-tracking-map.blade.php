@@ -118,7 +118,7 @@
                             html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
 
                             if (eventType =='fixed route' && currentRouteIndex[content['athlete']['bib_number']]){
-                                html += '<div>Distance: <b>' + currentRouteIndex[content['athlete']['bib_number']]['distance'].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
+                                html += '<div>Distance: <b>' + currentRouteIndex[content['athlete']['bib_number']]['distance_from_start'].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
 
                                 if (content['checkpointData'] && content['checkpointData'].length != 0) {
                                     html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
@@ -126,7 +126,7 @@
                                     var checkpointTimes =content['checkpointData'];
                                     // console.log(checkpointData);
                                     for (var j = 0; j < checkpointTimes.length; j++) {
-                                        html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint'] + ': <b>'+ checkpointTimes[j]['reached_at'] + '</b></div>';
+                                        html += '<div>Checkpoint ' + checkpointTimes[j]['checkpoint_no'] + ': <b>'+ checkpointTimes[j]['datetime'] + '</b></div>';
                                     }
                                 }
                             }
@@ -200,7 +200,7 @@
                         if (markerList[i].isCheckpoint) {
                             var marker = markerList[i];
 
-                            cpName = route[CPIndex-1]['checkpoint_name'];
+                            cpName = route[CPIndex]['checkpoint_name'];
                             marker.checkpointName = cpName;
                             marker.checkpointIndex = CPIndex;
                             marker.setLabel({text: ""+CPIndex, color: "white"});
@@ -316,7 +316,7 @@
             for (var bib_number in data) {
                 var routeIndexByBibNum = data[bib_number]['distances'];
                 for (var j = 0; j < routeIndexByBibNum.length; j++) {
-                    getTimeByBibNum = routeIndexByBibNum[j]['reached_at'];
+                    getTimeByBibNum = routeIndexByBibNum[j]['datetime'];
                     getTimeByBibNum = new Date(getTimeByBibNum).getTime() / 1000;
                     if (datetime >= getTimeByBibNum){
                         athleteArray[bib_number] = routeIndexByBibNum[j];
@@ -337,7 +337,6 @@
                 for (var bib_number in data) {
                     if( typeof data[bib_number] !== 'undefined' && data[bib_number] ){
                         var routeIndexByBibNum = data[bib_number]['distances'];
-
                         athleteArray[bib_number] = routeIndexByBibNum[routeIndexByBibNum.length-1];
                     }
                 }

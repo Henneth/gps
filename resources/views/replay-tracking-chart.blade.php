@@ -282,11 +282,15 @@
                 // strDist = strDist.slice(0, -1);
                 checkpoint = null;
                 for (var key in route) {
-                    if (dist <= route[key]['distance'] && route[key]['distance'] < nextDist){
+                    if (dist <= route[key]['distance_from_start'] && route[key]['distance_from_start'] < nextDist){
                         if (route[key]['checkpoint_name']) {
                             var checkpoint = String(route[key]['checkpoint_name']);
                         }else {
-                            var checkpoint = String('CP'+route[key]['checkpoint']);
+                            if(key == 0){
+
+                            }else{
+                                var checkpoint = String('CP'+route[key]['checkpoint_no']);
+                            }
                         }
                         break;
                     }
@@ -323,9 +327,9 @@
             var athleteArray = [];
 
             for (var bib_number in data) {
-                var routeIndexByBibNum = data[bib_number]['distances'];
+                var routeIndexByBibNum = data[bib_number]['distance_from_start'];
                 for (var j = 0; j < routeIndexByBibNum.length; j++) {
-                    getTimeByBibNum = routeIndexByBibNum[j]['reached_at'];
+                    getTimeByBibNum = routeIndexByBibNum[j]['datetime'];
                     getTimeByBibNum = new Date(getTimeByBibNum).getTime() / 1000;
                     if (datetime >= getTimeByBibNum){
                         athleteArray[bib_number] = {

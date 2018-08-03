@@ -27,7 +27,8 @@
                             <th>Last Name</th>
                             <th>Chinese Name</th>
                             <th>Country Code</th>
-                            <th>Visibility (Max:20)<button id='resetLocalstorage' type="button" class="btn btn-primary">Reset</button></th>
+                            <th>Visibility (Max:20)<div id='cleanLocalStorage'><i class="fas fa-info-circle"></i><button type="button" class="reset-btn btn btn-primary">Reset</button></div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,6 +64,18 @@
             height:80vh;
             width: 100%;
         }
+
+        #cleanLocalStorage {
+            display: inline-block;
+        }
+        .reset-btn {
+            display: none;
+        }
+        #cleanLocalStorage:hover .reset-btn{
+            display: inline-block;
+        }
+
+
         .label_content{
             position:relative;
             border-radius: 4px;
@@ -188,7 +201,7 @@
         });
 
         // empty localStorage and redirect to map tab
-        $('#resetLocalstorage').click(function(){
+        $('.reset-btn').click(function(){
             localStorage.removeItem("visibility{{$event_id}}");
             location.reload();
         });

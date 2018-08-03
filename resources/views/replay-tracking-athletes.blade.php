@@ -30,7 +30,7 @@
                             <th>Last Name</th>
                             <th>Chinese Name</th>
                             <th>Country Code</th>
-                            <th>Visibility (Max:20)</th>
+                            <th>Visibility (Max:20)<div id='cleanLocalStorage'><i class="fas fa-info-circle"></i><button type="button" class="reset-btn btn btn-primary">Reset</button></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -167,7 +167,13 @@
                 // store in localStorage
                 localStorage.setItem("visibility{{$event_id}}", json);
 
-            })
+            });
+
+            // empty localStorage and redirect to map tab
+            $('.reset-btn').click(function(){
+                localStorage.removeItem("visibility{{$event_id}}");
+                location.reload();
+            });
         })
     </script>
 @endsection
@@ -177,6 +183,16 @@
         #map {
             height:80vh;
             width: 100%;
+        }
+
+        #cleanLocalStorage {
+            display: inline-block;
+        }
+        .reset-btn {
+            display: none;
+        }
+        #cleanLocalStorage:hover .reset-btn{
+            display: inline-block;
         }
 
         .label_content{

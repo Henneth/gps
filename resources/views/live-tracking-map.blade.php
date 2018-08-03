@@ -172,7 +172,7 @@
                                     if( content['distances']){
                                         var currentRouteIndex = content['distances'].length - 1;
 
-                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
+                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance_from_start'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
                                     }
                                 }
                                 // if there is checkpoint time

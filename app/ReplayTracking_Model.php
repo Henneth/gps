@@ -150,7 +150,7 @@ class ReplayTracking_Model extends Model
 		$finished_at = !empty($finished_at) ? $finished_at[0]->reached_at : null;
 
 		if (!$elevation_chart) {
-			$data = DB::select("SELECT * FROM archive_reached_checkpoint
+			$data = DB::select("SELECT * FROM archive_valid_data
 				WHERE event_id = :event_id
 				AND bib_number = :bib_number
 				AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))

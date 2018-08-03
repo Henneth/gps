@@ -145,7 +145,7 @@
                     var marker = new RichMarker({
                         map: map,
                         flat: true,
-                        position: new google.maps.LatLng(parseFloat(content['data'][0]['latitude_final']), parseFloat(content['data'][0]['longitude_final'])),
+                        position: new google.maps.LatLng(parseFloat(content['data'][0]['latitude']), parseFloat(content['data'][0]['longitude'])),
                         content: borderStyle + '<div><div class="id' + content['athlete']['device_id'] + ' label_content" style="background-color: #' + content['athlete']['colour_code'] + '">' + content['athlete']['bib_number']
                         + '</div></div>'
                     });
@@ -157,15 +157,14 @@
                             if( content['athlete']['last_name'] ){ html += '<div>Last Name: <b>' + content['athlete']['last_name'] + '</b></div>'; }
                             if( content['athlete']['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['athlete']['zh_full_name'] + '</b></div>'; }
                             if( content['athlete']['country'] ){ html += '<div>Country: <b>' + content['athlete']['country'] + '</b></div>'; }
-                            html += '<div>Device ID: <b>' + content['athlete']['device_id'] + '</b></div>';
+                            // html += '<div>Device ID: <b>' + content['athlete']['device_id'] + '</b></div>';
 
                             if (eventType == "fixed route"){
                                 if ( marker ) { // update
                                     html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
                                     if( content['distances']){
                                         var currentRouteIndex = content['distances'].length - 1;
-
-                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
+                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance_from_start'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
                                     }
                                 } else{ // initialize
                                     html += '<div>Location: <b>' + parseFloat(content['data'][0]['latitude_final']).toFixed(6) + ', ' + parseFloat(content['data'][0]['longitude_final']).toFixed(6) + '</b></div>';
@@ -190,7 +189,7 @@
 
                                     for (var i = 0; i < checkpointTimes.length; i++) {
                                         if (lastCheckpoint == checkpointTimes[i]['checkpoint']) {
-                                            html += '<div>Finish: <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
+                                            html += '<div>Finish: <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
                                         } else {
                                             if (checkpointTimes[i]['checkpoint_name']) {
                                                 html += '<div>' + checkpointTimes[i]['checkpoint_name'] + ' (CP' + checkpointTimes[i]['checkpoint'] + '): <b>'+ checkpointTimes[i]['reached_at'] + '</b></div>';
@@ -401,7 +400,7 @@
             var temp = localStorage.getItem("visibility{{$event_id}}");
             var array = jQuery.parseJSON( temp );
             showOffKey = array;
-
+            console.log(showOffKey);
             function pollData(firstTime = false) {
                 $.ajax({
                     type:"get",

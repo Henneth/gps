@@ -94,6 +94,7 @@ class DrawRouteController extends Controller {
                     $ckptRow['latitude'] = $checkpoint['latitude'];
                     $ckptRow['longitude'] = $checkpoint['longitude'];
                     $ckptRow['point_order'] = $checkpoint['point_order'];
+                    $ckptRow['point_order'] = $checkpoint['distance_from_start'];
                     $ckptRow['distance_to_next_ckpt'] = NULL;
                     $ckptArray[] = $ckptRow;
                 }else{
@@ -101,6 +102,7 @@ class DrawRouteController extends Controller {
                     $ckptRow['latitude'] = $checkpoint['latitude'];
                     $ckptRow['longitude'] = $checkpoint['longitude'];
                     $ckptRow['point_order'] = $checkpoint['point_order'];
+                    $ckptRow['point_order'] = $checkpoint['distance_from_start'];
                     $ckptRow['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'] - $checkpoint['distance_from_start'];
                     $ckptArray[] = $ckptRow;
                 }
@@ -109,6 +111,7 @@ class DrawRouteController extends Controller {
                 $ckptRow['latitude'] = $checkpoint['latitude'];
                 $ckptRow['longitude'] = $checkpoint['longitude'];
                 $ckptRow['point_order'] = 1;
+                $ckptRow['point_order'] = $checkpoint['distance_from_start'];
                 $ckptRow['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'];
                 $ckptArray[] = $ckptRow;
             }

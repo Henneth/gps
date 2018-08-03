@@ -98,29 +98,31 @@
         var infowindow2;
         var elevations_global;
         var currentRouteIndex;
-        var checkpointDistances;
+        var checkpointData;
         var markerList = []; //array to store marker
         var firstLoad = true;
-        var showOffKey; // store "ON" device_id, data retrive from localStorage
+        var showOffKey; // store "ON" bib_number, data retrive from localStorage
         var data;
         var route;
 
-        checkpointDistances = {!! $checkpointDistances !!};
+        checkpointData = {!! $checkpoint !!};
+        console.log(checkpointData);
 
         @if ($route)
             route = {!!$route!!};
         @endif
 
-        // check device_id in localStorage, "ON" data will be save in localStorage
+        // check bib_number in localStorage, "ON" data will be save in localStorage
         var temp = localStorage.getItem("visibility{{$event_id}}");
         var array = jQuery.parseJSON( temp );
         showOffKey = array;
+        console.log(showOffKey);
 
         function pollData(firstTime = false) {
             $.ajax({
                 type:"get",
                 url:"{{url('/')}}/event/{{$event_id}}/live-tracking/poll",
-                data: {'device_ids': showOffKey ? JSON.stringify(showOffKey) : null},
+                data: {'bib_numbers': showOffKey ? JSON.stringify(showOffKey) : null},
                 dataType:"json",
                 success:function(ajax_data) {
                     if (firstTime) {
@@ -128,10 +130,12 @@
                     }
                     data = ajax_data;
                     console.log('polling...');
+                    console.log(data);
 
                     currentRouteIndex = lastPositionData();
                     if (elevations_global) {
                         drawChart(currentRouteIndex);
+                        // console.log(currentRouteIndex);
                     }
                 },
                 error:function() {
@@ -142,7 +146,7 @@
         // Execute the setInterval function without delay the first time
         $('#loading').show();
         pollData(true);
-        setInterval(pollData, 10000);//time in milliseconds
+        setInterval(pollData, 5000);//time in milliseconds
 
         function initChart() {
 
@@ -296,7 +300,7 @@
 
                 for (var j in currentRouteIndex) {
                     if(currentRouteIndex[j]['distance']) {
-                        var athleteDist = currentRouteIndex[j]['distance']['distance'];
+                        var athleteDist = currentRouteIndex[j]['distance']['distance_from_start'];
                         var athleteBibNumber = currentRouteIndex[j]['athlete']['bib_number'];
                         var athleteFirstName = currentRouteIndex[j]['athlete']['first_name'];
                         var athleteLastName = currentRouteIndex[j]['athlete']['last_name'];
@@ -322,16 +326,16 @@
                 }
                 // strDist = strDist.slice(0, -1);
                 checkpoint = null;
-                for (var key in checkpointDistances) {
-                    if (dist <= checkpointDistances[key]['distance'] && checkpointDistances[key]['distance'] < nextDist){
-                        // var checkpoint = String(checkpointDistances[key]['checkpoint']);
-                        if (checkpointDistances[key]['checkpoint_name']) {
-                            var checkpoint = String(checkpointDistances[key]['checkpoint_name']);
+                for (var key in checkpointData) {
+                    if (dist <= checkpointData[key]['distance_to_next_ckpt'] && checkpointData[key]['distance_to_next_ckpt'] < nextDist){
+
+                        if (checkpointData[key]['checkpoint_name']) {
+                            var checkpoint = String(checkpointData[key]['checkpoint_name']);
                         }else {
-                            if (key == checkpointDistances.length -1) {
+                            if (key == checkpointData.length -1) {
                                 var checkpoint = String('Finish');
                             } else {
-                                var checkpoint = String('CP'+checkpointDistances[key]['checkpoint']);
+                                var checkpoint = String('CP'+checkpointData[key]['checkpoint_no']);
                             }
                         }
                         break;
@@ -367,15 +371,14 @@
         // get last position of athlete
         function lastPositionData() {
             var athleteArray = [];
-
             if(typeof data !== 'undefined' && data){
-                for (var device_id in data) {
-                    if( typeof data[device_id] !== 'undefined' && data[device_id] ){
-                        var routeIndexByDevice = data[device_id]['distances'];
+                for (var bib_number in data) {
+                    if( typeof data[bib_number] !== 'undefined' && data[bib_number] ){
+                        var routeIndexByBibNum = data[bib_number]['distances'];
 
-                        athleteArray[device_id] = {
-                            'distance': routeIndexByDevice[routeIndexByDevice.length-1],
-                            'athlete': data[device_id]['athlete']
+                        athleteArray[bib_number] = {
+                            'distance': routeIndexByBibNum[routeIndexByBibNum.length-1],
+                            'athlete': data[bib_number]['athlete']
                         };
                     }
                 }

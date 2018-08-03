@@ -44,6 +44,7 @@ CREATE TABLE `checkpoint` (
   `latitude` varchar(255) NOT NULL,
   `longitude` varchar(255) NOT NULL,
   `distance_to_next_ckpt` int(11) NOT NULL,
+  `distance_from_start` int(11) NOT NULL,
   `display` tinyint(1) NOT NULL DEFAULT '1',
   `min_time` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -97,8 +97,8 @@ class LiveTrackingController extends Controller {
         $route = json_encode($route);
 
         // get checkpoint distances
-        $tempCheckpointDistances = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
-        $checkpointDistances = json_encode($tempCheckpointDistances);
+        $tempCheckpoint = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
+        $checkpoint = json_encode($tempCheckpoint);
         // echo "<pre>".print_r($route,1)."</pre>";
 
 
@@ -112,10 +112,10 @@ class LiveTrackingController extends Controller {
         }
 
         if (!empty($_GET['tab']) && $_GET['tab'] == 1) {
-            return view('live-tracking-chart')->with(array('event_id' => $event_id, 'event'=>$event, 'route' => $route, 'checkpointDistances'=>$checkpointDistances));
+            return view('live-tracking-chart')->with(array('event_id' => $event_id, 'event'=>$event, 'route' => $route, 'checkpoint'=>$checkpoint));
         }
         else {
-            return view('live-tracking-map')->with(array('event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'checkpointDistances'=>$checkpointDistances));
+            return view('live-tracking-map')->with(array('event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'checkpoint'=>$checkpoint));
         }
 
 
@@ -150,7 +150,7 @@ class LiveTrackingController extends Controller {
     // automatically update data from server
     public function poll($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
-        
+
         $colorArray = ["00FF00","0000FF","FF0000","FFFF00","00FFFF","FF00FF","00FF80","8000FF","FF8000","80FF00","0080FF","FF0080","80FF80","8080FF","FF8080","FFFF80","80FFFF","FF80FF","80FFBF","BF80FF","FFBF80","BFFF80","80BFFF","FF80BF"];
 
         // if not empty localstorage
@@ -164,6 +164,7 @@ class LiveTrackingController extends Controller {
                 $data[$bib_number] = $deviceData;
                 $count++;
             }
+            // echo '<pre>'.print_r($bib_numbers, 1).'</pre>';
         } else {
             // get 20 athletes from db
             if (Auth::check()){
@@ -172,7 +173,7 @@ class LiveTrackingController extends Controller {
                 $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true);
             }
             $data = [];
-            // echo '<pre>'.print_r($athletes, 1).'</pre>';
+
 
             $count = 0; // count index of $colorArray
             foreach ($athletes as $key => $athlete) {

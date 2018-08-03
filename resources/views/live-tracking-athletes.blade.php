@@ -190,7 +190,7 @@
         // empty localStorage and redirect to map tab
         $('#resetLocalstorage').click(function(){
             localStorage.removeItem("visibility{{$event_id}}");
-            $( "#home-tab" ).trigger( "click" );
+            location.reload();
         });
 
     </script>

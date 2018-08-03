@@ -81,7 +81,7 @@ class LiveTracking_Model extends Model
 			['bib_number'=>$bib_number]);
 
 		// can be improved
-		// $checkpointData = DB::connection('gps_live')->select("SELECT checkpoint, reached_at, checkpoint_name, device_id, min_time FROM route_distances
+		// $reachedCheckpoint = DB::connection('gps_live')->select("SELECT checkpoint, reached_at, checkpoint_name, device_id, min_time FROM route_distances
 		// 	INNER JOIN route_progress
 		// 	ON route_progress.event_id = route_distances.event_id AND route_progress.route_index = route_distances.route_index
 		// 	WHERE route_distances.event_id = :event_id
@@ -90,8 +90,10 @@ class LiveTracking_Model extends Model
 		// 		'event_id' => $event_id,
 		// 		'device_id'=>$deviceID
 		// 		] );
-		$checkpointData = DB::select("SELECT * FROM gps_live_{$event_id}.reached_checkpoint
-			WHERE bib_number = :bib_number ORDER BY datetime ASC",
+		$reachedCheckpoint = DB::select("SELECT * FROM gps_live_{$event_id}.reached_checkpoint T1
+			INNER JOIN gps_live_{$event_id}.checkpoint T2
+			ON T1.checkpoint_id = T2.checkpoint_id
+			WHERE T1.bib_number = :bib_number ORDER BY datetime ASC",
 			['bib_number'=>$bib_number]);
 
 
@@ -166,7 +168,7 @@ class LiveTracking_Model extends Model
 		$array['athlete'] = !empty($athlete) ? $athlete[0] : null;
 		$array['data'] = $data;
 		$array['distances'] = $distances;
-		$array['checkpointData'] = $checkpointData;
+		$array['reachedCheckpoint'] = $reachedCheckpoint;
 		return $array;
 	}
 

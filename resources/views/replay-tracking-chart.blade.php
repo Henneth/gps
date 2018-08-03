@@ -66,7 +66,7 @@
         var distance = 0;
         var elevations_global;
         var currentRouteIndex;
-        var showOffKey; // store "ON" device_id, data retrive from localStorage
+        var showOffKey; // store "ON" bib_number, data retrive from localStorage
         var data;
         var route;
 
@@ -76,7 +76,7 @@
                 route = {!!$route!!};
             @endif
 
-            // check device_id in localStorage, "ON" data will be save in localStorage
+            // check bib_number in localStorage, "ON" data will be save in localStorage
             var temp = localStorage.getItem("visibility{{$event_id}}");
             var array = jQuery.parseJSON( temp );
             showOffKey = array;
@@ -86,7 +86,7 @@
             $.ajax({
                 type:'get',
                 url:'{{url("/")}}/event/{{$event_id}}/replay-tracking/poll',
-                data: {'device_ids': showOffKey ? JSON.stringify(showOffKey) : null},
+                data: {'bib_numbers': showOffKey ? JSON.stringify(showOffKey) : null},
                 dataType: "json",
                 success:function(ajax_data) {
                     $('#loading').fadeOut('slow',function(){$(this).remove();});
@@ -94,7 +94,7 @@
 
                     currentRouteIndex = lastPositionData();
                     drawChart(currentRouteIndex);
-                    console.log(currentRouteIndex);
+                    // console.log(currentRouteIndex);
                 },
                 error:function() {
                     $('#loading').fadeOut('slow',function(){$(this).remove();});
@@ -254,7 +254,7 @@
 
                 for (var j in currentRouteIndex) {
                     if(currentRouteIndex[j]['distance']) {
-                        var athleteDist = currentRouteIndex[j]['distance']['distance'];
+                        var athleteDist = currentRouteIndex[j]['distance']['currentRouteIndex'];
 
                         var athleteBibNumber = currentRouteIndex[j]['athlete']['bib_number'];
                         var athleteFirstName = currentRouteIndex[j]['athlete']['first_name'];
@@ -322,15 +322,15 @@
         function dataFilterByTime(datetime) {
             var athleteArray = [];
 
-            for (var device_id in data) {
-                var routeIndexByDevice = data[device_id]['distances'];
-                for (var j = 0; j < routeIndexByDevice.length; j++) {
-                    getTimeByDevice = routeIndexByDevice[j]['reached_at'];
-                    getTimeByDevice = new Date(getTimeByDevice).getTime() / 1000;
-                    if (datetime >= getTimeByDevice){
-                        athleteArray[device_id] = {
-                            'distance': routeIndexByDevice[j],
-                            'athlete': data[device_id]['athlete']
+            for (var bib_number in data) {
+                var routeIndexByBibNum = data[bib_number]['distances'];
+                for (var j = 0; j < routeIndexByBibNum.length; j++) {
+                    getTimeByBibNum = routeIndexByBibNum[j]['reached_at'];
+                    getTimeByBibNum = new Date(getTimeByBibNum).getTime() / 1000;
+                    if (datetime >= getTimeByBibNum){
+                        athleteArray[bib_number] = {
+                            'distance': routeIndexByBibNum[j],
+                            'athlete': data[bib_number]['athlete']
                         };
                     } else {
                         break;
@@ -346,13 +346,13 @@
             var athleteArray = [];
 
             if(typeof data !== 'undefined' && data){
-                for (var device_id in data) {
-                    if( typeof data[device_id] !== 'undefined' && data[device_id] ){
-                        var routeIndexByDevice = data[device_id]['distances'];
+                for (var bib_number in data) {
+                    if( typeof data[bib_number] !== 'undefined' && data[bib_number] ){
+                        var routeIndexByBibNum = data[bib_number]['distances'];
 
-                        athleteArray[device_id] = {
-                            'distance': routeIndexByDevice[routeIndexByDevice.length-1],
-                            'athlete': data[device_id]['athlete']
+                        athleteArray[bib_number] = {
+                            'distance': routeIndexByBibNum[routeIndexByBibNum.length-1],
+                            'athlete': data[bib_number]['athlete']
                         };
                     }
                 }

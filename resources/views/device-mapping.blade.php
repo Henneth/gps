@@ -70,7 +70,7 @@
                                 {{ csrf_field() }}
                                 <td><input class="form-control" name="device_id" placeholder="Device ID" {{$is_live? 'disabled' : ''}}></td>
                                 <td>
-                                    <select name="athlete_bib_num" class="form-control" {{$is_live? 'disabled' : ''}}>
+                                    <select name="bib_number" class="form-control" {{$is_live? 'disabled' : ''}}>
                                         @foreach ($athletes as $athlete)
                                             <option value="{{$athlete->bib_number}}">{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}})</option>
                                         @endforeach
@@ -117,7 +117,7 @@
                                         @endif
                                     </td>
                                     <td class="athlete_select" style="display: none;">
-                                        <select name="athlete_bib_num" class="form-control">
+                                        <select name="bib_number" class="form-control">
                                             @foreach ($athletes as $athlete)
                                                 <option value="{{$athlete->bib_number}}" {{($athlete->bib_number == $device->bib_number) ? 'selected' : ''}}>{{$athlete->first_name}} {{$athlete->last_name}} (Bib: {{$athlete->bib_number}})</option>
                                             @endforeach

@@ -52,14 +52,13 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Athlete ID</th>
                             <th>Bib Number</th>
                             <th>First Name</th>
                             <th>Last Name</th>
                             <th>Chinese Full Name</th>
+                            <th>Country</th>
                             <th>Is Public</th>
                             <th>Default Visibility</th>
-                            <th>Country</th>
                             <th style="width: 64px;">&nbsp;</th>
                             {{-- <th style="width: 40px">Label</th> --}}
                         </tr>
@@ -68,12 +67,19 @@
                         <tr>
                             <form id="form_add" method="post" action="{{url('/')}}/event/{{$event_id}}/athletes/add">
                                 {{ csrf_field() }}
-                                <td>&nbsp;</td>
                                 <td><input form="form_add" class="form-control" name="bib_number" placeholder="Bib Number" {{$is_live? 'disabled' : ''}}></td>
                                 <td><input form="form_add" class="form-control" name="first_name" placeholder="First Name" {{$is_live? 'disabled' : ''}}></td>
                                 <td><input form="form_add" class="form-control" name="last_name" placeholder="Last Name" {{$is_live? 'disabled' : ''}}></td>
                                 {{-- <td>@include('partials/countries-dropdown')</td> --}}
                                 <td><input form="form_add" class="form-control" name="zh_full_name" placeholder="Chinese Full Name" {{$is_live? 'disabled' : ''}}></td>
+                                <td>
+                                    <select name="country_code" class="form-control" {{$is_live? 'disabled' : ''}}>
+                                        <option disabled selected>---- Select a country ----</option>
+                                        @foreach($countries as $country)
+                                            <option value="{{$country->code}}">{{$country->country}}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td>
                                     <div>
                                         <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox" checked="checked" {{$is_live? 'disabled' : ''}}/>
@@ -84,14 +90,6 @@
                                     <select name="status" class="form-control" {{$is_live? 'disabled' : ''}}>
                                         <option value="visible">Visible</option>
                                         <option value="hidden">Hidden</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select name="country_code" class="form-control" {{$is_live? 'disabled' : ''}}>
-                                        <option disabled selected>---- Select a country ----</option>
-                                        @foreach($countries as $country)
-                                            <option value="{{$country->code}}">{{$country->country}}</option>
-                                        @endforeach
                                     </select>
                                 </td>
 
@@ -105,14 +103,23 @@
                         <?php $count = 2 ?>
                         @foreach ($athletes as $key => $athlete)
                             <tr>
-                                <form id="form_edit_{{$athlete->athlete_id}}" method="post" action="{{url('/')}}/event/{{$event_id}}/athletes/edit">
+                                <form id="form_edit_{{$athlete->bib_number}}" method="post" action="{{url('/')}}/event/{{$event_id}}/athletes/edit">
                                     {{ csrf_field() }}
-                                    <input form="form_edit_{{$athlete->athlete_id}}" type="hidden" name="athlete_id" value="{{$athlete->athlete_id}}"></input>
-                                    <td>{{$athlete->athlete_id}}</td>
-                                    <td class="text"><span>{{$athlete->bib_number}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="bib_number" value="{{$athlete->bib_number}}" placeholder="Bib Number"></td>
-                                    <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
-                                    <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
-                                    <td class="text"><span>{{$athlete->zh_full_name}}</span><input form="form_edit_{{$athlete->athlete_id}}" class="form-control" style="display: none;" name="zh_full_name" value="{{$athlete->zh_full_name}}" placeholder="zh_full_name"></td>
+                                    {{-- <input form="form_edit_{{$athlete->bib_number}}" type="hidden" name="athlete_id" value="{{$athlete->athlete_id}}"></input> --}}
+                                    <td class="text"><span>{{$athlete->bib_number}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="bib_number" value="{{$athlete->bib_number}}" placeholder="Bib Number"></td>
+                                    <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
+                                    <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
+                                    <td class="text"><span>{{$athlete->zh_full_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="zh_full_name" value="{{$athlete->zh_full_name}}" placeholder="Chinese Full Name"></td>
+                                    <td class="country_code" data-code="{{$athlete->country_code}}">
+                                        <span>{{$athlete->country}}</span>
+                                        <div style="display: none;">
+                                            <select name="country_code" class="form-control">
+                                                @foreach($countries as $country)
+                                                    <option value="{{$country->code}}">{{$country->country}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </td>
                                     <td class="is_public">
                                         <span>{{($athlete->is_public == 1) ? 'True' :'False'}}</span>
                                         <div style="display: none;">
@@ -127,25 +134,15 @@
                                             <option value="hidden" {{($athlete->status == 'hidden' ? 'selected' : '')}}>Hidden</option>
                                         </select>
                                     </td>
-                                    <td class="country_code" data-code="{{$athlete->country_code}}">
-                                        <span>{{$athlete->country}}</span>
-                                        <div style="display: none;">
-                                            <select name="country_code" class="form-control">
-                                                @foreach($countries as $country)
-                                                    <option value="{{$country->code}}">{{$country->country}}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </td>
                                     {{-- <td class="colour_code"> --}}
                                         {{-- @if ($athlete->colour_code)
                                             <div class="read-only" style="padding-left: 4px; background: #{{$athlete->colour_code}}">#{{$athlete->colour_code}}</div>
                                         @endif
                                         <div class="editable" style="display: none; width:100%;">
-                                            <input type="text" form="form_edit_{{$athlete->athlete_id}}" name="colour_code" class="pick-a-color form-control" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}">
+                                            <input type="text" form="form_edit_{{$athlete->bib_number}}" name="colour_code" class="pick-a-color form-control" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}">
                                         </div> --}}
                                     {{-- </td> --}}
-                                    <td><button type="button" class="edit-btn btn btn-default" {{$is_live? 'disabled' : ''}}>Edit</button><button form="form_edit_{{$athlete->athlete_id}}" type="submit" class="btn btn-default" style="display: none;" {{$is_live? 'disabled' : ''}}>Save</button></td>
+                                    <td><button type="button" class="edit-btn btn btn-default" {{$is_live? 'disabled' : ''}}>Edit</button><button form="form_edit_{{$athlete->bib_number}}" type="submit" class="btn btn-default" style="display: none;" {{$is_live? 'disabled' : ''}}>Save</button></td>
                                 </form>
                             </tr>
                         <?php $count++ ?>

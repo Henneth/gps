@@ -35,25 +35,31 @@ class EditEventController extends Controller {
                 ->update(['is_checkpoint' => 0, 'display' => 1, 'checkpoint_no' => null, 'checkpoint_name' => null, 'min_time' => null]);
         }
 
-        // clear current column value to zero first if event-live is ticked(1)
-        if (isset($_POST['event-live']) && $_POST['event-live'] == 'on') {
-            DB::table('events')
-                ->where('event_id', $event_id)
-                ->update(['live' => 1]);
-            // EditEvent_Model::copyToLiveDB($event_id);
-        }
         return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event saved.');
     }
 
-    public function unsetLive($event_id) {
-        if (!isset($_POST['event-live']) || $_POST['event-live'] == '') {
-            DB::table('events')
-                ->where('event_id', $event_id)
-                ->update(['live' => 2]);
-            EditEvent_Model::copyToArchiveDB($event_id);
-            // return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
-        }
-        // return redirect('event/'.$event_id.'/edit-event');
+    public function turnOnLive($event_id) {
+        DB::table('events')
+            ->where('event_id', $event_id)
+            ->update(['live' => 1]);
+        EditEvent_Model::processAthletes($event_id);
+        return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is live.');
+    }
+
+    public function archive($event_id) {
+        DB::table('events')
+            ->where('event_id', $event_id)
+            ->update(['live' => 2]);
+        EditEvent_Model::copyToArchiveDB($event_id);
+        return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
+    }
+
+    public function revertToOriginal($event_id) {
+        DB::table('events')
+            ->where('event_id', $event_id)
+            ->update(['live' => 0]);
+        EditEvent_Model::revertToOriginal($event_id);
+        return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is reverted to original.');
     }
 
 }

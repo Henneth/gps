@@ -39,28 +39,28 @@ foreach ($events as $event) {
     //define event id
     $event_id = $event['event_id'];
     $db = "gps_live_".$event['event_id'];
-    echo "== Event ID: " . $event_id . " ==\n";
+    echo "== Event ID: " . $event_id . " ==<br>";
 
     // get route data
     $eventInfo_stmt = $pdo->prepare('SELECT datetime_from, datetime_to, event_type FROM gps.events WHERE event_id = :event_id');
     $eventInfo_stmt->execute(array(':event_id' => $event_id));
     $eventInfo = $eventInfo_stmt->fetchAll();
     if(empty($eventInfo)){
-        echo "-- No event time range --\n";
+        echo "-- No event time range --<br>";
         continue;
     }
 
     // get route
     $route = $pdo->query("SELECT * FROM {$db}.map_point")->fetchAll();
     if (!$route){
-        echo "-- No route --\n";
+        echo "-- No route --<br>";
         continue;
     }
 
     // get bib numbers
     $bib_numbers = $pdo->query("SELECT bib_number FROM {$db}.athletes")->fetchAll();
     if(empty($bib_numbers)){
-        echo "-- No athletes --\n";
+        echo "-- No athletes --<br>";
         continue;
     }
 
@@ -71,7 +71,7 @@ foreach ($events as $event) {
         $device_ids_stmt->execute(array(':bib_number' => $bib_number['bib_number']));
         $device_ids = $device_ids_stmt->fetchAll();
         if(empty($device_ids)){
-            echo "-- No device mapping for this athlete --\n";
+            echo "-- No device mapping for this athlete --<br>";
             continue;
         }
 
@@ -80,14 +80,19 @@ foreach ($events as $event) {
         foreach ($device_ids as $device_id) {
             $gps_data_stmt = $pdo->prepare("SELECT * FROM {$db}.raw_data
                 WHERE :datetime_from <= datetime AND datetime <= :datetime_to
-                AND :start_time <= datetime AND datetime <= :end_time
+            	AND (:start_time1 IS NULL OR (:start_time2 IS NOT NULL AND datetime >= :start_time3))
+            	AND (:end_time1 IS NULL OR (:end_time2 IS NOT NULL AND datetime <= :end_time3))
                 AND device_id = :device_id AND processed = 0");
             $gps_data_stmt->execute(array(
                 ':datetime_from' => $eventInfo[0]['datetime_from'],
                 ':datetime_to' => $eventInfo[0]['datetime_to'],
                 ':device_id' => $device_id['device_id'],
-                ':start_time' => $device_id['start_time'],
-                ':end_time' => $device_id['end_time'],
+                ':start_time1' => $device_id['start_time'],
+                ':start_time2' => $device_id['start_time'],
+                ':start_time3' => $device_id['start_time'],
+                ':end_time1' => $device_id['end_time'],
+                ':end_time2' => $device_id['end_time'],
+                ':end_time3' => $device_id['end_time'],
             ));
             $gps_data = $gps_data_stmt->fetchAll();
 
@@ -155,12 +160,15 @@ foreach ($events as $event) {
                     $lon1 = $routePoint['longitude'];
 
                     $validData = false;
+
+                    // echo $lat2.' '.$lon2.' '.$lat1.' '.$lon1;
                     if (distanceUnder50m($lat1, $lon1, $lat2, $lon2)) {
                         $distance_covered = $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
                         $elapsed_time = elapsed_time($gps_position['datetime'], $lastReachedPoint['datetime']);
+                        // echo $distance_covered.' ';
+                        // echo $elapsed_time.' <br>';
                         if (speedCheck($distance_covered, $elapsed_time)) {
                             $validData = true;
-                            $validated = true;
                         }
                     }
 
@@ -172,9 +180,9 @@ foreach ($events as $event) {
                             $table = $validData ? 'valid_data':'invalid_data';
 
                             // Copy to valid/invalid data table
-                            $stmt = $pdo->prepare("INSERT INTO {$db}.{$table} (id, bib_number, latitude, longitude, distance_covered, elapsed_time, datetime) SELECT (id, :bib_number, latitude, longitude, :distance_covered, :elapsed_time, datetime) FROM {$db}.raw_data WHERE id = :id");
+                            $stmt = $pdo->prepare("INSERT INTO {$db}.{$table} (id, bib_number, latitude, longitude, distance_covered, elapsed_time, datetime) SELECT id, :bib_number, latitude, longitude, :distance_covered, :elapsed_time, datetime FROM {$db}.raw_data WHERE id = :id");
                             $stmt->bindValue(':id', $gps_position['id']);
-                            $stmt->bindValue(':bib_number', $bib_number);
+                            $stmt->bindValue(':bib_number', $bib_number['bib_number']);
                             $stmt->bindValue(':distance_covered', $distance_covered);
                             $stmt->bindValue(':elapsed_time', $elapsed_time);
                             $stmt->execute();
@@ -185,20 +193,25 @@ foreach ($events as $event) {
                             $stmt->execute();
 
                             $pdo->commit();
+
+                            $validated = true;
                         } catch(PDOException $e) {
                             $pdo->rollBack();
 
                             // Report errors
-                            echo "=== MYSQL Error. Rollback. ===";
+                            echo "<pre>".print_r($e,1)."</pre>";
+                            echo "=== MYSQL Error. Rollback. ===<br>";
                         }
                     }
 
                     if ($validData){
                         // Check if distance has progress
-                        if (!finished && $point_order > $lastReachedPointNo) {
+                        if (!$finished && $point_order > $lastReachedPointNo) {
                             if (getCurrentCheckpoint($point_order, $checkpoints) > $reachedCkptNo + 1) {
                                 continue;
                             }
+
+                            echo "Has progress";
 
                             // reached map point
                             $lastReachedPointNo = $point_order;
@@ -207,16 +220,22 @@ foreach ($events as $event) {
                             $accumulated_distance_since_last_ckpt = $accumulated_distance_since_last_ckpt + $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
                             $distance_to_next_ckpt = $checkpoints[$reachedCkptNo]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
 
-                            // insert into distance_data
-                            $stmt = $pdo->prepare("INSERT INTO {$db}.distance_data (bib_number, point_order, distance, datetime) VALUES (:bib_number, :point_order, :distance, :datetime)");
-                            $stmt->bindValue(':bib_number', $bib_number);
-                            $stmt->bindValue(':point_order', $point_order);
-                            $stmt->bindValue(':distance_from_start', $routePoint['distance_from_start']);
-                            $stmt->bindValue(':datetime', $gps_position['datetime']);
-                            $stmt->execute();
+                            try {
+                                // insert into distance_data
+                                $stmt = $pdo->prepare("INSERT INTO {$db}.distance_data (bib_number, point_order, distance_from_start, datetime) VALUES (:bib_number, :point_order, :distance_from_start, :datetime)");
+                                $stmt->bindValue(':bib_number', $bib_number);
+                                $stmt->bindValue(':point_order', $point_order);
+                                $stmt->bindValue(':distance_from_start', $routePoint['distance_from_start']);
+                                $stmt->bindValue(':datetime', $gps_position['datetime']);
+                                $stmt->execute();
+                            } catch(PDOException $e) {
+                                // Report errors
+                                echo "<pre>".print_r($e,1)."</pre>";
+                            }
 
                             // if ($distance_to_next_ckpt <= 100 && checkMinTime($checkpoints[$reachedCkptNo + 1]['min_time'], $reachedCkpt['datetime'], $gps_position['datetime'])) {
                             if ($distance_to_next_ckpt <= 100) {
+
                                 // reached checkpoint
                                 $reachedCkptNo = $reachedCkptNo + 1;
                                 $reachedCkptID = $reachedCkptNo + 1;
@@ -225,51 +244,74 @@ foreach ($events as $event) {
                                 $distance_to_next_ckpt = $checkpoints[$reachedCkptIndex]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
                                 $accumulated_distance_since_last_ckpt = $distance_to_next_ckpt * -1;
 
-                                // insert into reached_checkpoint
-                                $stmt = $pdo->prepare("INSERT INTO {$db}.reached_checkpoint (bib_number, checkpoint_id, datetime, elapsed_time_btwn_ckpts) VALUES (:bib_number, :checkpoint_id, :datetime, :elapsed_time_btwn_ckpts)");
-                                $stmt->bindValue(':bib_number', $bib_number);
-                                $stmt->bindValue(':checkpoint_id', $reachedCkptID);
-                                $stmt->bindValue(':datetime', $gps_position['datetime']);
-                                $stmt->bindValue(':elapsed_time_btwn_ckpts', elapsed_time($reachedCkpt['datetime'], $gps_position['datetime']));
-                                $stmt->execute();
+                                try {
+                                    // insert into reached_checkpoint
+                                    $stmt = $pdo->prepare("INSERT INTO {$db}.reached_checkpoint (bib_number, checkpoint_id, datetime, elapsed_time_btwn_ckpts) VALUES (:bib_number, :checkpoint_id, :datetime, :elapsed_time_btwn_ckpts)");
+                                    $stmt->bindValue(':bib_number', $bib_number['bib_number']);
+                                    $stmt->bindValue(':checkpoint_id', $reachedCkptID);
+                                    $stmt->bindValue(':datetime', $gps_position['datetime']);
+                                    $stmt->bindValue(':elapsed_time_btwn_ckpts', elapsed_time($gps_position['datetime'], $reachedCkpt['datetime']));
+                                    $stmt->execute();
+                                } catch(PDOException $e) {
+                                    // Report errors
+                                    echo "<pre>".print_r($e,1)."</pre>";
+                                }
 
                                 // update $reachedCkpt
                                 $reachedCkpt['checkpoint_id'] = $reachedCkptID;
                                 $reachedCkpt['datetime'] = $gps_position['datetime'];
-                                $reachedCkpt['elapsed_time_btwn_ckpts'] = elapsed_time($reachedCkpt['datetime'], $gps_position['datetime']);
+                                $reachedCkpt['elapsed_time_btwn_ckpts'] = elapsed_time($gps_position['datetime'], $reachedCkpt['datetime']);
 
-                                // check finished
+                                // check if finished
                                 if (sizeof($checkpoints) == $reachedCkptID) {
+                                    echo "finished";
+                                    // this athlete has finished
                                     $finished = true;
 
-                                    // insert into distance_data
-                                    $stmt = $pdo->prepare("INSERT INTO {$db}.distance_data (bib_number, point_order, distance, datetime) VALUES (:bib_number, :point_order, :distance, :datetime)");
-                                    $stmt->bindValue(':bib_number', $bib_number);
-                                    $stmt->bindValue(':point_order', sizeof($route));
-                                    $stmt->bindValue(':distance_from_start', $route[sizeof($route) - 1]['distance_from_start']);
-                                    $stmt->bindValue(':datetime', $gps_position['datetime']);
-                                    $stmt->execute();
+                                    try {
+                                        // insert into distance_data
+                                        $stmt = $pdo->prepare("INSERT INTO {$db}.distance_data (bib_number, point_order, distance_from_start, datetime) VALUES (:bib_number, :point_order, :distance_from_start, :datetime)");
+                                        $stmt->bindValue(':bib_number', $bib_number['bib_number']);
+                                        $stmt->bindValue(':point_order', sizeof($route));
+                                        $stmt->bindValue(':distance_from_start', $route[sizeof($route) - 1]['distance_from_start']);
+                                        $stmt->bindValue(':datetime', $gps_position['datetime']);
+                                        $stmt->execute();
+                                    } catch(PDOException $e) {
+                                        // Report errors
+                                        echo "<pre>".print_r($e,1)."</pre>";
+                                    }
 
+                                    // end this loop
                                     continue;
                                 }
 
-                                // reset next_checkpoint
-                                $stmt = $pdo->prepare("INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt");
-                                $stmt->bindValue(':bib_number', $bib_number);
-                                $stmt->bindValue(':checkpoint_id', $reachedCkptID + 1);
-                                $stmt->bindValue(':accumulated_distance_since_last_ckpt', $accumulated_distance_since_last_ckpt);
-                                $stmt->bindValue(':accumulated_time_since_last_ckpt', 0);
-                                $stmt->bindValue(':distance_to_next_ckpt', $distance_to_next_ckpt);
-                                $stmt->execute();
+                                try {
+                                    // reset next_checkpoint
+                                    $stmt = $pdo->prepare("INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt");
+                                    $stmt->bindValue(':bib_number', $bib_number['bib_number']);
+                                    $stmt->bindValue(':checkpoint_id', $reachedCkptID + 1);
+                                    $stmt->bindValue(':accumulated_distance_since_last_ckpt', $accumulated_distance_since_last_ckpt);
+                                    $stmt->bindValue(':accumulated_time_since_last_ckpt', 0);
+                                    $stmt->bindValue(':distance_to_next_ckpt', $distance_to_next_ckpt);
+                                    $stmt->execute();
+                                } catch(PDOException $e) {
+                                    // Report errors
+                                    echo "<pre>".print_r($e,1)."</pre>";
+                                }
                             } else {
-                                // update next_checkpoint
-                                $stmt = $pdo->prepare("INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = :accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt = :accumulated_time_since_last_ckpt, distance_to_next_ckpt = :distance_to_next_ckpt");
-                                $stmt->bindValue(':bib_number', $bib_number);
-                                $stmt->bindValue(':checkpoint_id', $reachedCkptID + 1);
-                                $stmt->bindValue(':accumulated_distance_since_last_ckpt', $accumulated_distance_since_last_ckpt);
-                                $stmt->bindValue(':accumulated_time_since_last_ckpt', elapsed_time($reachedCkpt['datetime'], $gps_position['datetime']));
-                                $stmt->bindValue(':distance_to_next_ckpt', $distance_to_next_ckpt);
-                                $stmt->execute();
+                                try {
+                                    // update next_checkpoint
+                                    $stmt = $pdo->prepare("INSERT INTO {$db}.next_checkpoint (bib_number, checkpoint_id, accumulated_distance_since_last_ckpt, accumulated_time_since_last_ckpt, distance_to_next_ckpt) VALUES (:bib_number, :checkpoint_id, :accumulated_distance_since_last_ckpt, :accumulated_time_since_last_ckpt, :distance_to_next_ckpt) ON DUPLICATE KEY UPDATE accumulated_distance_since_last_ckpt = VALUES(accumulated_distance_since_last_ckpt), accumulated_time_since_last_ckpt = VALUES(accumulated_time_since_last_ckpt), distance_to_next_ckpt = VALUES(distance_to_next_ckpt)");
+                                    $stmt->bindValue(':bib_number', $bib_number['bib_number']);
+                                    $stmt->bindValue(':checkpoint_id', $reachedCkptID + 1);
+                                    $stmt->bindValue(':accumulated_distance_since_last_ckpt', $accumulated_distance_since_last_ckpt);
+                                    $stmt->bindValue(':accumulated_time_since_last_ckpt', elapsed_time($gps_position['datetime'], $reachedCkpt['datetime']));
+                                    $stmt->bindValue(':distance_to_next_ckpt', $distance_to_next_ckpt);
+                                    $stmt->execute();
+                                } catch(PDOException $e) {
+                                    // Report errors
+                                    echo "<pre>".print_r($e,1)."</pre>";
+                                }
                             }
 
                         }
@@ -286,7 +328,7 @@ foreach ($events as $event) {
 
 
 // $after = microtime(true);
-// echo ($after-$before) . " sec\n";
+// echo ($after-$before) . " sec<br>";
 
 // function checkMinTime($min_time, $prev_time, $current_time) {
 //     $timeFirst  = strtotime($prev_time);

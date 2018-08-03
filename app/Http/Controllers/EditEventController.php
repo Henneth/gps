@@ -40,7 +40,7 @@ class EditEventController extends Controller {
             DB::table('events')
                 ->where('event_id', $event_id)
                 ->update(['live' => 1]);
-            // EditEvent_Model::copyToLiveDB($event_id);
+            EditEvent_Model::processAthletes($event_id);
         }
         return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event saved.');
     }
@@ -51,9 +51,9 @@ class EditEventController extends Controller {
                 ->where('event_id', $event_id)
                 ->update(['live' => 2]);
             EditEvent_Model::copyToArchiveDB($event_id);
-            // return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
+            return redirect('event/'.$event_id.'/edit-event')->with('success', 'Event is archived.');
         }
-        // return redirect('event/'.$event_id.'/edit-event');
+        return redirect('event/'.$event_id.'/edit-event');
     }
 
 }

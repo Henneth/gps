@@ -33,7 +33,6 @@ class DrawRouteController extends Controller {
     public function saveRoute($event_id) {
 
 		$route = $_POST['route'];
-
         $routeDecode = json_decode($route);
 
         $index = 0;
@@ -59,11 +58,11 @@ class DrawRouteController extends Controller {
                 if (property_exists($value, 'is_checkpoint') && $value->is_checkpoint == 1) {
                     $tempArray ['checkpoint_no'] = $checkpoint_no;
                     $checkpointArray[] = $tempArray;
+                    $checkpointArray['point_order'] = $index + 1;
                     $checkpoint_no++;
                 } else {
                     $tempArray ['checkpoint_no'] = NULL;
                 }
-
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
 
             } else {
@@ -73,66 +72,55 @@ class DrawRouteController extends Controller {
                 $tempArray ['distance_from_start'] = 0;
                 $tempArray ['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
                 $tempArray ['checkpoint_no'] = 0;
-                // empty checkpoint table
-                // DB::table('gps_live_'.$event_id.'.checkpoint')->truncate();
-                // add first point into checkpoint table
-                // DB::table('gps_live_'.$event_id.'.checkpoint')
-                //    ->insert(
-                //        array('checkpoint_no'=> 0,
-                //        'latitude' => $routeDecode[$index]->lat,
-                //        'longitude' => $routeDecode[$index]->lon)
-                //    );
                 $checkpointArray[] = $tempArray;
                 // echo "<pre>".print_r($tempArray,1)."</pre>";
             }
             $tempArray ['checkpoint_name'] = NULL;
-
             $distanceArray [] = $tempArray;
 
             $index++;
-            // echo $key;
-            // echo "<pre>".print_r($routeDecode[$key],1)."</pre>";
-            // echo "<pre>".print_r($routeDecode[$key]->lon,1)."</pre>";
         }
 
         $distanceArray[sizeof($distanceArray)-1]['checkpoint_name'] = 'Finish';
 
-        $cpArrayTemp = [];
-        $cpArray = [];
+        $ckptRow = [];
+        $ckptArray = [];
         foreach ($checkpointArray as $index => $checkpoint) {
             // echo sizeof($checkpointArray) - 1;
             if ($index != 0) {
-                if($index == (sizeof($checkpointArray)-1) ){
-                    $cpArrayTemp['checkpoint_no'] = $checkpoint['checkpoint_no'];
-                    $cpArrayTemp['latitude'] = $checkpoint['latitude'];
-                    $cpArrayTemp['longitude'] = $checkpoint['longitude'];
-                    $cpArrayTemp['distance_to_next_ckpt'] = 0;
-                    $cpArray[] = $cpArrayTemp;
+                if($index == (sizeof($checkpointArray)-1)){
+                    $ckptRow['checkpoint_no'] = $checkpoint['checkpoint_no'];
+                    $ckptRow['latitude'] = $checkpoint['latitude'];
+                    $ckptRow['longitude'] = $checkpoint['longitude'];
+                    $ckptRow['point_order'] = $checkpointArray['point_order'];
+                    $ckptRow['distance_to_next_ckpt'] = NULL;
+                    $ckptArray[] = $ckptRow;
                 }else{
-                    $cpArrayTemp['checkpoint_no'] = $checkpoint['checkpoint_no'];
-                    $cpArrayTemp['latitude'] = $checkpoint['latitude'];
-                    $cpArrayTemp['longitude'] = $checkpoint['longitude'];
-                    $distance_to_next_ckpt = $checkpointArray[$index+1]['distance_from_start'] - $checkpoint['distance_from_start'];
-                    $cpArrayTemp['distance_to_next_ckpt'] = $distance_to_next_ckpt;
-                    $cpArray[] = $cpArrayTemp;
+                    $ckptRow['checkpoint_no'] = $checkpoint['checkpoint_no'];
+                    $ckptRow['latitude'] = $checkpoint['latitude'];
+                    $ckptRow['longitude'] = $checkpoint['longitude'];
+                    $ckptRow['point_order'] = $checkpointArray['point_order'];
+                    $ckptRow['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'] - $checkpoint['distance_from_start'];
+                    $ckptArray[] = $ckptRow;
                 }
             } else {
-                $cpArrayTemp['checkpoint_no'] = $checkpoint['checkpoint_no'];
-                $cpArrayTemp['latitude'] = $checkpoint['latitude'];
-                $cpArrayTemp['longitude'] = $checkpoint['longitude'];
-                $cpArrayTemp['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'] ? $checkpointArray[$index+1]['distance_from_start'] : 0 ;
-                $cpArray[] = $cpArrayTemp;
+                $ckptRow['checkpoint_no'] = $checkpoint['checkpoint_no'];
+                $ckptRow['latitude'] = $checkpoint['latitude'];
+                $ckptRow['longitude'] = $checkpoint['longitude'];
+                $ckptRow['point_order'] = 1;
+                $ckptRow['distance_to_next_ckpt'] = !empty($checkpointArray[$index+1]['distance_from_start']) ? $checkpointArray[$index+1]['distance_from_start'] : 0;
+                $ckptArray[] = $ckptRow;
             }
         }
 
-        DB::transaction(function () use($event_id, $distanceArray, $cpArray) {
+        DB::transaction(function () use($event_id, $distanceArray, $ckptArray) {
             DB::table('gps_live_'.$event_id.'.map_point')->truncate();
             DB::table('gps_live_'.$event_id.'.map_point')
                 ->insert($distanceArray);
 
             DB::table('gps_live_'.$event_id.'.checkpoint')->truncate();
             DB::table('gps_live_'.$event_id.'.checkpoint')
-                ->insert($cpArray);
+                ->insert($ckptArray);
         });
 
         return redirect('event/'.$event_id.'/draw-route')->with('success', 'Route updated.');

@@ -10,7 +10,7 @@ class AthletesController extends Controller {
     public function index($event_id) {
         $athletes = DB::table('gps_live_'.$event_id.'.athletes')
             ->leftJoin('countries', 'athletes.country_code', '=', 'countries.code')
-            ->orderby('bib_number', 'desc')
+            ->orderby(DB::raw('ABS(bib_number)'), 'desc')
             ->get();
 
         $countries = DB::table('gps_live_'.$event_id.'.countries')

@@ -17,7 +17,7 @@
             @include('live-tracking-tabbar')
             <div class="tab-content">
                 @if ($event->event_type == "fixed route")
-                    <div class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" id="elevationChart" style="width:100%; height:100%;"></div>
+                    <div class="elevation-section tab-pane active" id="elevationChart" style="width:100%; height:100%;"></div>
                 @endif
             </div>
         </div>
@@ -84,13 +84,13 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script>
-
         @if ($event->event_type == "fixed route")
             // elevation chart
             google.charts.load('current', {'packages':['corechart']});
             google.charts.setOnLoadCallback(initChart);
         @endif
 
+        // init global variables
         var chart;
         var chartOptions;
         var elevationData;
@@ -101,28 +101,27 @@
         var checkpointData;
         var markerList = []; //array to store marker
         var firstLoad = true;
-        var showOffKey; // store "ON" bib_number, data retrive from localStorage
+        var localStorageArray; // store "ON" bib_number, data retrive from localStorage
         var data;
         var route;
 
         checkpointData = {!! $checkpoint !!};
-        console.log(checkpointData);
 
         @if ($route)
             route = {!!$route!!};
         @endif
 
-        // check bib_number in localStorage, "ON" data will be save in localStorage
+        // check bib_number in localStorage, "ON" data will be saved in localStorage
         var temp = localStorage.getItem("visibility{{$event_id}}");
         var array = jQuery.parseJSON( temp );
-        showOffKey = array;
-        console.log(showOffKey);
+        localStorageArray = array;
+        // console.log(localStorageArray);
 
         function pollData(firstTime = false) {
             $.ajax({
                 type:"get",
                 url:"{{url('/')}}/event/{{$event_id}}/live-tracking/poll",
-                data: {'bib_numbers': showOffKey ? JSON.stringify(showOffKey) : null},
+                data: {'bib_numbers': localStorageArray ? JSON.stringify(localStorageArray) : null},
                 dataType:"json",
                 success:function(ajax_data) {
                     if (firstTime) {
@@ -130,7 +129,7 @@
                     }
                     data = ajax_data;
                     console.log('polling...');
-                    console.log(data);
+                    // console.log(data);
 
                     currentRouteIndex = lastPositionData();
                     if (elevations_global) {
@@ -335,9 +334,7 @@
                             if (key == checkpointData.length -1) {
                                 var checkpoint = String('Finish');
                             } else {
-                                if(key == 0){
-                                    
-                                }else{
+                                if(key != 0){
                                     var checkpoint = String('CP'+checkpointData[key]['checkpoint_no']);
                                 }
                             }

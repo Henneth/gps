@@ -57,14 +57,15 @@ class LiveTracking_Model extends Model
 			WHERE bib_number = :bib_number LIMIT 1",
 			['bib_number'=>$bib_number ]);
 
-			if (!empty($athlete)) {
-				$athlete[0]->colour_code = $color;
-				$start_time = $athlete[0]->start_time;
-				$end_time = $athlete[0]->end_time;
-			} else {
-				$start_time = NULL;
-				$end_time = NULL;
-			}
+		if (!empty($athlete)) {
+			$athlete[0]->colour_code = $color;
+		}
+			// $start_time = $athlete[0]->start_time;
+			// $end_time = $athlete[0]->end_time;
+		// } else {
+			// $start_time = NULL;
+			// $end_time = NULL;
+		// }
 
 		// $distances = DB::connection('gps_live')->select("SELECT * FROM route_distances
 		// 	INNER JOIN route_progress
@@ -89,18 +90,14 @@ class LiveTracking_Model extends Model
 		// 		'event_id' => $event_id,
 		// 		'device_id'=>$deviceID
 		// 		] );
-		$reachedCheckpoint = DB::select("SELECT * FROM gps_live_{$event_id}.reached_checkpoint T1
-			INNER JOIN gps_live_{$event_id}.checkpoint T2
-			ON T1.checkpoint_id = T2.checkpoint_id
-			WHERE T1.bib_number = :bib_number ORDER BY datetime ASC",
+		$reachedCheckpoint = DB::select("SELECT * FROM gps_live_{$event_id}.reached_checkpoint
+			WHERE bib_number = :bib_number ORDER BY datetime ASC",
 			['bib_number'=>$bib_number]);
-
 
 		$finished_at = DB::select("SELECT datetime AS reached_at FROM gps_live_{$event_id}.reached_checkpoint
 			WHERE bib_number = :bib_number
-			AND checkpoint_id = (SELECT max(checkpoint_id) AS max_checkpoint_id FROM gps_live_{$event_id}.checkpoint) LIMIT 1", [
-				"bib_number"=>$bib_number,
-			]);
+			AND checkpoint_id = (SELECT max(checkpoint_id) AS max_checkpoint_id FROM gps_live_{$event_id}.checkpoint) LIMIT 1",
+			["bib_number"=>$bib_number]);
 		$finished_at = !empty($finished_at) ? $finished_at[0]->reached_at : null;
 
 		// $data = DB::select("SELECT * FROM gps_live_{$event_id}.valid_data
@@ -120,26 +117,18 @@ class LiveTracking_Model extends Model
 		// 		"finished_at2"=>$finished_at,
 		// 		"finished_at3"=>$finished_at
 		// 	]);
-
 		$data = DB::select("SELECT * FROM gps_live_{$event_id}.valid_data
 			WHERE bib_number = :bib_number
-			AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))
-			AND (:end_time IS NULL OR (:end_time1 IS NOT NULL AND datetime <= :end_time2))
+			-- AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))
+			-- AND (:end_time IS NULL OR (:end_time1 IS NOT NULL AND datetime <= :end_time2))
 			AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
 			ORDER BY datetime DESC", [
 				"bib_number"=>$bib_number,
-				"start_time"=>$start_time,
-				"end_time"=>$end_time,
-				"start_time1"=>$start_time,
-				"end_time1"=>$end_time,
-				"start_time2"=>$start_time,
-				"end_time2"=>$end_time,
 				"finished_at1"=>$finished_at,
 				"finished_at2"=>$finished_at,
 				"finished_at3"=>$finished_at
 			]);
 		// echo '<pre>'.print_r($data, 1).'</pre>';
-
 
 		// $data = DB::connection('gps_live')->select("SELECT gps_data.datetime, unix_timestamp(datetime) AS timestamp, gps_data.id, gps_data.latitude_final, gps_data.longitude_final FROM gps_data
 		// 	INNER JOIN device_mapping
@@ -170,7 +159,7 @@ class LiveTracking_Model extends Model
 		$array['reachedCheckpoint'] = $reachedCheckpoint;
 		return $array;
 	}
-
+}
 
 // ---------------------------------
 	// get data from route_distances & route_progress table, get the largest route_index
@@ -242,4 +231,3 @@ class LiveTracking_Model extends Model
 	// 		]);
 	// 	return $data;
 	// }
-}

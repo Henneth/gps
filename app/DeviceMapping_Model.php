@@ -34,12 +34,12 @@ class DeviceMapping_Model extends Model
 		}
 
 		if ($live) {
-			$profile = DB::select("SELECT * FROM gps_live_{$event_id}.participants WHERE 1=1 ".$checkIsPublic.$checkIsVisible);
+			$profile = DB::select("SELECT * FROM gps_live_{$event_id}.participants WHERE 1=1 ".$checkIsPublic.$checkIsVisible."ORDER BY IF(bib_number RLIKE '^[a-z]', 2, 1), ABS(bib_number)");
 			// echo '<pre>'.print_r($profile, 1).'</pre>';
 
 		} else {
 			$profile = DB::select("SELECT * FROM archive_participants
-				WHERE event_id = :event_id ".$checkIsPublic.$checkIsVisible, [
+				WHERE event_id = :event_id ".$checkIsPublic.$checkIsVisible."ORDER BY IF(bib_number RLIKE '^[a-z]', 2, 1), ABS(bib_number)", [
 					"event_id"=>$event_id
 				]);
 			// echo '<pre>'.print_r($profile, 1).'</pre>';

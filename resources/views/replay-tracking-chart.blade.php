@@ -9,37 +9,36 @@
 @endsection
 
 @section('main-content')
-<div class="loading" id="loading" style="display: none;">
-    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-</div>
-<div>
-    <div class="nav-tabs-custom">
-        @include('replay-tracking-tabbar')
-        <div class="tab-content">
-            <div class="flex-container form-group replay-controls-wrapper">
-                <button type="button" class="replay-controls play btn btn-primary">Play</button>
-                <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
-                <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
-                <div class="slider-wrapper">
-                    <div>
-                        <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
-                    </div>
-                    <div style="block">
-                        <span>{{$event->datetime_from}}</span>
-                        <span style="float:right;">{{$event->datetime_to}}</span>
+    <div class="loading" id="loading" style="display: none;">
+        <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+    </div>
+    <div>
+        <div class="nav-tabs-custom">
+            @include('replay-tracking-tabbar')
+            <div class="tab-content">
+                <div class="flex-container form-group replay-controls-wrapper">
+                    <button type="button" class="replay-controls play btn btn-primary">Play</button>
+                    <button type="button" class="replay-controls pause btn btn-default" disabled>Pause</button>
+                    <button type="button" class="replay-controls stop btn btn-default" disabled>Stop</button>
+                    <div class="slider-wrapper">
+                        <div>
+                            <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
+                        </div>
+                        <div style="block">
+                            <span>{{$event->datetime_from}}</span>
+                            <span style="float:right;">{{$event->datetime_to}}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            @if($event->event_type =='fixed route')
-                <div  class="elevation-section tab-pane <?php if (isset($_GET['tab'])) {echo ($_GET['tab'] == 1 ? 'active' : '');} else{} ?>" >
-                    <div id="elevationChart" style="width:100%; height:100%;"></div>
-                </div>
-            @endif
+                @if($event->event_type =='fixed route')
+                    <div class="elevation-section tab-pane active">
+                        <div id="elevationChart" style="width:100%; height:100%;"></div>
+                    </div>
+                @endif
 
+            </div>
         </div>
     </div>
-
-</div>
 @endsection
 
 @section('js')
@@ -66,9 +65,12 @@
         var distance = 0;
         var elevations_global;
         var currentRouteIndex;
-        var showOffKey; // store "ON" bib_number, data retrive from localStorage
+        var checkpointData;
+        var localStorageArray; // store "ON" bib_number, data retrive from localStorage
         var data;
         var route;
+
+        checkpointData = {!! $checkpoint !!};
 
         function initial() {
 
@@ -76,21 +78,22 @@
                 route = {!!$route!!};
             @endif
 
-            // check bib_number in localStorage, "ON" data will be save in localStorage
+            // check bib_number in localStorage, "ON" data will be saved in localStorage
             var temp = localStorage.getItem("visibility{{$event_id}}");
             var array = jQuery.parseJSON( temp );
-            showOffKey = array;
-            // console.log(showOffKey);
+            localStorageArray = array;
+            // console.log(localStorageArray);
 
             $('#loading').show();
             $.ajax({
                 type:'get',
                 url:'{{url("/")}}/event/{{$event_id}}/replay-tracking/poll',
-                data: {'bib_numbers': showOffKey ? JSON.stringify(showOffKey) : null},
+                data: {'bib_numbers': localStorageArray ? JSON.stringify(localStorageArray) : null},
                 dataType: "json",
                 success:function(ajax_data) {
                     $('#loading').fadeOut('slow',function(){$(this).remove();});
                     data = ajax_data;
+                    console.log('polling...');
 
                     currentRouteIndex = lastPositionData();
                     drawChart(currentRouteIndex);
@@ -254,8 +257,7 @@
 
                 for (var j in currentRouteIndex) {
                     if(currentRouteIndex[j]['distance']) {
-                        var athleteDist = currentRouteIndex[j]['distance']['currentRouteIndex'];
-
+                        var athleteDist = currentRouteIndex[j]['distance']['distance_from_start'];
                         var athleteBibNumber = currentRouteIndex[j]['athlete']['bib_number'];
                         var athleteFirstName = currentRouteIndex[j]['athlete']['first_name'];
                         var athleteLastName = currentRouteIndex[j]['athlete']['last_name'];
@@ -281,12 +283,18 @@
                 }
                 // strDist = strDist.slice(0, -1);
                 checkpoint = null;
-                for (var key in route) {
-                    if (dist <= route[key]['distance'] && route[key]['distance'] < nextDist){
+                for (var key in checkpointData) {
+                    if (dist <= checkpointData[key]['distance_from_start'] && checkpointData[key]['distance_from_start'] < nextDist){
                         if (route[key]['checkpoint_name']) {
-                            var checkpoint = String(route[key]['checkpoint_name']);
+                            var checkpoint = String(checkpointData[key]['checkpoint_name']);
                         }else {
-                            var checkpoint = String('CP'+route[key]['checkpoint']);
+                            if (key == checkpointData.length -1) {
+                                var checkpoint = String('Finish');
+                            } else {
+                                if(key != 0){
+                                    var checkpoint = String('CP'+checkpointData[key]['checkpoint_no']);
+                                }
+                            }
                         }
                         break;
                     }
@@ -325,7 +333,7 @@
             for (var bib_number in data) {
                 var routeIndexByBibNum = data[bib_number]['distances'];
                 for (var j = 0; j < routeIndexByBibNum.length; j++) {
-                    getTimeByBibNum = routeIndexByBibNum[j]['reached_at'];
+                    getTimeByBibNum = routeIndexByBibNum[j]['datetime'];
                     getTimeByBibNum = new Date(getTimeByBibNum).getTime() / 1000;
                     if (datetime >= getTimeByBibNum){
                         athleteArray[bib_number] = {

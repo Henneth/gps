@@ -22,12 +22,12 @@
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
-                            <th style="line-height: 32px;">Bib Number</th>
+                            <th style="line-height: 32px;">Race No.</th>
                             <th style="line-height: 32px;">First Name</th>
                             <th style="line-height: 32px;">Last Name</th>
                             <th style="line-height: 32px;">Chinese Name</th>
                             <th style="line-height: 32px;">Country Code</th>
-                            <th style="line-height: 32px;">Visibility (Max:20)&nbsp;&nbsp;<button id='resetLocalstorage' type="button" class="btn btn-default" style="padding: 1px 7px;">Reset</button></th>
+                            <th style="line-height: 32px;">Visibility (Max:20)&nbsp;&nbsp;<button id='reset-participants-selection' type="button" class="btn btn-default" style="padding: 1px 7px;">Reset</button></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,7 +89,6 @@
             border-right: solid 4px transparent;
         }
 
-
         .chart-info-window {
             padding: 16px;
             width: 160px;
@@ -124,6 +123,7 @@
         $(document).ready(function() {
             $('#profile-table').DataTable({
                 'columnDefs': [
+                    { 'type': natural, 'targets': 0 },
                     { 'orderable': false, 'targets': 1 },
                     { 'orderable': false, 'targets': 2 },
                     { 'orderable': false, 'targets': 3 },
@@ -131,7 +131,7 @@
                     { 'orderable': false, 'targets': 5 }
                 ]
             });
-        } );
+        });
 
         // Loacl Storage checks browser support
         if (typeof(Storage) !== "undefined") {
@@ -187,12 +187,11 @@
             localStorage.setItem("visibility{{$event_id}}", json);
         });
 
-        // empty localStorage and redirect to map tab
-        $('#resetLocalstorage').click(function(){
+        // empty localStorage and reload
+        $('#reset-participants-selection').click(function(){
             localStorage.removeItem("visibility{{$event_id}}");
             location.reload();
         });
-
     </script>
 
 @endsection

@@ -85,7 +85,6 @@ class LiveTrackingController extends Controller {
     //     return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime, 'getFinishedAthletes'=>$getFinishedAthletes, 'tail'=>$tail, 'event_type'=>$event_type));
     // }
 
-
     public function index($event_id) {
 
         // run calculation.php
@@ -108,16 +107,18 @@ class LiveTrackingController extends Controller {
             } else{
                 $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
             }
+
             return view('live-tracking-athletes')->with(array('profile' => $profile, 'event_id' => $event_id, 'event'=>$event));
         }
 
         if (!empty($_GET['tab']) && $_GET['tab'] == 1) {
             return view('live-tracking-chart')->with(array('event_id' => $event_id, 'event'=>$event, 'route' => $route, 'checkpoint'=>$checkpoint));
         }
+
         else {
             return view('live-tracking-map')->with(array('event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'checkpoint'=>$checkpoint));
         }
-
+    }
 
 // -----------------------------------------
 
@@ -145,13 +146,13 @@ class LiveTrackingController extends Controller {
 
 
         // return view('live-tracking')->with(array('data'=>$jsonData, 'event'=>$event, 'event_id'=>$event_id, 'route' => $route, 'profile'=> $profile, 'jsonProfile'=>$jsonProfile, 'currentRouteIndex'=>$currentRouteIndex, 'checkpointData'=>$checkpointData, 'checkpointDistances'=>$checkpointDistances, 'minTime'=>$getMinTime, 'getFinishedAthletes'=>$getFinishedAthletes, 'tail'=>$tail, 'event_type'=>$event_type));
-    }
 
     // automatically update data from server
     public function poll($event_id) {
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
-        $colorArray = ["00FF00","0000FF","FF0000","FFFF00","00FFFF","FF00FF","00FF80","8000FF","FF8000","80FF00","0080FF","FF0080","80FF80","8080FF","FF8080","FFFF80","80FFFF","FF80FF","80FFBF","BF80FF","FFBF80","BFFF80","80BFFF","FF80BF"];
+        // $colorArray = ["00FF00","0000FF","FF0000","FFFF00","00FFFF","FF00FF","00FF80","8000FF","FF8000","80FF00","0080FF","FF0080","80FF80","8080FF","FF8080","FFFF80","80FFFF","FF80FF","80FFBF","BF80FF","FFBF80","BFFF80","80BFFF","FF80BF"];
+        $colorArray = ["00FF00","0000FF","FF0000","FFFF00","00FFFF","FF00FF","00FF80","8000FF","FF8000","80FF00","0080FF","FF0080","009900","000099","990000","999900","009999","990099","00994D","4D0099","994D00","4D9900","004D99","99004D"];
 
         // if not empty localstorage
         if ( !empty($_GET['bib_numbers']) ){
@@ -181,10 +182,11 @@ class LiveTrackingController extends Controller {
                 $count++;
             }
         }
+        // echo '<pre>'.print_r($data, 1).'</pre>';
 
         return response()->json($data);
     }
-
+}
 
     // // automatically update data from server
     // public function poll($event_id) {
@@ -246,13 +248,10 @@ class LiveTrackingController extends Controller {
     // }
 
     // group data
-    private function group_by($array, $key) {
-        $return = array();
-        foreach($array as $val) {
-            $return[$val->$key][] = $val;
-        }
-        return $return;
-    }
-
-
-}
+    // private function group_by($array, $key) {
+    //     $return = array();
+    //     foreach($array as $val) {
+    //         $return[$val->$key][] = $val;
+    //     }
+    //     return $return;
+    // }

@@ -32,12 +32,11 @@
                             <thead>
                                 <tr>
                                     <th scope="col"></th>
+                                    <th scope="col">Race No.</th>
                                     <th scope="col">Name</th>
-                                    <th scope="col">Bib Number</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr id='participants'></tr>
+                            <tbody id="participants">
                             </tbody>
                         </table>
                     </div>
@@ -113,7 +112,7 @@
         var checkpoint;
         var markerList = []; //array to store marker
         var firstLoad = true;
-        var showOffKey; // store "ON" bib_number, data retrive from localStorage
+        var localStorageArray; // store "ON" bib_number, data retrive from localStorage
         var tailArray = [];
         var data;
         var eventType;
@@ -135,7 +134,7 @@
 
         function initMap() {
 
-            @if ($checkpoint)
+            @if ($route)
 
                 // Function to add a marker to the map.
                 function addMarker(map, content) {
@@ -148,89 +147,76 @@
                         flat: true,
                         position: new google.maps.LatLng(parseFloat(content['data'][0]['latitude']), parseFloat(content['data'][0]['longitude'])),
                         content: borderStyle + '<div><div class="id' + content['athlete']['bib_number'] + ' label_content" style="background-color: #' + content['athlete']['colour_code'] + '">' + content['athlete']['bib_number']
-                        + '</div></div>'
+                        + '</div></div>',
+                        data: content
                     });
 
                     google.maps.event.addListener(marker, 'click', (function (marker) {
             			return function () {
-                            var html = '<div>Bib Number: <b>' + content['athlete']['bib_number'] + '</b></div>';
-                            if( content['athlete']['first_name'] ){ html += '<div>First Name: <b>' + content['athlete']['first_name'] + '</b></div>'; }
-                            if( content['athlete']['last_name'] ){ html += '<div>Last Name: <b>' + content['athlete']['last_name'] + '</b></div>'; }
-                            if( content['athlete']['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + content['athlete']['zh_full_name'] + '</b></div>'; }
-                            if( content['athlete']['country'] ){ html += '<div>Country: <b>' + content['athlete']['country'] + '</b></div>'; }
-                            // html += '<div>Device ID: <b>' + content['athlete']['device_id'] + '</b></div>';
+                            var html = '<div>Bib Number: <b>' + marker.data['athlete']['bib_number'] + '</b></div>';
+                            if( marker.data['athlete']['first_name'] ){ html += '<div>First Name: <b>' + marker.data['athlete']['first_name'] + '</b></div>'; }
+                            if( marker.data['athlete']['last_name'] ){ html += '<div>Last Name: <b>' + marker.data['athlete']['last_name'] + '</b></div>'; }
+                            if( marker.data['athlete']['zh_full_name'] ){ html += '<div>Chinese Name: <b>' + marker.data['athlete']['zh_full_name'] + '</b></div>'; }
+                            if( marker.data['athlete']['country'] ){ html += '<div>Country: <b>' + marker.data['athlete']['country'] + '</b></div>'; }
+                            // html += '<div>Device ID: <b>' + marker.data['athlete']['device_id'] + '</b></div>';
+                            html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
 
                             if (eventType == "fixed route"){
-                                if ( marker ) { // update
-                                    html += '<div>Location: <b>' + parseFloat(marker.position.lat()).toFixed(6) + ', ' + parseFloat(marker.position.lng()).toFixed(6) + '</b></div>';
-                                    if( content['distances']){
-                                        var currentRouteIndex = content['distances'].length - 1;
-                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance_from_start'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
-                                    }
-                                } else{ // initialize
-                                    html += '<div>Location: <b>' + parseFloat(content['data'][0]['latitude']).toFixed(6) + ', ' + parseFloat(content['data'][0]['longitude']).toFixed(6) + '</b></div>';
-                                    if( content['distances']){
-                                        var currentRouteIndex = content['distances'].length - 1;
-
-                                        html += '<div>Distance: <b>' + content['distances'][currentRouteIndex]['distance'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
-                                    }
+                                if (marker.data['distances'] && marker.data['distances'].length > 0) {
+                                    var currentRouteIndex = marker.data['distances'].length - 1;
+                                    html += '<div>Distance: <b>' + marker.data['distances'][currentRouteIndex]['distance_from_start'].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' m' + '</b></div>';
                                 }
+
                                 // if there is checkpoint time
-                                if ( content['reachedCheckpoint'] ){
+                                if ( marker.data['reachedCheckpoint'] && marker.data['reachedCheckpoint'].length > 0){
 
                                     html += '<hr style="margin-top: 8px; margin-bottom: 8px;">';
+                                    var checkpointTimes = marker.data['reachedCheckpoint'];
 
-                                    var checkpointTimes = content['reachedCheckpoint'];
+                                    // get the last reached checkpoint number
+                                    var currentCheckpointNo = checkpointTimes[checkpointTimes.length-1]['checkpoint_id'] - 1;
+                                    // get last checkpoint number
+                                    var lastCheckpointNo = checkpoint[checkpoint.length-1]['checkpoint_no'];
 
-
-                                    // get the latest checkpoint index, is a number
-                                    var currentCheckpoint = checkpointTimes[checkpointTimes.length-1]['checkpoint_no'];
-                                    // get last checkpoint index from checkpoints' list, is a number
-                                    var lastCheckpoint = checkpoint[checkpoint.length-1]['checkpoint_no'];
-                                    console.log(lastCheckpoint);
-                                    console.log(checkpoint);
                                     for (var i = 0; i < checkpointTimes.length; i++) {
-                                        if (lastCheckpoint == checkpointTimes[i]['checkpoint_no']) {
+                                        var checkpoint_no = checkpointTimes[i]['checkpoint_id'] - 1;
+                                        if (lastCheckpointNo == checkpoint_no) {
                                             html += '<div>Finish: <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
                                         } else {
-                                            if (checkpointTimes[i]['checkpoint_name']) {
-                                                html += '<div>' + checkpointTimes[i]['checkpoint_name'] + ' (CP' + checkpointTimes[i]['checkpoint_no'] + '): <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
+                                            if ( checkpoint[checkpoint_no]['checkpoint_name'] ) {
+                                                html += '<div>' + checkpoint[checkpoint_no]['checkpoint_name'] + ' (CP' + checkpoint_no + '): <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
                                             } else {
-                                                html += '<div>CP' + checkpointTimes[i]['checkpoint_no'] + ': <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
+                                                html += '<div>CP' + checkpoint_no + ': <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
                                             }
                                         }
                                         // console.log(marker.reachedCheckpoint[i]);
                                     }
 
-                                    if (currentCheckpoint < lastCheckpoint) {
+                                    if (currentCheckpointNo < lastCheckpointNo) {
                                         // get the latest checkpoint datetime
                                         var currentCheckpointTime = new Date(checkpointTimes[checkpointTimes.length-1]['datetime']).getTime();
-                                        // match then get min time of checkpoints
-                                        var nextCheckpointMinTime = new Date('1970-01-01T' + findObjectByKey(checkpoint, 'checkpoint_no', currentCheckpoint+1)['min_time'] + 'Z').getTime();
+                                        // match then get min time of checkpoint
+                                        var nextCheckpointMinTime = new Date('1970-01-01T' + checkpoint[currentCheckpointNo + 1]['min_time'] + 'Z').getTime();
 
                                         // checkpoint: number of checkpoints
                                         // checkpoint number greater than 2 can do time prediction of next checkpooint
                                         if ( checkpointTimes.length >= 2 ) {
 
-                                            var fCheckpoint; // new formerCheckpoint
-                                            var nCheckpoint; // new next checkpoint
-                                            var cCheckpoint; // new current checkpoint
-                                            var fCheckpointMintime, nCheckpointMintime, cCheckpointMintime;
-                                            var fCheckpointTime, nCheckpointTime, cCheckpointTime;
+                                            var fCheckpoint; // former Checkpoint
+                                            var lCheckpoint; // later Checkpoint
+                                            var lCheckpointMinTime, fCheckpointTime, lCheckpointTime;
                                             // console.log(checkpointTimes);
                                             var SumOfSpeedRatios = 0;
                                             var SpeedRatioCount = 0;
                                             for (var i = 1; i < checkpointTimes.length; i++) {
-                                                if (findObjectByKey(checkpoint, 'checkpoint_no', i) && findObjectByKey(checkpointTimes, 'checkpoint_no', i+1) && findObjectByKey(checkpoint, 'checkpoint_no', i+1)['min_time']) {
-                                                    fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint_no', i)['datetime']).getTime(); // get datetime
-                                                    nCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint_no', i+1)['datetime']).getTime(); // get datetime
-
-                                                    nCheckpointMintime = new Date('1970-01-01T' +  findObjectByKey(checkpoint, 'checkpoint_no', i+1)['min_time'] + 'Z').getTime();
-                                                    SumOfSpeedRatios += (nCheckpointTime-fCheckpointTime) / nCheckpointMintime;
+                                                var former_checkpoint_id = i + 1;
+                                                var former_checkpoint_no = i;
+                                                if (findObjectByKey(checkpointTimes, 'checkpoint_id', former_checkpoint_id) && findObjectByKey(checkpointTimes, 'checkpoint_id', former_checkpoint_id + 1) && checkpoint[former_checkpoint_no + 1]['min_time'] != null) {
+                                                    fCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint_id', former_checkpoint_id)['datetime']).getTime();
+                                                    lCheckpointTime = new Date(findObjectByKey(checkpointTimes, 'checkpoint_id', former_checkpoint_id + 1)['datetime']).getTime();
+                                                    lCheckpointMinTime = new Date('1970-01-01T' + checkpoint[former_checkpoint_no + 1]['min_time'] + 'Z').getTime();
+                                                    SumOfSpeedRatios += (nCheckpointTime-lCheckpointTime) / lCheckpointMinTime;
                                                     SpeedRatioCount++;
-                                                    // console.log(nCheckpointTime);
-                                                    // console.log(fCheckpointTime);
-                                                    // console.log(nCheckpointMintime);
                                                 }
 
                                             }
@@ -239,7 +225,6 @@
                                                 var tempPredictTime = SumOfSpeedRatios / SpeedRatioCount * nextCheckpointMinTime + currentCheckpointTime;
 
                                                 var predictTime= new Date(tempPredictTime).toLocaleTimeString();
-                                                // console.log(predictTime);
 
                                                 var predictDate = new Date(tempPredictTime).toISOString().split('T')[0];
 
@@ -298,8 +283,9 @@
                         strokeWeight: 3,
                         map: map
                     });
+
                     var route = {!!$route!!};
-                    // console.log(route);
+
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["latitude"]);
                         gpxLng = parseFloat(route[key]["longitude"]);
@@ -315,7 +301,6 @@
                             var marker = markerList[i];
 
                             cpName = checkpoint[CPIndex]['checkpoint_name'];
-
                             marker.checkpointName = cpName;
                             marker.checkpointIndex = CPIndex;
                             marker.setLabel({text: ""+CPIndex, color: "white"});
@@ -328,8 +313,6 @@
                                 infowindow2.setContent(html);
                                 infowindow2.open(map, this);
                             });
-
-                            markerList[i].setLabel({text: ""+CPIndex, color: "white"});
                             CPIndex++;
                         }
                     }
@@ -401,13 +384,15 @@
             // check bib_number in localStorage
             var temp = localStorage.getItem("visibility{{$event_id}}");
             var array = jQuery.parseJSON( temp );
-            showOffKey = array;
-            console.log(showOffKey);
+            localStorageArray = array;
+            console.log(localStorageArray);
+
+            // poll data
             function pollData(firstTime = false) {
                 $.ajax({
                     type:"get",
                     url:"{{url('/')}}/event/{{$event_id}}/live-tracking/poll",
-                    data: {'bib_numbers': showOffKey ? JSON.stringify(showOffKey) : null},
+                    data: {'bib_numbers': localStorageArray ? JSON.stringify(localStorageArray) : null},
                     dataType:"json",
                     success:function(ajax_data) {
                         if (firstTime) {
@@ -415,41 +400,35 @@
                         }
                         data = ajax_data;
                         console.log('polling...');
-                        console.log(data);
 
-
-                        var reachedCheckpoint = ajax_data['reachedCheckpoint'];
-                        // console.log(data);
-
-                        // check bib_number in localStorage
+                        {{--// check bib_number in localStorage
                         var temp = localStorage.getItem("visibility{{$event_id}}");
-                        var localStorageArray = jQuery.parseJSON( temp );
-                        // console.log("localStorageArray"+localStorageArray);
+                        var localStorageArray = jQuery.parseJSON( temp );--}}
 
-                        // console.log(array);
+                        // add markers / set positions
                         for (var key in data) {
+
                             // marker exists
                             if (athleteMarkers[key]) {
                                 athleteMarkers[key].setPosition( new google.maps.LatLng(parseFloat(data[key]['data'][0]['latitude']), parseFloat(data[key]['data'][0]['longitude'])) );
-                                // athleteMarkers[bib_number].profile = data[bib_number];
-                                // athleteMarkers[bib_number].reachedCheckpoint = reachedCheckpoint[bib_number];
-                                // console.log(athleteMarkers[array[key]['bib_number']]);
+                                athleteMarkers[key].data = data[key];
 
                             // marker does not exist
                             } else {
                                 if (data[key]['data'] && data[key]['data'].length != 0) {
-                                    // localStorage is not empty
-                                    if (temp !== null) {
-                                        if (jQuery.inArray(key, localStorageArray) !== -1) {
-                                            athleteMarkers[key] = (addMarker(map, data[key]));
-                                        }
-                                    // localStorage empty
-                                    } else {
-                                        // check database visible setting
-                                        if (data[key]['athlete']['status'] == "visible"){
-                                            athleteMarkers[key] = (addMarker(map, data[key]));
-                                        }
-                                    }
+                                    athleteMarkers[key] = addMarker(map, data[key]);
+                                    // // localStorage is not empty
+                                    // if (temp !== null) {
+                                    //     if (jQuery.inArray(key, localStorageArray) !== -1) {
+                                    //         athleteMarkers[key] = addMarker(map, data[key]);
+                                    //     }
+                                    // // localStorage empty
+                                    // } else {
+                                    //     // check database visible setting
+                                    //     if (data[key]['athlete']['status'] == "visible"){
+                                    //         athleteMarkers[key] = addMarker(map, data[key]);
+                                    //     }
+                                    // }
                                 }
                             }
 
@@ -460,49 +439,50 @@
                             // participants
                             if (firstTime) {
                                 if(data[key]["athlete"]){
-                                    var d1 = document.getElementById('participants');
-                                    d1.insertAdjacentHTML('afterend', '<td><span class="symbolStyle" style="color: '+'#'+colourCode +';">&#9632;</span></td><td>'+data[key]["athlete"]["first_name"]+' ' +data[key]["athlete"]["last_name"]+'</td><td>'+data[key]["athlete"]["bib_number"]+'</td>');
+                                    $("#participants").append('<tr><td><span class="symbolStyle" style="color: '+'#'+colourCode +';">&#9632;</span></td><td>'+data[key]["athlete"]["bib_number"]+'</td><td>'+data[key]["athlete"]["first_name"]+' ' +data[key]["athlete"]["last_name"]+'</td></tr>');
                                 }
                             }
 
-                            // get tail data
-                            var tail = data[key]['data'];
+                            // tail
+                            if (eventType != "fixed route") {
+                                // get tail data
+                                var tail = data[key]['data'];
 
-                            var tailCoordinates = []; // array to store all Lat & Lng of that athlete
+                                var tailCoordinates = []; // array to store all Lat & Lng of that athlete
 
-                            // update tails
-                            if (typeof(tail) !== "undefined" && tail){
+                                // update tails
+                                if (typeof(tail) !== "undefined" && tail){
 
-                                var lineSymbol = {
-                                    path: 'M 0,-1 0,1',
-                                    strokeOpacity: 1,
-                                    scale: 2
-                                };
-                                for (var i in tail) {
+                                    var lineSymbol = {
+                                        path: 'M 0,-1 0,1',
+                                        strokeOpacity: 1,
+                                        scale: 2
+                                    };
+                                    for (var i in tail) {
+                                        var gpxLat2 = parseFloat(tail[i]['latitude']);
+                                        var gpxLng2 = parseFloat(tail[i]['longitude']);
+                                        tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2});
+                                    }
 
-                                    var gpxLat2 = parseFloat(tail[i]['latitude']);
-                                    var gpxLng2 = parseFloat(tail[i]['longitude']);
-                                    tailCoordinates.push({lat:gpxLat2 , lng:gpxLng2});
+                                    if (typeof(tailArray[key]) !== "undefined" && tailArray[key]){
+                                        tailArray[key].setMap(null);
+                                    }
+
+                                    tailArray[key] = new google.maps.Polyline({
+                                        path: tailCoordinates,
+                                        geodesic: true,
+                                        strokeColor: '#'+colourCode,
+                                        strokeOpacity: 0,
+                                        strokeWeight: 2,
+                                        icons: [{
+                                            icon: lineSymbol,
+                                            offset: '0',
+                                            repeat: '10px'
+                                        }],
+                                    });
+
+                                    tailArray[key].setMap(map);
                                 }
-
-                                if (typeof(tailArray[key]) !== "undefined" && tailArray[key]){
-                                    tailArray[key].setMap(null);
-                                }
-
-                                tailArray[key] = new google.maps.Polyline({
-                                    path: tailCoordinates,
-                                    geodesic: true,
-                                    strokeColor: '#'+colourCode,
-                                    strokeOpacity: 0,
-                                    strokeWeight: 2,
-                                    icons: [{
-                                        icon: lineSymbol,
-                                        offset: '0',
-                                        repeat: '10px'
-                                    }],
-                                });
-
-                                tailArray[key].setMap(map);
                             }
                         }
                     },
@@ -514,7 +494,7 @@
             // Execute the setInterval function without delay the first time
             $('#loading').show();
             pollData(true);
-            setInterval(pollData, 30000);//time in milliseconds
+            setInterval(pollData, 3000);//time in milliseconds
 
         }
 
@@ -527,6 +507,7 @@
             // Because path is an MVCArray, we can simply append a new coordinate
             // and it will automatically appear.
             path.push(position);
+            
             if (IsCP) {
                 // Add a new marker at the new plotted point on the polyline.
                 var marker = new google.maps.Marker({

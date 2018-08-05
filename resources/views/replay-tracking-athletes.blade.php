@@ -25,12 +25,12 @@
                 <table id="profile-table" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
-                            <th>Bib Number</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Chinese Name</th>
-                            <th>Country Code</th>
-                            <th>Visibility (Max:20)</th>
+                            <th style="line-height: 32px;">Race No.</th>
+                            <th style="line-height: 32px;">First Name</th>
+                            <th style="line-height: 32px;">Last Name</th>
+                            <th style="line-height: 32px;">Chinese Name</th>
+                            <th style="line-height: 32px;">Country Code</th>
+                            <th style="line-height: 32px;">Visibility (Max:20)&nbsp;&nbsp;<button id='reset-participants-selection' type="button" class="btn btn-default" style="padding: 1px 7px;">Reset</button></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,10 +80,10 @@
                 window.location.assign(url.origin+url.pathname+'?tab=0');
             })
 
-
             $(document).ready(function() {
                 $('#profile-table').DataTable({
                     'columnDefs': [
+                        { 'type': natural, 'targets': 0 },
                         { 'orderable': false, 'targets': 1 },
                         { 'orderable': false, 'targets': 2 },
                         { 'orderable': false, 'targets': 3 },
@@ -91,8 +91,7 @@
                         { 'orderable': false, 'targets': 5 }
                     ]
                 });
-            } );
-
+            });
 
             // Loacl Storage checks browser support
             if (typeof(Storage) !== "undefined") {
@@ -135,39 +134,25 @@
                     if (index < 0) {
                         array.push(bib_number);
                     }
-                    // console.log(array);
                 } else {
                     var bib_number = this.getAttribute("data-id");
                     var index = array.indexOf(bib_number);
                     if (index >= 0) {
                         array.splice(index, 1);
                     }
-                    // console.log(array);
                 }
-                    // console.log(array);
-                // var array = jQuery.parseJSON( temp );
-
-
-                // create array
-                // // max 10
-                // if($('.tgl:checked').size()>20){
-                //     $(this).prop('checked', false);
-                //     return;
-                // }
-                //
-                // $('.tgl').each(function() {
-                //     if ($(this).is(":checked")) {
-                //         array.push($(this).attr("data-id"));
-                //     }
-                // })
-
                 // json encode
                 var json = JSON.stringify(array);
                 console.log(json);
                 // store in localStorage
                 localStorage.setItem("visibility{{$event_id}}", json);
+            });
 
-            })
+            // empty localStorage and reload
+            $('#reset-participants-selection').click(function(){
+                localStorage.removeItem("visibility{{$event_id}}");
+                location.reload();
+            });
         })
     </script>
 @endsection
@@ -178,7 +163,6 @@
             height:80vh;
             width: 100%;
         }
-
         .label_content{
             position:relative;
             border-radius: 4px;
@@ -204,62 +188,9 @@
             border-right: solid 4px transparent;
         }
 
-        .flex-container {
+        /* .flex-container {
             display: flex;
-        }
-        .replay-controls {
-            margin-right: 4px;
-        }
-        .slider-wrapper {
-            padding: 4px 20px;
-            flex-grow: 100;
-        }
-        .slider.slider-horizontal {
-            width: 100%;
-        }
-        .slider-handle {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: #444;
-            -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
-            -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
-            opacity: 1;
-            border: 0px solid transparent;
-        }
-        .slider-handle.round {
-            -webkit-border-radius: 20px;
-            -moz-border-radius: 20px;
-            border-radius: 20px;
-        }
-        .slider-disabled .slider-selection {
-            opacity: 0.5;
-        }
-
-        #red .slider-selection {
-            background: #f56954;
-        }
-
-        #blue .slider-selection {
-            background: #3c8dbc;
-        }
-
-        #green .slider-selection {
-            background: #00a65a;
-        }
-
-        #yellow .slider-selection {
-            background: #f39c12;
-        }
-
-        #aqua .slider-selection {
-            background: #00c0ef;
-        }
-
-        #purple .slider-selection {
-            background: #932ab6;
-        }
+        } */
         .chart-info-window {
             padding: 16px;
             width: 160px;

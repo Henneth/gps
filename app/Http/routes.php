@@ -11,6 +11,9 @@
 |
 */
 
+// Pattern
+Route::pattern('event_id', '[0-9]+');
+
 // Public
 Route::get('/', function () {
     return redirect('view-all-events');

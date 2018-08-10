@@ -107,6 +107,7 @@
 
     <script>
         var IsCP;
+        var display;
         var map;
         var infowindow, infowindow2;
         var checkpoint;
@@ -120,7 +121,6 @@
 
         eventType = '{{$event->event_type}}';
         checkpoint = {!! $checkpoint !!};
-        console.log(checkpoint);
 
         function findObjectByKey(array, key, value) {
             for (var i = 0; i < array.length; i++) {
@@ -177,17 +177,21 @@
                                     var currentCheckpointNo = checkpointTimes[checkpointTimes.length-1]['checkpoint_id'] - 1;
                                     // get last checkpoint number
                                     var lastCheckpointNo = checkpoint[checkpoint.length-1]['checkpoint_no'];
-
+                                    var count = 1 ;
                                     for (var i = 0; i < checkpointTimes.length; i++) {
+
                                         var checkpoint_no = checkpointTimes[i]['checkpoint_id'] - 1;
-                                        if (lastCheckpointNo == checkpoint_no) {
-                                            html += '<div>Finish: <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
-                                        } else {
-                                            if ( checkpoint[checkpoint_no]['checkpoint_name'] ) {
-                                                html += '<div>' + checkpoint[checkpoint_no]['checkpoint_name'] + ' (CP' + checkpoint_no + '): <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
+                                        if (checkpoint[checkpoint_no]['display'] == 1) {
+                                            if (lastCheckpointNo == checkpoint_no) {
+                                                html += '<div>Finish: <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
                                             } else {
-                                                html += '<div>CP' + checkpoint_no + ': <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
+                                                if ( checkpoint[checkpoint_no]['checkpoint_name'] ) {
+                                                    html += '<div>' + checkpoint[checkpoint_no]['checkpoint_name'] + ' (CP' + count + '): <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
+                                                } else {
+                                                    html += '<div>CP' + count + ': <b>'+ checkpointTimes[i]['datetime'] + '</b></div>';
+                                                }
                                             }
+                                            count++;
                                         }
                                         // console.log(marker.reachedCheckpoint[i]);
                                     }
@@ -290,29 +294,33 @@
                         gpxLat = parseFloat(route[key]["latitude"]);
                         gpxLng = parseFloat(route[key]["longitude"]);
                         IsCP = route[key]["is_checkpoint"] || key == 0;
-                        addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
+                        display = route[key]["display"] || key == 0;
+                        addLatLngInit(IsCP, display, new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
                     // Add labels/icons to route markers
                     var CPIndex = 1;
-
+                    var DisplayCPIndex = 1;
                     for (var i = 1; i < markerList.length -1; i++) {
                         if (markerList[i].isCheckpoint) {
                             var marker = markerList[i];
-
-                            cpName = checkpoint[CPIndex]['checkpoint_name'];
-                            marker.checkpointName = cpName;
-                            marker.checkpointIndex = CPIndex;
-                            marker.setLabel({text: ""+CPIndex, color: "white"});
-                            marker.addListener('click', function() {
-                                if (this.checkpointName){
-                                    var html = '<div><b>'+ this.checkpointName + ' (CP' + this.checkpointIndex + ')</b>'+ '</div>';
-                                }else {
-                                    var html = '<div><b>'+'CP'+ this.checkpointIndex + '</b></div>';
-                                }
-                                infowindow2.setContent(html);
-                                infowindow2.open(map, this);
-                            });
+                            if (marker.display == 1){
+                                // console.log(pointOrder);
+                                cpName = checkpoint[CPIndex]['checkpoint_name'];
+                                marker.checkpointName = cpName;
+                                // marker.checkpointIndex = CPIndex;
+                                marker.setLabel({text: ""+DisplayCPIndex, color: "white"});
+                                marker.addListener('click', function() {
+                                    if (this.checkpointName){
+                                        var html = '<div><b>'+ this.checkpointName + ' (CP' + DisplayCPIndex + ')</b>'+ '</div>';
+                                    }else {
+                                        var html = '<div><b>'+'CP'+ DisplayCPIndex + '</b></div>';
+                                    }
+                                    infowindow2.setContent(html);
+                                    infowindow2.open(map, this);
+                                });
+                                DisplayCPIndex++;
+                            }
                             CPIndex++;
                         }
                     }
@@ -385,7 +393,7 @@
             var temp = localStorage.getItem("visibility{{$event_id}}");
             var array = jQuery.parseJSON( temp );
             localStorageArray = array;
-            console.log(localStorageArray);
+            // console.log(localStorageArray);
 
             // poll data
             function pollData(firstTime = false) {
@@ -434,7 +442,6 @@
 
                             // get athlete's colour_code
                             var colourCode = data[key]['athlete']['colour_code'];
-                            colourCode = colourCode ? colourCode : '000000';
 
                             // participants
                             if (firstTime) {
@@ -500,31 +507,23 @@
 
         initMap();
 
-        function addLatLngInit(IsCP, position) {
+        function addLatLngInit(IsCP, display, position) {
 
             path = poly.getPath();
 
             // Because path is an MVCArray, we can simply append a new coordinate
             // and it will automatically appear.
             path.push(position);
-            
-            if (IsCP) {
-                // Add a new marker at the new plotted point on the polyline.
-                var marker = new google.maps.Marker({
-                    position: position,
-                    title: '#' + path.getLength(),
-                    map: map,
-                    isCheckpoint: IsCP
-                });
-            } else {
-                // Add a new marker at the new plotted point on the polyline.
-                var marker = new google.maps.Marker({
-                    position: position,
-                    title: '#' + path.getLength(),
-                    map: null,
-                    isCheckpoint: IsCP
-                });
-            }
+
+            // Add a new marker at the new plotted point on the polyline.
+            var marker = new google.maps.Marker({
+                position: position,
+                title: '#' + path.getLength(),
+                map: (IsCP && display == 1) ? map : null,
+                isCheckpoint: IsCP,
+                display: display,
+            });
+
             markerList.push(marker);
         }
 

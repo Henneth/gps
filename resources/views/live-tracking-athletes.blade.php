@@ -123,7 +123,7 @@
         $(document).ready(function() {
             $('#profile-table').DataTable({
                 'columnDefs': [
-                    { 'type': natural, 'targets': 0 },
+                    { 'type': 'num', 'targets': 0 },
                     { 'orderable': false, 'targets': 1 },
                     { 'orderable': false, 'targets': 2 },
                     { 'orderable': false, 'targets': 3 },

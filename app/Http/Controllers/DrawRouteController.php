@@ -18,7 +18,7 @@ class DrawRouteController extends Controller {
         	->first();
 
         $route = DB::table('gps_live_'.$event_id.'.map_point')
-            ->select('latitude', 'longitude', 'is_checkpoint')
+            ->select('latitude', 'longitude', 'is_checkpoint', 'display')
         	->get();
         $data = json_encode($route);
 
@@ -34,6 +34,7 @@ class DrawRouteController extends Controller {
 
 		$route = $_POST['route'];
         $routeDecode = json_decode($route);
+        // echo "<pre>".print_r($checkpoints,1)."</pre>";
 
         $index = 0;
         $totalDistance = 0;
@@ -53,11 +54,13 @@ class DrawRouteController extends Controller {
                 $tempArray['longitude'] = $lon2;
                 $tempArray['distance_from_last_point'] = $currentDistance;
                 $tempArray['distance_from_start'] = $totalDistance;
+                $tempArray['display'] = $routeDecode[$index]->display;
 
                 $tempArray ['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
                 if (property_exists($value, 'is_checkpoint') && $value->is_checkpoint == 1) {
                     $tempArray['checkpoint_no'] = $checkpoint_no;
                     $checkpointRow = $tempArray;
+
                     $checkpointRow['point_order'] = $index + 1;
                     $checkpointArray[] = $checkpointRow;
                     $checkpoint_no++;
@@ -71,6 +74,7 @@ class DrawRouteController extends Controller {
                 $tempArray['longitude'] = $routeDecode[$index]->lon;
                 $tempArray['distance_from_last_point'] = 0;
                 $tempArray['distance_from_start'] = 0;
+                $tempArray['display'] = 1;
                 $tempArray['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
                 $tempArray['checkpoint_no'] = 0;
                 $checkpointArray[] = $tempArray;
@@ -87,15 +91,17 @@ class DrawRouteController extends Controller {
         $ckptRow = [];
         $ckptArray = [];
         foreach ($checkpointArray as $index => $checkpoint) {
+
             // echo sizeof($checkpointArray) - 1;
             if ($index != 0) {
-                if($index == (sizeof($checkpointArray)-1)){
+                if($index == (count($checkpointArray)-1)){
                     $ckptRow['checkpoint_no'] = $checkpoint['checkpoint_no'];
                     $ckptRow['latitude'] = $checkpoint['latitude'];
                     $ckptRow['longitude'] = $checkpoint['longitude'];
                     $ckptRow['point_order'] = $checkpoint['point_order'];
                     $ckptRow['distance_from_start'] = $checkpoint['distance_from_start'];
                     $ckptRow['distance_to_next_ckpt'] = NULL;
+                    $ckptRow['display'] = 1;
                     $ckptArray[] = $ckptRow;
                 }else{
                     $ckptRow['checkpoint_no'] = $checkpoint['checkpoint_no'];
@@ -104,6 +110,7 @@ class DrawRouteController extends Controller {
                     $ckptRow['point_order'] = $checkpoint['point_order'];
                     $ckptRow['distance_from_start'] = $checkpoint['distance_from_start'];
                     $ckptRow['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'] - $checkpoint['distance_from_start'];
+                    $ckptRow['display'] = $checkpoint['display'];
                     $ckptArray[] = $ckptRow;
                 }
             } else {
@@ -113,9 +120,12 @@ class DrawRouteController extends Controller {
                 $ckptRow['point_order'] = 1;
                 $ckptRow['distance_from_start'] = $checkpoint['distance_from_start'];
                 $ckptRow['distance_to_next_ckpt'] = $checkpointArray[$index+1]['distance_from_start'];
+                $ckptRow['display'] = 1;
                 $ckptArray[] = $ckptRow;
             }
         }
+        // echo "<pre>".print_r($ckptArray,1)."</pre>";
+
 
         DB::transaction(function () use($event_id, $distanceArray, $ckptArray) {
             DB::table('gps_live_'.$event_id.'.map_point')->truncate();
@@ -219,6 +229,7 @@ class DrawRouteController extends Controller {
     }
 
     public function saveCheckpointName($event_id) {
+        // echo "<pre>".print_r($_POST,1)."</pre>";
 
         foreach ($_POST['checkpoint_name'] as $checkpoint_no => $checkpoint_name) {
             $checkpoint_name = !empty($checkpoint_name) ? $checkpoint_name : null;

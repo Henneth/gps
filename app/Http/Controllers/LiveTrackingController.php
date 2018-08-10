@@ -93,10 +93,10 @@ class LiveTrackingController extends Controller {
 
         $event = DB::table('events')->where('event_id', $event_id)->first();
         $route = DB::table('gps_live_'.$event_id.'.map_point')->get();
-        $route = json_encode($route);
-
-        // get checkpoint distances
         $tempCheckpoint = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
+
+        $route = json_encode($route);
+        // get checkpoint distances
         $checkpoint = json_encode($tempCheckpoint);
         // echo "<pre>".print_r($route,1)."</pre>";
 
@@ -157,6 +157,7 @@ class LiveTrackingController extends Controller {
         // if not empty localstorage
         if ( !empty($_GET['bib_numbers']) ){
             $bib_numbers = json_decode($_GET['bib_numbers']);
+            sort($bib_numbers);
 
             $data = [];
             $count = 0; // count index of $colorArray

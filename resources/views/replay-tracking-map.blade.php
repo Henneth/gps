@@ -196,7 +196,7 @@
                     for(var key in route){
                         gpxLat = parseFloat(route[key]["latitude"]);
                         gpxLng = parseFloat(route[key]["longitude"]);
-                        IsCP = route[key]["is_checkpoint"] || key == 0;
+                        IsCP = (route[key]["is_checkpoint"] && route[key]["display"] == 1) || key == 0;
                         addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
                     }
 
@@ -265,6 +265,7 @@
                         $('#loading').fadeOut('slow',function(){$(this).remove();});
                         data = ajax_data;
                         console.log('polling...');
+                        console.log(data);
 
                         // add markers
                         for (var key in data) {
@@ -284,7 +285,6 @@
 
                             // get athlete's colour_code
                             var colourCode = data[key]['athlete']['colour_code'];
-                            colourCode = colourCode ? colourCode : '000000';
 
                             if (data[key]['athlete']) {
                                 $('#participants').append('<tr><td><span class="symbolStyle" style="color: '+'#'+colourCode +';">&#9632;</span></td><td>'+data[key]["athlete"]["bib_number"]+'</td><td>'+data[key]["athlete"]["first_name"]+' ' +data[key]["athlete"]["last_name"]+'</td></tr>');
@@ -454,7 +454,6 @@
                         if (eventType != "fixed route") {
                             var tailCoordinates = []; // array to store all Lat & Lng of that athlete
                             var colourCode = data[bib_number]['athlete']['colour_code'];
-                            colourCode = colourCode ? colourCode : '000000';
 
                             var lineSymbol = {
                                 path: 'M 0,-1 0,1',

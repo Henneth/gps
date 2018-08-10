@@ -117,7 +117,7 @@ class LiveTracking_Model extends Model
 		// 		"finished_at2"=>$finished_at,
 		// 		"finished_at3"=>$finished_at
 		// 	]);
-		$data = DB::select("SELECT * FROM gps_live_{$event_id}.valid_data
+		$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM gps_live_{$event_id}.valid_data
 			WHERE bib_number = :bib_number
 			-- AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))
 			-- AND (:end_time IS NULL OR (:end_time1 IS NOT NULL AND datetime <= :end_time2))

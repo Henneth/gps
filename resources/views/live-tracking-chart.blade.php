@@ -325,21 +325,25 @@
                 }
                 // strDist = strDist.slice(0, -1);
                 checkpoint = null;
+                var count = 0;
                 for (var key in checkpointData) {
-                    if (dist <= checkpointData[key]['distance_from_start'] && checkpointData[key]['distance_from_start'] < nextDist){
+                    if( checkpointData[key]['display'] == 1 ){
+                        if (dist <= checkpointData[key]['distance_from_start'] && checkpointData[key]['distance_from_start'] < nextDist){
 
-                        if (checkpointData[key]['checkpoint_name']) {
-                            var checkpoint = String(checkpointData[key]['checkpoint_name']);
-                        }else {
-                            if (key == checkpointData.length -1) {
-                                var checkpoint = String('Finish');
-                            } else {
-                                if(key != 0){
-                                    var checkpoint = String('CP'+checkpointData[key]['checkpoint_no']);
+                            if (checkpointData[key]['checkpoint_name']) {
+                                var checkpoint = String(checkpointData[key]['checkpoint_name']);
+                            }else {
+                                if (key == checkpointData.length -1) {
+                                    var checkpoint = String('Finish');
+                                } else {
+                                    if(key != 0){
+                                        var checkpoint = String('CP' + count);
+                                    }
                                 }
                             }
+                            break;
                         }
-                        break;
+                        count++;
                     }
                 }
 

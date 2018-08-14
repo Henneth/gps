@@ -187,8 +187,11 @@ class ReplayTrackingController extends Controller {
         }
 
         usort($data, array($this, "cmp"));
-        $tempCheckpoint = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
-
+        if ($event->live == 1){
+            $tempCheckpoint = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
+        } else {
+            $tempCheckpoint = DB::table('archive_checkpoint')->where('event_id', $event_id)->get();
+        }
         $dataArray = [];
         foreach ($data as $value) {
             $tempArray = [];

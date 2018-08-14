@@ -174,7 +174,7 @@ class ReplayTracking_Model extends Model
 	}
 
 	public static function getReachedCheckpointData($event_id, $bib_number){
-		$reached_checkpoint = DB::select("SELECT checkpoint_id, datetime FROM archive_reached_checkpoint WHERE event_id = :event_id AND bib_number = :bib_number ORDER BY datetime desc", ["event_id"=$event_id, "bib_number"=>$bib_number]);
+		$reached_checkpoint = DB::select("SELECT checkpoint_id, datetime FROM archive_reached_checkpoint WHERE event_id = :event_id AND bib_number = :bib_number ORDER BY datetime desc", ["event_id"=>$event_id, "bib_number"=>$bib_number]);
 
 		$name = DB::table("archive_athletes")
 			->where('event_id', $event_id)

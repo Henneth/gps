@@ -273,3 +273,30 @@
     align-items: center;
     justify-content: center;
 }
+/* How to disable Google Map's Satellite view? near to Track Participants */
+.gm-style-mtc {
+  display: none;
+}
+
+.time-board-a {
+    display: block;
+}
+.time-board-b {
+    display: none;
+}
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575.98px) {
+    .replay-controls-wrapper {
+        display: block !important;
+    }
+    .time-board-a {
+        display: none;
+    }
+    .time-board-b {
+        display: block;
+        height: 20px;
+    }
+    .slider-wrapper{
+        margin-top: 8px;
+    }
+}

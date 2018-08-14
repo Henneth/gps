@@ -24,9 +24,19 @@
                         <div>
                             <input type="text" value="" class="slider form-control" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="0" data-slider-orientation="horizontal" data-slider-selection="before" data-slider-tooltip="show" data-slider-id="aqua" autocomplete="off">
                         </div>
-                        <div style="block">
+                        <div style="block" class="time-board-a">
                             <span>{{$event->datetime_from}}</span>
                             <span style="float:right;">{{$event->datetime_to}}</span>
+                        </div>
+                        <div style="block" class="time-board-b">
+                            <span style="float:left;">
+                                <?php $splitDate = explode(' ', $event->datetime_from);?>
+                                {{$splitDate[0]}}<br>{{$splitDate[1]}}
+                            </span>
+                            <span style="float:right;">
+                                <?php $splitDate = explode(' ', $event->datetime_to);?>
+                                {{$splitDate[0]}}<br>{{$splitDate[1]}}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -491,6 +501,34 @@
     #map {
         height:80vh;
         width: 100%;
+    }
+
+    .replay-controls {
+        max-height: 48px;
+    }
+
+    .time-board-a {
+        display: block;
+    }
+    .time-board-b {
+        display: none;
+    }
+
+    /* Extra small devices (portrait phones, less than 576px) */
+    @media (max-width: 575.98px) {
+        .replay-controls-wrapper {
+            display: block !important;
+        }
+        .time-board-a {
+            display: none;
+        }
+        .time-board-b {
+            display: block;
+            height: 20px;
+        }
+        .slider-wrapper{
+            margin-top: 8px;
+        }
     }
 
     .label_content{

@@ -308,13 +308,13 @@
                                 // console.log(pointOrder);
                                 cpName = checkpoint[CPIndex]['checkpoint_name'];
                                 marker.checkpointName = cpName;
-                                // marker.checkpointIndex = CPIndex;
+                                marker.displayCPIndex = DisplayCPIndex;
                                 marker.setLabel({text: ""+DisplayCPIndex, color: "white"});
                                 marker.addListener('click', function() {
                                     if (this.checkpointName){
-                                        var html = '<div><b>'+ this.checkpointName + ' (CP' + DisplayCPIndex + ')</b>'+ '</div>';
+                                        var html = '<div><b>'+ this.checkpointName + ' (CP' + this.displayCPIndex + ')</b>'+ '</div>';
                                     }else {
-                                        var html = '<div><b>'+'CP'+ DisplayCPIndex + '</b></div>';
+                                        var html = '<div><b>'+'CP'+ this.displayCPIndex + '</b></div>';
                                     }
                                     infowindow2.setContent(html);
                                     infowindow2.open(map, this);
@@ -566,6 +566,9 @@
         })
         $('#profile-tab').click(function(){
             window.location.assign(url.origin+url.pathname+'?tab=2');
+        })
+        $('#checkpoint-tab').click(function(){
+            window.location.assign(url.origin+url.pathname+'?tab=3');
         })
         $('#home-tab').click(function(){
             window.location.assign(url.origin+url.pathname+'?tab=0');

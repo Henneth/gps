@@ -68,6 +68,10 @@ class ReplayTrackingController extends Controller {
             return view('replay-tracking-chart')->with(array('event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'event'=>$event, 'route' => $route, 'checkpoint'=>$checkpoint));
         }
 
+        if (!empty($_GET['tab']) && $_GET['tab'] == 3) {
+            return view('replay-tracking-checkpoint')->with(array('event_id' => $event_id,  'event'=>$event, 'checkpoint'=>$tempCheckpoint));
+        }
+
         else {
             return view('replay-tracking-map')->with(array('event' => $event, 'event_id' => $event_id, 'timestamp_from' => $timestamp_from, 'timestamp_to' => $timestamp_to, 'route' => $route, 'checkpoint'=>$checkpoint));
         }
@@ -133,6 +137,125 @@ class ReplayTrackingController extends Controller {
 
         return response()->json($data);
     }
+
+
+    public function checkpointTable($event_id){
+        // $time_start = microtime(true);
+        $event = DB::table('events')->where('event_id', $event_id)->first();
+
+        // if not empty localstorage
+        if ( !empty($_GET['bib_numbers']) ){
+            $bib_numbers = json_decode($_GET['bib_numbers']);
+            sort($bib_numbers);
+
+            $data = [];
+            foreach ($bib_numbers as $key => $bib_number) {
+                if ($event->live == 1){
+                    $reachedCheckpointData = LiveTracking_Model::getReachedCheckpointData($event_id, $bib_number);
+                } else {
+                    $reachedCheckpointData = ReplayTracking_Model::getReachedCheckpointData($event_id, $bib_number);
+                }
+
+
+                $data[$bib_number] = $reachedCheckpointData;
+            }
+        } else {
+            // get 20 athletes from db
+            if (Auth::check()){
+                if ($event->live == 1){
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                }else {
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                }
+            } else {
+                if  ($event->live == 1){
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                } else{
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                }
+            }
+
+            $data = [];
+            foreach ($athletes as $key => $athlete) {
+                if  ($event->live == 1){
+                    $reachedCheckpointData = LiveTracking_Model::getReachedCheckpointData($event_id, $athlete->bib_number);
+                } else {
+                    $reachedCheckpointData = ReplayTracking_Model::getReachedCheckpointData($event_id, $athlete->bib_number);
+                }
+                $data[$athlete->bib_number] = $reachedCheckpointData;
+            }
+        }
+
+        usort($data, array($this, "cmp"));
+        $tempCheckpoint = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
+
+        $dataArray = [];
+        foreach ($data as $value) {
+            $tempArray = [];
+            $tempArray[] = $value['bib_number'].' '.$value['name'];
+
+
+            foreach ($tempCheckpoint as $index => $checkpoint) {
+                if( ($index != 0) && ($checkpoint->display == 1) ) {
+                    if( !empty($value['data']) ) {
+                        $tempDatetime = "";
+                        foreach ($value['data'] as $item) {
+                            if($item->checkpoint_id == $checkpoint->checkpoint_id){
+                                $tempDatetime = $item->datetime;
+                            }
+                        }
+                        $tempArray[] = $tempDatetime;
+                    } else {
+                        $tempArray[] = "";
+                    }
+                }
+            }
+            $dataArray[] = $tempArray;
+            // echo '<pre>'.print_r($dataArray, 1).'</pre>';
+        }
+
+
+        return response()->json(array('data' => $dataArray));
+    }
+
+
+    public function cmp($a, $b){
+        if ( !empty($a['data'][0]) && !empty($b['data'][0]) ){
+            if( $a['data'][0]->checkpoint_id > $b['data'][0]->checkpoint_id) {
+                return -1;
+            } else if ($a['data'][0]->checkpoint_id == $b['data'][0]->checkpoint_id) {
+                if(strtotime($a['data'][0]->datetime) < strtotime($b['data'][0]->datetime)) {
+                    return -1;
+                } else if ( strtotime($a['data'][0]->datetime) == strtotime($b['data'][0]->datetime) ) {
+                    if ($a['bib_number'] < $b['bib_number']) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    return 1;
+                }
+            } else {
+                return 1;
+            }
+        } else {
+            if ( !empty($a['data'][0]) && empty($b['data'][0]) ) {
+                return -1;
+            } else if ( empty($a['data'][0]) && !empty($b['data'][0]) ) {
+                return 1;
+            } else {
+                if ($a['bib_number'] < $b['bib_number']) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        }
+    }
+
+
+
+
 }
 
     // private function group_by($array, $key) {

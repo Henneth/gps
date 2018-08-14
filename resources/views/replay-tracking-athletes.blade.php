@@ -76,12 +76,16 @@
             $('#profile-tab').click(function(){
                 window.location.assign(url.origin+url.pathname+'?tab=2');
             })
+            $('#checkpoint-tab').click(function(){
+                window.location.assign(url.origin+url.pathname+'?tab=3');
+            })
             $('#home-tab').click(function(){
                 window.location.assign(url.origin+url.pathname+'?tab=0');
             })
 
             $(document).ready(function() {
                 $('#profile-table').DataTable({
+                    "scrollX": true,
                     'columnDefs': [
                         { 'type': 'num', 'targets': 0 },
                         { 'orderable': false, 'targets': 1 },

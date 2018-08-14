@@ -159,6 +159,22 @@ class LiveTracking_Model extends Model
 		$array['reachedCheckpoint'] = $reachedCheckpoint;
 		return $array;
 	}
+
+	public static function getReachedCheckpointData($event_id, $bib_number){
+		$reached_checkpoint = DB::select("SELECT checkpoint_id, datetime FROM gps_live_{$event_id}.reached_checkpoint WHERE bib_number = :bib_number ORDER BY datetime desc", ["bib_number"=>$bib_number]);
+
+		$name = DB::table("gps_live_{$event_id}.athletes")
+			->where('bib_number', $bib_number)
+			->select('first_name', 'last_name')
+			->first();
+
+		$array['name'] = $name->first_name . " " . (!empty($name->last_name) ? $name->last_name : "");
+		$array['bib_number'] = $bib_number;
+		$array['data'] = $reached_checkpoint;
+		return $array;
+	}
+
+
 }
 
 // ---------------------------------

@@ -326,6 +326,7 @@
                 // strDist = strDist.slice(0, -1);
                 checkpoint = null;
                 var count = 0;
+                // console.log(checkpointData);
                 for (var key in checkpointData) {
                     if( checkpointData[key]['display'] == 1 ){
                         if (dist <= checkpointData[key]['distance_from_start'] && checkpointData[key]['distance_from_start'] < nextDist){
@@ -414,6 +415,9 @@
         })
         $('#profile-tab').click(function(){
             window.location.assign(url.origin+url.pathname+'?tab=2');
+        })
+        $('#checkpoint-tab').click(function(){
+            window.location.assign(url.origin+url.pathname+'?tab=3');
         })
         $('#home-tab').click(function(){
             window.location.assign(url.origin+url.pathname+'?tab=0');

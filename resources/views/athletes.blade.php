@@ -60,6 +60,9 @@
                             <th>Is Public</th>
                             <th>Default Visibility</th>
                             <th style="width: 64px;">&nbsp;</th>
+                            @if(!$is_live)
+                                <th style="width: 64px;">&nbsp;</th>
+                            @endif
                             {{-- <th style="width: 40px">Label</th> --}}
                         </tr>
                     </thead>
@@ -106,7 +109,8 @@
                                 <form id="form_edit_{{$athlete->bib_number}}" method="post" action="{{url('/')}}/event/{{$event_id}}/athletes/edit">
                                     {{ csrf_field() }}
                                     {{-- <input form="form_edit_{{$athlete->bib_number}}" type="hidden" name="athlete_id" value="{{$athlete->athlete_id}}"></input> --}}
-                                    <td class="text"><span>{{$athlete->bib_number}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="bib_number" value="{{$athlete->bib_number}}" placeholder="Bib Number"></td>
+                                    <td class="text"><span>{{$athlete->bib_number}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="new_bib_number" value="{{$athlete->bib_number}}" placeholder="Bib Number" {{$is_live? 'disabled' : ''}}></td>
+                                    <td class="text" hidden><span>{{$athlete->bib_number}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="old_bib_number" value="{{$athlete->bib_number}}" placeholder="Bib Number"></td>
                                     <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
                                     <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
                                     <td class="text"><span>{{$athlete->zh_full_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="zh_full_name" value="{{$athlete->zh_full_name}}" placeholder="Chinese Full Name"></td>
@@ -142,8 +146,15 @@
                                             <input type="text" form="form_edit_{{$athlete->bib_number}}" name="colour_code" class="pick-a-color form-control" value="{{!empty($athlete->colour_code) ? $athlete->colour_code : '#0000ff'}}">
                                         </div> --}}
                                     {{-- </td> --}}
-                                    <td><button type="button" class="edit-btn btn btn-default" {{$is_live? 'disabled' : ''}}>Edit</button><button form="form_edit_{{$athlete->bib_number}}" type="submit" class="btn btn-default" style="display: none;" {{$is_live? 'disabled' : ''}}>Save</button></td>
+                                    <td><button type="button" class="edit-btn btn btn-default">Edit</button><button form="form_edit_{{$athlete->bib_number}}" type="submit" class="btn btn-default" style="display: none;">Save</button></td>
                                 </form>
+                                @if(!$is_live)
+                                    <form class="delete-form" method="post" action="{{url('/')}}/event/{{$event_id}}/athletes/delete">
+                                        {{ csrf_field() }}
+                                        <td><button type="submit" class="btn btn-danger">Delete</button></td>
+                                        <input id='deleteAthleteRow' hidden value="{{$athlete->bib_number}}" name="del_athlete">
+                                    </form>
+                                @endif
                             </tr>
                         <?php $count++ ?>
                         @endforeach
@@ -203,5 +214,15 @@
                 inlineDropdown          : true
             });
         });
+
+        $(document).ready(function(){
+            $( ".delete-form" ).submit(function( event ) {
+                event.preventDefault();
+                if (confirm('Are you sure you want to delete this record?')){
+                    this.submit();
+                }
+            });
+        });
+
     </script>
 @endsection

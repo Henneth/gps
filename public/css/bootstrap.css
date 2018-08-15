@@ -874,6 +874,9 @@ th {
 *:after {
   box-sizing: border-box;
 }
+#map * {
+    box-sizing: content-box !important;
+}
 html {
   font-size: 10px;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);

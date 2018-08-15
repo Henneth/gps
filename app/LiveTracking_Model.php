@@ -117,7 +117,7 @@ class LiveTracking_Model extends Model
 		// 		"finished_at2"=>$finished_at,
 		// 		"finished_at3"=>$finished_at
 		// 	]);
-		$data = DB::select("SELECT * FROM gps_live_{$event_id}.valid_data
+		$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM gps_live_{$event_id}.valid_data
 			WHERE bib_number = :bib_number
 			-- AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))
 			-- AND (:end_time IS NULL OR (:end_time1 IS NOT NULL AND datetime <= :end_time2))
@@ -159,6 +159,22 @@ class LiveTracking_Model extends Model
 		$array['reachedCheckpoint'] = $reachedCheckpoint;
 		return $array;
 	}
+
+	public static function getReachedCheckpointData($event_id, $bib_number){
+		$reached_checkpoint = DB::select("SELECT checkpoint_id, datetime FROM gps_live_{$event_id}.reached_checkpoint WHERE bib_number = :bib_number ORDER BY datetime desc", ["bib_number"=>$bib_number]);
+
+		$name = DB::table("gps_live_{$event_id}.athletes")
+			->where('bib_number', $bib_number)
+			->select('first_name', 'last_name')
+			->first();
+
+		$array['name'] = $name->first_name . " " . (!empty($name->last_name) ? $name->last_name : "");
+		$array['bib_number'] = $bib_number;
+		$array['data'] = $reached_checkpoint;
+		return $array;
+	}
+
+
 }
 
 // ---------------------------------

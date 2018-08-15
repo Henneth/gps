@@ -35,6 +35,8 @@ Route::get('event/{event_id}', function ($event_id) {
 });
 Route::get('event/{event_id}/live-tracking', 'LiveTrackingController@index')->name('live-tracking');
 Route::get('event/{event_id}/live-tracking/poll', 'LiveTrackingController@poll');
+Route::get('event/{event_id}/live-tracking/checkpoint-table', 'LiveTrackingController@checkpointTable');
+Route::get('event/{event_id}/replay-tracking/checkpoint-table', 'ReplayTrackingController@checkpointTable');
 Route::get('event/{event_id}/replay-tracking', 'ReplayTrackingController@index')->name('replay-tracking');
 Route::get('event/{event_id}/replay-tracking/poll', 'ReplayTrackingController@poll');
 
@@ -65,6 +67,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('event/{event_id}/athletes', 'AthletesController@index')->name('athletes');
     Route::post('event/{event_id}/athletes/add', 'AthletesController@addAthlete');
     Route::post('event/{event_id}/athletes/edit', 'AthletesController@editAthlete');
+    Route::post('event/{event_id}/athletes/delete', 'AthletesController@deleteAthlete');
     Route::post('event/{event_id}/athletes/import-from-excel', 'AthletesController@importFromExcel');
 
     // Device Mapping

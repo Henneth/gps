@@ -172,5 +172,22 @@ class ReplayTracking_Model extends Model
 		$array['reachedCheckpoint'] = $reachedCheckpoint;
 		return $array;
 	}
+
+	public static function getReachedCheckpointData($event_id, $bib_number){
+		$reached_checkpoint = DB::select("SELECT checkpoint_id, datetime FROM archive_reached_checkpoint WHERE event_id = :event_id AND bib_number = :bib_number ORDER BY datetime desc", ["event_id"=>$event_id, "bib_number"=>$bib_number]);
+
+		$name = DB::table("archive_athletes")
+			->where('event_id', $event_id)
+			->where('bib_number', $bib_number)
+			->select('first_name', 'last_name')
+			->first();
+
+		$array['name'] = $name->first_name . " " . (!empty($name->last_name) ? $name->last_name : "");
+		$array['bib_number'] = $bib_number;
+		$array['data'] = $reached_checkpoint;
+		return $array;
+	}
+
+
 }
 // echo "<pre>".print_r($array,1)."</pre>";

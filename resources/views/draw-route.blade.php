@@ -93,32 +93,72 @@
         @if ($event && $event->event_type == "fixed route")
             <div class="min-time-section tab-pane" id="tab_2">
                 @if ($checkpoints && $checkpoints[sizeof($checkpoints)-1]->checkpoint_no != 0)
-                <form action="{{url('/')}}/event/{{$event_id}}/save-minimum-times" method="post">
-                    {{ csrf_field() }}
-                    @for ($i=1; $i < sizeof($checkpoints); $i++)
-                        <div class="form-group min-times-row">
-                            <label>From {{($i == 1) ? 'Start' : 'Checkpoint'.($checkpoints[$i]->checkpoint_no - 1)}} to {{($checkpoints[$i]->checkpoint_no == (sizeof($checkpoints)-1)) ? 'Finish' : 'Checkpoint'.($checkpoints[$i]->checkpoint_no)}}</label>
-                            <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpoints[$i]->checkpoint_no}}]" value="{{$checkpoints[$i]->min_time}}" {{$event->live ? 'disabled' : ''}}>
+                    <form action="{{url('/')}}/event/{{$event_id}}/save-minimum-times" method="post">
+                        {{ csrf_field() }}
+                        <?php
+                            $alphabets = array('A','B','C','D','E','F','G','H','I','J','K', 'L','M','N','O','P','Q','R','S','T','U','V','W','X ','Y','Z');
+                            $count = 0;
+                            $techCkptCount = 0;
+                            $formerPoint = '';
+                            $latterPoint = '';
+                        ?>
+                        @for ($i=1; $i < count($checkpoints); $i++)
+                            <div class="form-group min-times-row">
+                                <?php
+                                    if ($checkpoints[$i-1]->display == 1) {
+                                        $formerPoint = "Ckpt ".$count;
+                                        $count++;
+                                    } else {
+                                        $formerPoint = "Tech. Ckpt ".$alphabets[$techCkptCount];
+                                        $techCkptCount++;
+                                    }
+
+                                    if ($checkpoints[$i]->display == 1) {
+                                        $latterPoint = "Ckpt ".$count;
+                                    } else {
+                                        $latterPoint = "Tech. Ckpt ".$alphabets[$techCkptCount];
+                                    }
+
+                                    if ($i == 1){
+                                        $formerPoint = "Start";
+                                    }
+                                    if ($i ==( count($checkpoints) -1 )){
+                                        $latterPoint = "Finish";
+                                    }
+
+                                ?>
+                                <label>{{$formerPoint}} → {{$latterPoint}}</label>
+                                <input type="text" class="form-control" placeholder="Minimum time (HH:MM:SS)" autocomplete="off" name="min_times[{{$checkpoints[$i]->checkpoint_no}}]" value="{{$checkpoints[$i]->min_time}}" {{$event->live ? 'disabled' : ''}}>
+                            </div>
+                        @endfor
+                        <div>
+                            <button type="submit" class="btn btn-primary" {{$event->live ? 'disabled' : ''}}>Save</button>
                         </div>
-                    @endfor
-                    <div>
-                        <button type="submit" class="btn btn-primary" {{$event->live ? 'disabled' : ''}}>Save</button>
-                    </div>
-                </form>
+                    </form>
                 @else
-                <div>No checkpoints yet. Please draw the route first.</div>
+                    <div>No checkpoints yet. Please draw the route first.</div>
                 @endif
             </div>
             <div class="set-checkpoint-name tab-pane" id="tab_3">
                 @if ($checkpoints && $checkpoints[sizeof($checkpoints)-1]->checkpoint_no != 0)
                 <form action="{{url('/')}}/event/{{$event_id}}/save-checkpoint-name" method="post">
                     {{ csrf_field() }}
-                    @for ($i=2; $i < sizeof($checkpoints); $i++)
-                        <div class="form-group">
-                            <label>Name of Checkpoint {{($checkpoints[$i-1]->checkpoint_no)}}</label>
-                            <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpoints[$i-1]->checkpoint_no}}]" value="{{$checkpoints[$i-1]->checkpoint_name}}" {{$event->live ? 'disabled' : ''}}>
-                        </div>
-                    @endfor
+                    <?php
+                        $i = 0;
+                        foreach ($checkpoints as $cpNum => $value) {
+                            if($checkpoints && $checkpoints[$cpNum]->display == 1){
+                                if (($cpNum != (count($checkpoints) - 1)) && $cpNum != 0){
+                    ?>
+                                    <div class="form-group">
+                                        <label>Name of Ckpt {{$i+1}}</label>
+                                        <input type="text" class="form-control" placeholder="Name of Checkpoint" autocomplete="off" name="checkpoint_name[{{$checkpoints[$cpNum]->checkpoint_no}}]" value="{{$checkpoints[$cpNum]->checkpoint_name}}" {{$event->live ? 'disabled' : ''}}>
+                                    </div>
+                    <?php
+                                    $i++;
+                                }
+                            }
+                        }
+                    ?>
                     <div>
                         <button type="submit" class="btn btn-primary" {{$event->live ? 'disabled' : ''}}>Save</button>
                     </div>
@@ -147,6 +187,7 @@
         var gpxLat;
         var gpxLng;
         var IsCP;
+        var display;
 
         // set info window
         var marker;
@@ -176,12 +217,13 @@
             mirrorCoordinates = [];
             if(data){
 
-                // console.log(data);
+                console.log(data);
                 for(var key in data){
                     gpxLat = parseFloat(data[key]["latitude"]);
                     gpxLng = parseFloat(data[key]["longitude"]);
                     IsCP = data[key]["is_checkpoint"];
-                    addLatLngInit(IsCP, new google.maps.LatLng(gpxLat, gpxLng));
+                    display = data[key]["display"];
+                    addLatLngInit(IsCP, display, new google.maps.LatLng(gpxLat, gpxLng));
                 }
 
                 reOrder();
@@ -226,7 +268,7 @@
         }
 
         // Handles click events on a map, and adds a new point to the Polyline.
-        function addLatLngInit(IsCP, position) {
+        function addLatLngInit(IsCP, display, position) {
 
             path = poly.getPath();
 
@@ -243,6 +285,7 @@
                 title: '#' + path.getLength(),
                 map: map,
                 is_checkpoint: IsCP,
+                display: display,
                 // resize icon https://developers.google.com/maps/documentation/javascript/markers
             });
 
@@ -262,11 +305,21 @@
 
                 if (!marker.isStartEnd && event_type == "fixed route") {
                     if (marker.is_checkpoint == 1){
-                        content += "<br /><b> Remove this checkpoint? </b>";
-                        content += "<br /><input type = 'button' onclick = 'removeCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+                        content += "<br><b> Remove this checkpoint? </b>";
+                        content += "<br><input type = 'button' onclick = 'removeCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+
+                        if (marker.display == 1){
+                            content += "<br><br><b>Hide this checkpoint on map?</b>";
+                            content += "<br><input type = 'button' onclick = 'hideThisCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+
+                        }else {
+                            content += "<br><br><b>Display this checkpoint on map?</b>";
+                            content += "<br><input type = 'button' onclick = 'displayThisCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+                        }
+
                     }else {
-                        content += "<br /><b> Set it as checkpoint? </b>";
-                        content += "<br /><input type = 'button' onclick = 'setAsCheckpoint(" + marker.id + ");' value = 'Confirm' />";
+                        content += "<br><b> Set it as checkpoint? </b>";
+                        content += "<br><input type = 'button' onclick = 'setAsCheckpoint(" + marker.id + ");' value = 'Confirm' />";
                     }
                 }
 
@@ -280,12 +333,13 @@
         function setAsCheckpoint(id){
             for (var i = 0; i < markerList.length; i++) {
                 if ( markerList[i].id == id ){
-                    infoWindow.setContent('<div style="color: green">' + infoWindow.getContent() + "</div>");
+                    // infoWindow.setContent('<div style="color: green">' + infoWindow.getContent() + "</div>");
                     markerList[i]['is_checkpoint'] = 1;
                     markerList[i].setIcon(null);
                     infoWindow.close(map, this);
+                    console.log(markerList[i]);
                 }
-                // console.log(markerList[i]);
+
             }
             reOrder();
         }
@@ -295,6 +349,10 @@
                 if ( markerList[i].id == id ){
                     infoWindow.setContent('<div style="color: red">' + infoWindow.getContent() + "</div>");
                     markerList[i]['is_checkpoint'] = 0;
+                    markerList[i]['display'] = 0;
+                    $('#thisPoint').click(function(){
+                        markerList[i]['display'] = 0;
+                    })
                     markerList[i].setIcon('{{ url('/') }}/img/icons/triangle.png');
                     infoWindow.close(map, this);
                 }
@@ -303,14 +361,45 @@
             reOrder();
         }
 
+        function displayThisCheckpoint(id){
+            for (var i = 0; i < markerList.length; i++) {
+                if ( markerList[i].id == id ){
+                    markerList[i]['display'] = 1;
+                    // markerList[i].setOptions({'opacity' : 1});
+                    infoWindow.close(map, this);
+                    console.log(markerList[i]);
+                }
+
+            }
+            reOrder();
+        }
+
+        function hideThisCheckpoint(id){
+            for (var i = 0; i < markerList.length; i++) {
+                if ( markerList[i].id == id ){
+                    markerList[i]['display'] = 0;
+                    // markerList[i].setOptions({'opacity' : 0.6});
+                    infoWindow.close(map, this);
+                    console.log(markerList[i]);
+                }
+
+            }
+            reOrder();
+        }
+
+
         function reOrder(){
             var CPIndex = 1;
             for (var i = 0; i < markerList.length; i++) {
                 markerList[i].setLabel(null);
                 markerList[i].isStartEnd = false;
                 if (markerList[i].is_checkpoint){
-                    markerList[i].setLabel({text: ""+CPIndex, color: "white"});
-                    CPIndex++;
+                    if (markerList[i].display == 1) {
+                        markerList[i].setLabel({text: ""+CPIndex, color: "white"});
+                        CPIndex++;
+                    } else {
+                        markerList[i].setOptions({'opacity' : markerList[i].display == 1 ? 1 : 0.8});
+                    }
                 } else {
                     markerList[i].setIcon('{{ url('/') }}/img/icons/triangle.png');
                 }
@@ -325,6 +414,7 @@
                 markerList[0].isStartEnd = true;
                 markerList[0].setIcon(null);
                 markerList[0].is_checkpoint = 0;
+                markerList[0].display = 1;
             }
         }
 
@@ -393,23 +483,19 @@
             for (var i = 0; i < markerList.length; i++) {
                 markerList[i];
                 if (i == markerList.length - 1) {
-                    var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'is_checkpoint': 1};
+                    var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'is_checkpoint': 1, 'display': 1};
                     array.push(temp);
                 } else {
-                    var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'is_checkpoint': markerList[i].is_checkpoint};
+                    var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'is_checkpoint': markerList[i].is_checkpoint, 'display':  markerList[i].display};
                     array.push(temp);
                 }
             }
 
-            console.log(array);
-            console.log(markerList);
-
             encodeString = JSON.stringify(array);
-            console.log(encodeString);
 
             // encodeString = google.maps.geometry.encoding.encodePath(path);
             $('#route').val(encodeString);
-            // console.log(path.b[0].lat());
+
             // Set save-route value
             document.getElementById('save-route').submit();
         });

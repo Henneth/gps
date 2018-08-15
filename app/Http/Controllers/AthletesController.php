@@ -49,26 +49,51 @@ class AthletesController extends Controller {
             'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
         ]);
-        
+
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is added.');
+    }
+
+    public function deleteAthlete($event_id) {
+        DB::table('gps_live_'.$event_id.'.athletes')
+            ->where('bib_number', $_POST['del_athlete'])
+            ->delete();
+        return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete has been deleted.');
     }
 
 
     public function editAthlete($event_id) {
-        if (empty($_POST['bib_number']) || empty($_POST['first_name'])) {
+        $is_live = DB::table('events')
+            ->select('live')
+            ->where('event_id',$event_id)
+            ->first();
+
+        if ( (!$is_live->live && empty($_POST['new_bib_number'])) || empty($_POST['first_name'])) {
             return redirect('event/'.$event_id.'/athletes')->with('error', 'Bib number and first name must not be empty.');
         }
 
+        $arr = [];
+        if (!$is_live->live) {
+            $arr['bib_number'] = $_POST['new_bib_number'];
+        }
+        $arr['first_name'] = $_POST['first_name'];
+        $arr['last_name'] = !empty($_POST['last_name']) ? $_POST['last_name'] : NULL;
+        $arr['zh_full_name'] = !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL;
+        $arr['is_public'] = (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0;
+        $arr['status'] = !empty($_POST['status']) ? $_POST['status'] : 'visible';
+        $arr['country_code'] = !empty($_POST['country_code']) ? $_POST['country_code'] : NULL;
         DB::table('gps_live_'.$event_id.'.athletes')
-            ->where('bib_number', $_POST['bib_number'])
-            ->update([
-                'first_name' => $_POST['first_name'],
-                'last_name' => !empty($_POST['last_name']) ? $_POST['last_name'] : NULL,
-                'zh_full_name' => !empty($_POST['zh_full_name']) ? $_POST['zh_full_name'] : NULL,
-                'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
-                'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
-                'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
-            ]);
+            ->where('bib_number', $_POST['old_bib_number'])
+            ->update($arr);
+
+        if ($is_live->live) {
+            DB::transaction(function () use($event_id) {
+                DB::table('gps_live_'.$event_id.'.participants')->truncate();
+
+                $live_db = "gps_live_{$event_id}";
+        		DB::insert("INSERT INTO {$live_db}.participants (bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, country_zh_hk, start_time, end_time, status) SELECT bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, country_zh_hk, null, null, status FROM {$live_db}.athletes AS a LEFT JOIN {$live_db}.countries AS c ON a.country_code = c.code");
+            });
+
+        }
 
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is edited.');
     }

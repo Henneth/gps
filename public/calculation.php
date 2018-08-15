@@ -199,7 +199,7 @@ foreach ($events as $event) {
                             $pdo->rollBack();
 
                             // Report errors
-                            echo "<pre>".print_r($e,1)."</pre>";
+                            // echo "<pre>".print_r($e,1)."</pre>";
                             echo "=== MYSQL Error. Rollback. ===<br>";
                         }
                     }
@@ -234,7 +234,7 @@ foreach ($events as $event) {
                                 $stmt->execute();
                             } catch(PDOException $e) {
                                 // Report errors
-                                echo "<pre>".print_r($e,1)."</pre>";
+                                // echo "<pre>".print_r($e,1)."</pre>";
                             }
 
                             // update $lastReachedPoint
@@ -265,7 +265,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    echo "<pre>".print_r($e,1)."</pre>";
+                                    // echo "<pre>".print_r($e,1)."</pre>";
                                 }
 
                                 // update $reachedCkpt
@@ -289,7 +289,7 @@ foreach ($events as $event) {
                                         $stmt->execute();
                                     } catch(PDOException $e) {
                                         // Report errors
-                                        echo "<pre>".print_r($e,1)."</pre>";
+                                        // echo "<pre>".print_r($e,1)."</pre>";
                                     }
 
                                     // end this loop
@@ -307,7 +307,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    echo "<pre>".print_r($e,1)."</pre>";
+                                    // echo "<pre>".print_r($e,1)."</pre>";
                                 }
                             } else {
                                 try {
@@ -321,7 +321,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    echo "<pre>".print_r($e,1)."</pre>";
+                                    // echo "<pre>".print_r($e,1)."</pre>";
                                 }
                             }
 

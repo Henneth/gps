@@ -55,7 +55,7 @@
                     @endif
                 </li>
                 @if($current_event && $current_event->live == 1)
-                    @foreach ([['Live Tracking', 'fa-map-marker-alt']] as $item)
+                    @foreach ([['Live Tracking', 'fa-map-marker-alt'], ['Replay Tracking', 'fa-redo']] as $item)
                         <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa fa-fw {{$item[1]}}'></i>&nbsp;&nbsp;<span>{{$item[0]}}</span></a></li>
                     @endforeach
                     @if (Auth::check())

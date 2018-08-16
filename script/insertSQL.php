@@ -7,13 +7,13 @@ $json = file_get_contents('./gps_data.json');
 $json_data = json_decode($json,true);
 
 //Print data
-echo '<pre>' . print_r($json_data, true) . '</pre>';
+// echo '<pre>' . print_r($json_data, true) . '</pre>';
 
 $host = '127.0.0.1';
 $user = 'root';
 $pass = 'root';
 $charset = 'utf8mb4';
-$db = 'gps_live';
+$db = 'gps_live_7';
 
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -26,7 +26,7 @@ $pdo = new PDO($dsn, $user, $pass, $opt);
 // set default timezone
 date_default_timezone_set('Asia/Hong_Kong');
 
-// e.g. php insertSQL.php '2018-07-23 09:00:00' '2018-07-23 18:00:00'
+// e.g. php insertSQL.php '2018-07-7 14:00:00' '2018-07-7 16:30:00'
 // read args from terminal line
 if ( !empty($argv[1])  && !empty($argv[2]) ){
    $startTimeTemp = date_create($argv[1]);
@@ -37,7 +37,7 @@ if ( !empty($argv[1])  && !empty($argv[2]) ){
    $startTime = strtotime($startTimeStr);
    $endTime = strtotime($endTimeStr);
 }
-$percentage = ($endTime - $startTime) / 20;
+$percentage = ($endTime - $startTime) / 35;
 
 // echo '<pre>'.print_r($startTimeStr,1).'</pre>'."\n";
 // echo($startTime."\n");
@@ -66,23 +66,19 @@ while ($endTime >= $newTime) {
 	$newTime = ($currentTime - $initTime) * $percentage + $startTime;
   $time = date("Y-m-d H:i:s",$newTime);
 
+  echo "<pre>".print_r($array_filtered, 1)."</pre>";
+
   foreach ($array_filtered as $key => $value) {
     $arrayDataTimeTemp2= date_create($value['datetime']);
     $dataTimeTemp2 = date_format($arrayDataTimeTemp2, 'Y-m-d H:i:s');
     $dataTime2 = strtotime($dataTimeTemp2);
     if($dataTime2 < $newTime){
-        $stmt = $pdo->prepare('INSERT INTO `gps_dd` (`id`, `device_id`, `latitude`, `latitude_logo`, `latitude_final`, `longitude`, `longitude_logo`, `longitude_final`, `elevation`, `battery_level`, `is_valid`, `datetime`, `created_at`) 
-          VALUES (NULL, :device_id, :latitude, :latitude_logo, :latitude_final, :longitude, :longitude_logo, :longitude_final, :elevation, :battery_level, :is_valid, :timeStr, NULL)');
+        $stmt = $pdo->prepare('INSERT INTO `raw_data` (`id`, `device_id`, `latitude`, `longitude`, `battery_level`, `datetime`, `created_at`) 
+          VALUES (NULL, :device_id, :latitude, :longitude, :battery_level, :timeStr, NULL)');
         $stmt->bindParam(':device_id', $value['device_id']);
-        $stmt->bindParam(':latitude', $value['latitude']);
-        $stmt->bindParam(':latitude_logo', $value['latitude_logo']);
-        $stmt->bindParam(':latitude_final', $value['latitude_final']);
-        $stmt->bindParam(':longitude', $value['longitude']);
-        $stmt->bindParam(':longitude_logo', $value['longitude_logo']);
-        $stmt->bindParam(':longitude_final', $value['longitude_final']);
-        $stmt->bindParam(':elevation', $value['elevation']);
+        $stmt->bindParam(':latitude', $value['latitude_final']);
+        $stmt->bindParam(':longitude', $value['longitude_final']);
         $stmt->bindParam(':battery_level', $value['battery_level']);
-        $stmt->bindParam(':is_valid', $value['is_valid']);
         $stmt->bindParam(':timeStr', $value['datetime']);
         $stmt->execute();
         unset($array_filtered[$key]);

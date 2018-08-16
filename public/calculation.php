@@ -2,7 +2,9 @@
 <?php
 // This script is for calculating athletes' distance progresses
 
-// $before = microtime(true);
+//Create a variable for start time
+$time_start = microtime(true);
+
 
 require_once('../setEnv.php');
 
@@ -36,6 +38,9 @@ if(empty($events)){
 
 
 foreach ($events as $event) {
+
+
+
     //define event id
     $event_id = $event['event_id'];
     $db = "gps_live_".$event['event_id'];
@@ -199,7 +204,7 @@ foreach ($events as $event) {
                             $pdo->rollBack();
 
                             // Report errors
-                            // echo "<pre>".print_r($e,1)."</pre>";
+                            echo "<pre>".print_r($e,1)."</pre>";
                             echo "=== MYSQL Error. Rollback. ===<br>";
                         }
                     }
@@ -234,7 +239,7 @@ foreach ($events as $event) {
                                 $stmt->execute();
                             } catch(PDOException $e) {
                                 // Report errors
-                                // echo "<pre>".print_r($e,1)."</pre>";
+                                echo "<pre>".print_r($e,1)."</pre>";
                             }
 
                             // update $lastReachedPoint
@@ -265,7 +270,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    // echo "<pre>".print_r($e,1)."</pre>";
+                                    echo "<pre>".print_r($e,1)."</pre>";
                                 }
 
                                 // update $reachedCkpt
@@ -289,7 +294,7 @@ foreach ($events as $event) {
                                         $stmt->execute();
                                     } catch(PDOException $e) {
                                         // Report errors
-                                        // echo "<pre>".print_r($e,1)."</pre>";
+                                        echo "<pre>".print_r($e,1)."</pre>";
                                     }
 
                                     // end this loop
@@ -307,7 +312,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    // echo "<pre>".print_r($e,1)."</pre>";
+                                    echo "<pre>".print_r($e,1)."</pre>";
                                 }
                             } else {
                                 try {
@@ -321,7 +326,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    // echo "<pre>".print_r($e,1)."</pre>";
+                                    echo "<pre>".print_r($e,1)."</pre>";
                                 }
                             }
 
@@ -335,11 +340,28 @@ foreach ($events as $event) {
         }
 
     }
+
 }
 
 
-// $after = microtime(true);
-// echo ($after-$before) . " sec<br>";
+//Create a variable for end time
+$time_end = microtime(true);
+ 
+//Subtract the two times to get seconds
+$time = $time_end - $time_start;
+try{
+    $data_processing_stmt = $pdo->prepare("INSERT INTO data_processing (elapsed_time) VALUES (:time)");
+    $data_processing_stmt->bindValue(":time", $time);
+    $data_processing_stmt->execute();
+
+}catch(PDOException $e) {
+    // Report errors
+    echo "<pre>".print_r($e,1)."</pre>";
+}
+
+
+echo 'Execution time : '.$time.' seconds<br>';
+
 
 // function checkMinTime($min_time, $prev_time, $current_time) {
 //     $timeFirst  = strtotime($prev_time);
@@ -481,5 +503,8 @@ function pdoMultiInsert($tableName, $data, $pdoObject){
     return $pdoStatement->execute();
 }
 
+
 ?>
 <!-- End -->
+
+

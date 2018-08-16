@@ -277,6 +277,17 @@ INSERT INTO `countries` (`code`, `country`, `country_zh_hk`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `data_processing`
+--
+
+CREATE TABLE `data_processing` (
+  `elapsed_time` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `device_mapping`
 --
 

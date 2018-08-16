@@ -286,7 +286,7 @@
                         $('#loading').fadeOut('slow',function(){$(this).remove();});
                         data = ajax_data;
                         console.log('polling...');
-                        // console.log(data);
+                        console.log(data);
 
                         // add markers
                         for (var key in data) {

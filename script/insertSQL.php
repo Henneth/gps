@@ -1,3 +1,5 @@
+<!-- insert data script  -->
+<!-- e.g. php insertSQL.php '2018-07-7 14:00:00' '2018-07-7 16:30:00' -->
 <?php
 
 // Read JSON file

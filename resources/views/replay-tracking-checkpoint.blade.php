@@ -22,8 +22,12 @@
                             <th style="line-height: 32px;">Athletes</th>
                             <?php $count=1 ?>
                             @foreach ($checkpoint as $index => $value)
-                                @if( ($index != 0) && ($value->display == 1) )
+                                @if( ($index != 0) && ($value->display == 1) && ($index != (count($checkpoint) - 1)) )
                                     <th style="line-height: 32px;">CP {{$count}} {{$value->checkpoint_name ? '('.$value->checkpoint_name.')' : ''}}</th>
+                                    <?php $count++ ?>
+                                @endif
+                                @if( $index == (count($checkpoint) - 1) )
+                                    <th style="line-height: 32px;">Finish</th>
                                     <?php $count++ ?>
                                 @endif
                             @endforeach

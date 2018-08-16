@@ -109,7 +109,7 @@
                     if (elevations_global) {
                         drawChart(currentRouteIndex);
                     }
-                    // console.log(currentRouteIndex);
+                    console.log(data);
                 },
                 error:function() {
                     $('#loading').fadeOut('slow',function(){$(this).remove();});

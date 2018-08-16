@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class LiveTracking_Model extends Model
 {
 
-	public static function getLocationsViaBibNumber($event_id, $datetime_from, $datetime_to, $bib_number, $color) {
+	public static function getLocationsViaBibNumber($event_id, $datetime_from, $datetime_to, $bib_number, $color, $livetracking = true) {
 
 		// $athlete = DB::connection('gps_live')->select("SELECT device_mapping.device_id, device_mapping.status, athletes.athlete_id, device_mapping.bib_number, athletes.first_name, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.is_public, athletes.colour_code, countries.country, countries.code
 		// 	FROM device_mapping
@@ -91,21 +91,33 @@ class LiveTracking_Model extends Model
 		} else {
 			$upperTimeLimit = $datetime_to;
 		}
-		$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM gps_live_{$event_id}.valid_data
-			WHERE bib_number = :bib_number
-			AND DATE_SUB('".$upperTimeLimit."', INTERVAL 10 MINUTE) < datetime
-			AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
-			ORDER BY datetime DESC", [
-				"bib_number"=>$bib_number,
-				"finished_at1"=>$finished_at,
-				"finished_at2"=>$finished_at,
-				"finished_at3"=>$finished_at
-			]);
-		if (empty($data)) {
+		if ($livetracking) {
+			$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM gps_live_{$event_id}.valid_data
+				WHERE bib_number = :bib_number
+				AND DATE_SUB('".$upperTimeLimit."', INTERVAL 10 MINUTE) < datetime
+				AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
+				ORDER BY datetime DESC", [
+					"bib_number"=>$bib_number,
+					"finished_at1"=>$finished_at,
+					"finished_at2"=>$finished_at,
+					"finished_at3"=>$finished_at
+				]);
+			if (empty($data)) {
+				$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM gps_live_{$event_id}.valid_data
+					WHERE bib_number = :bib_number
+					AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
+					ORDER BY datetime DESC LIMIT 1", [
+						"bib_number"=>$bib_number,
+						"finished_at1"=>$finished_at,
+						"finished_at2"=>$finished_at,
+						"finished_at3"=>$finished_at
+					]);
+			}
+		} else {
 			$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM gps_live_{$event_id}.valid_data
 				WHERE bib_number = :bib_number
 				AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
-				ORDER BY datetime DESC LIMIT 1", [
+				ORDER BY datetime DESC", [
 					"bib_number"=>$bib_number,
 					"finished_at1"=>$finished_at,
 					"finished_at2"=>$finished_at,

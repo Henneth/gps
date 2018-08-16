@@ -39,6 +39,7 @@ class ReplayTrackingController extends Controller {
         $timestamp_from = strtotime($event->datetime_from." HKT");
         $timestamp_to = strtotime($event->datetime_to." HKT");
 
+        // echo "<pre>".print_r($tempCheckpoint,1)."</pre>";
 
         if (!empty($_GET['tab']) && $_GET['tab'] == 2) {
             if (Auth::check()) {
@@ -50,7 +51,6 @@ class ReplayTrackingController extends Controller {
             }else{
                 if ($event->live == 1){
                     $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
-                    // echo "<pre>".print_r($profile,1)."</pre>";
                 } else {
                     $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
                 }
@@ -116,7 +116,7 @@ class ReplayTrackingController extends Controller {
             $count = 0; // count index of $colorArray
             foreach ($athletes as $key => $athlete) {
                 if  ($event->live == 1){
-                    $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $athlete->bib_number, $colorArray[$count]);
+                    $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $athlete->bib_number, $colorArray[$count], false);
                 } else {
                     $deviceData = ReplayTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $athlete->bib_number, $colorArray[$count]);
                 }

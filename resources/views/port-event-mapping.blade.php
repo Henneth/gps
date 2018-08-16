@@ -40,7 +40,7 @@
                                       <select class="form-control" name="{{$portsArray[$i]}}">
                                         <option value="">Achive (default)</option>
                                         @foreach ($events as $event)
-                                            <option value="{{$event->event_id}}" {{(array_key_exists($portsArray[$i], $mappingArray) ? $mappingArray[$portsArray[$i]] : null)== $event->event_id ? 'selected' : ''}}>{{$event->event_name}}</option>
+                                            <option value="{{$event->event_id}}" {{ (array_key_exists($portsArray[$i], $mappingArray) ? $mappingArray[$portsArray[$i]] : null) == $event->event_id ? 'selected' : ''}}>{{$event->event_name}}</option>
                                         @endforeach
                                       </select>
                                     </td>

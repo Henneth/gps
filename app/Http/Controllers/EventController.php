@@ -62,8 +62,7 @@ class EventController extends Controller {
         $mapping_file_path = storage_path('/')."ports_events_mapping.txt";
         $mapping_file = fopen($mapping_file_path, "r") or die("Unable to open file!");
         $mappingJson = fread($mapping_file,filesize($mapping_file_path));
-        $mappingArray = (array) json_decode($mappingJson);
-        // echo '<pre>'.print_r($mappingArray,1).'</pre>';
+        $mappingArray = json_decode($mappingJson, true);
         fclose($mapping_file);
 
         return view('port-event-mapping')->with(array('events' => $events, 'mappingArray' => $mappingArray));

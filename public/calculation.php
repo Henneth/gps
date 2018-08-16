@@ -87,19 +87,19 @@ foreach ($events as $event) {
         foreach ($device_ids as $device_id) {
             $gps_data_stmt = $pdo->prepare("SELECT * FROM {$db}.raw_data
                 WHERE :datetime_from <= datetime
-            	-- AND (:start_time1 IS NULL OR (:start_time2 IS NOT NULL AND datetime >= :start_time3))
-            	-- AND (:end_time1 IS NULL OR (:end_time2 IS NOT NULL AND datetime <= :end_time3))
+            	AND (:start_time1 IS NULL OR (:start_time2 IS NOT NULL AND datetime >= :start_time3))
+            	AND (:end_time1 IS NULL OR (:end_time2 IS NOT NULL AND datetime <= :end_time3))
                 AND device_id = :device_id AND processed = 0 ORDER BY datetime");
             $gps_data_stmt->execute(array(
                 ':datetime_from' => $eventInfo[0]['datetime_from'],
                 // ':datetime_to' => $eventInfo[0]['datetime_to'],
                 ':device_id' => $device_id['device_id'],
-                // ':start_time1' => $device_id['start_time'],
-                // ':start_time2' => $device_id['start_time'],
-                // ':start_time3' => $device_id['start_time'],
-                // ':end_time1' => $device_id['end_time'],
-                // ':end_time2' => $device_id['end_time'],
-                // ':end_time3' => $device_id['end_time'],
+                ':start_time1' => $device_id['start_time'],
+                ':start_time2' => $device_id['start_time'],
+                ':start_time3' => $device_id['start_time'],
+                ':end_time1' => $device_id['end_time'],
+                ':end_time2' => $device_id['end_time'],
+                ':end_time3' => $device_id['end_time'],
             ));
             $gps_data = $gps_data_stmt->fetchAll();
 

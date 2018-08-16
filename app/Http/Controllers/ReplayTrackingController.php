@@ -7,8 +7,6 @@ use App\Http\Controllers\Controller;
 use App\ReplayTracking_Model as ReplayTracking_Model;
 use App\DeviceMapping_Model as DeviceMapping_Model;
 use App\LiveTracking_Model as LiveTracking_Model;
-
-
 use Auth;
 
 class ReplayTrackingController extends Controller {
@@ -28,21 +26,18 @@ class ReplayTrackingController extends Controller {
         if ($event->live == 1){
             $route = DB::table('gps_live_'.$event_id.'.map_point')->get();
             $tempCheckpoint = DB::table('gps_live_'.$event_id.'.checkpoint')->get();
-        } else {
+        } else if ($event->live == 2){
             $route = DB::table('archive_map_point')->where('event_id', $event_id)->get();
             $tempCheckpoint = DB::table('archive_checkpoint')->where('event_id', $event_id)->get();
+        } else {
+            return redirect('event/'.$event_id.'/draw-route');
         }
-
-
 
         $route = json_encode($route);
         $checkpoint = json_encode($tempCheckpoint);
 
-
         $timestamp_from = strtotime($event->datetime_from." HKT");
         $timestamp_to = strtotime($event->datetime_to." HKT");
-
-        // get checkpoint distances
 
 
         if (!empty($_GET['tab']) && $_GET['tab'] == 2) {
@@ -98,7 +93,6 @@ class ReplayTrackingController extends Controller {
                     $deviceData = ReplayTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $bib_number, $colorArray[$count]);
                 }
 
-
                 $data[$bib_number] = $deviceData;
                 $count++;
             }
@@ -138,7 +132,7 @@ class ReplayTrackingController extends Controller {
         return response()->json($data);
     }
 
-
+    // poll checkpoint table related data
     public function checkpointTable($event_id){
         // $time_start = microtime(true);
         $event = DB::table('events')->where('event_id', $event_id)->first();

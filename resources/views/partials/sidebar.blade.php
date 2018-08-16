@@ -6,13 +6,16 @@
 
         <?php
             $live_events = []; // array only store live events, 'live is 1'
-            $other_events = []; // 'live is 0 or 2'
+            $future_events = []; // 'live is 0'
+            $archived_events = []; // 'live is 2'
             $current_event = [];
             foreach ($events as $value) {
                 if($value->live == 1){
                     $live_events[] = $value;
-                } else{
-                    $other_events[] = $value;
+                } else if ($value->live == 2){
+                    $archived_events[] = $value;
+                } else {
+                    $future_events[] = $value;
                 }
 
                 if (!empty($event_id) && $event_id == $value->event_id) {
@@ -33,7 +36,7 @@
         <!-- Sidebar Menu -->
         <ul class="sidebar-menu">
             @if(( $hideOthers && $current_event->live == 1 ) || ( !$hideOthers && !empty($live_events) ))
-                <li class="header live-event">LIVE EVENT
+                <li class="header live-event">LIVE EVENTS
                     <span class="pull-right-container">
                         <i class="fa fa-minus pull-right"></i>
                         <i class="fa fa-plus pull-right" style="display: none;"></i>
@@ -55,7 +58,7 @@
                     @endif
                 </li>
                 @if($current_event && $current_event->live == 1)
-                    @foreach ([['Live Tracking', 'fa-map-marker-alt']] as $item)
+                    @foreach ([['Live Tracking', 'fa-map-marker-alt'], ['Replay Tracking', 'fa-redo']] as $item)
                         <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa fa-fw {{$item[1]}}'></i>&nbsp;&nbsp;<span>{{$item[0]}}</span></a></li>
                     @endforeach
                     @if (Auth::check())
@@ -66,8 +69,8 @@
                 @endif
             @endif
 
-            @if (!$hideOthers || ($hideOthers && $current_event->live != 1))
-                <li class="header">ARCHIVE
+            @if (!$hideOthers || ($hideOthers && $current_event->live == 2))
+                <li class="header">ARCHIVED EVENTS
                     <span class="pull-right-container">
                         <i class="fa fa-minus pull-right"></i>
                         <i class="fa fa-plus pull-right" style="display: none;"></i>
@@ -76,9 +79,9 @@
                         <div style="padding: 4px 0 0;color:#ccc;font-style: italic;font-size: 1.2em;"><span style="color: #666;">●</span> {{$event_name}}</div>
                     @else
                         <div style="padding: 8px 0 4px;">
-                            <select class="archive-events sidebar-select form-control" style="width: 100%;height: 28px;" tabindex="-1" aria-hidden="true">
+                            <select class="archived-events sidebar-select form-control" style="width: 100%;height: 28px;" tabindex="-1" aria-hidden="true">
                                 <option disabled selected>---- Select an event ----</option>
-                                @foreach ($other_events as $event)
+                                @foreach ($archived_events as $event)
                                     <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
                                 @endforeach
                             </select>
@@ -86,7 +89,7 @@
                     @endif
                 </li>
 
-                @if($current_event && $current_event->live != 1)
+                @if($current_event && $current_event->live == 2)
                     @foreach ([['Replay Tracking', 'fa-redo']] as $item)
                         <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa fa-fw {{$item[1]}}'></i>&nbsp;&nbsp;<span>{{$item[0]}}</span></a></li>
                     @endforeach
@@ -103,7 +106,43 @@
                         @endif
                     @endif
                 @endif
+            @endif
 
+            @if (Auth::check())
+                @if (!$hideOthers || ($hideOthers && $current_event->live == 0))
+                    <li class="header">FUTURE EVENTS
+                        <span class="pull-right-container">
+                            <i class="fa fa-minus pull-right"></i>
+                            <i class="fa fa-plus pull-right" style="display: none;"></i>
+                        </span>
+                        @if ($hideOthers)
+                            <div style="padding: 4px 0 0;color:#ccc;font-style: italic;font-size: 1.2em;"><span style="color: #666;">●</span> {{$event_name}}</div>
+                        @else
+                            <div style="padding: 8px 0 4px;">
+                                <select class="future-events sidebar-select form-control" style="width: 100%;height: 28px;" tabindex="-1" aria-hidden="true">
+                                    <option disabled selected>---- Select an event ----</option>
+                                    @foreach ($future_events as $event)
+                                        @if (Auth::check() || $event->live != 0)
+                                            <option value="{{$event->event_id}}" {{ ($event->event_id == (!empty($event_id) ? $event_id : 0)) ? 'selected' : ''}}>{{$event->event_name}}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                    </li>
+
+                    @if($current_event && $current_event->live == 0)
+                        @if ($event_type == 'fixed route' || $event_type == 'shortest route')
+                            @foreach ([['Draw Route', 'fa-pencil-alt'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Edit Event', 'fas fa-cog']] as $item)
+                                <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa fa-fw {{$item[1]}}'></i>&nbsp;&nbsp;<span>{{$item[0]}}</span></a></li>
+                            @endforeach
+                        @else
+                            @foreach ([['Draw Route', 'fa-pencil-alt'], ['Checkpoint', 'fa-flag-checkered'], ['Athletes', 'icon-directions_run'], ['Device Mapping', 'fa-exchange-alt'], ['Edit Event', 'fas fa-cog']] as $item)
+                                <li class="{{(Route::currentRouteName() == str_slug($item[0], '-') ) ? 'active' : ''}}"><a href="{{ url( 'event/' . $event_id . '/' . str_slug($item[0], '-') ) }}"><i class='fa fa-fw {{$item[1]}}'></i>&nbsp;&nbsp;<span>{{$item[0]}}</span></a></li>
+                            @endforeach
+                        @endif
+                    @endif
+                @endif
             @endif
 
             @if (!$hideOthers)

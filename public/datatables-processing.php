@@ -44,7 +44,7 @@ require_once('../setEnv.php');
 $sql_details = array(
     'user' => 'root',
     'pass' => ($env == 'server') ? 'rts123' : 'root',
-    'db'   => !empty($_GET['live']) ? "gps_live_".$_GET['live'] : 'gps',
+    'db'   => !empty($_GET['event_id']) ? "gps_live_".$_GET['event_id'] : 'gps',
     'host' => '127.0.0.1'
 );
 

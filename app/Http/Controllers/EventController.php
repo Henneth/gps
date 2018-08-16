@@ -48,9 +48,9 @@ class EventController extends Controller {
         // get current event_id for creating new gps_live DB
         $event_id = DB::getPdo()->lastInsertId();
         CreateEvent_Model::createLiveDB($event_id);
-        echo '<pre>'.print_r($event_id,1).'</pre>';
+        // echo '<pre>'.print_r($event_id,1).'</pre>';
 
-        // return redirect('create-new-event')->with('success', 'Event Created.');
+        return redirect('create-new-event')->with('success', 'Event Created.');
     }
 
 

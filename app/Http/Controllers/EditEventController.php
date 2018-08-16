@@ -30,8 +30,11 @@ class EditEventController extends Controller {
 
         if ($event_type == 'shortest route') {
 			DB::table("gps_live_".$event_id.".checkpoint")->truncate();
+			$maxPointOrder = DB::table("gps_live_".$event_id.".map_point")
+                ->max('point_order');
 			DB::table("gps_live_".$event_id.".map_point")
                 ->where('is_checkpoint', 1)
+                ->where('point_order', '!=', $maxPointOrder)
                 ->update(['is_checkpoint' => 0, 'display' => 1, 'checkpoint_no' => null, 'checkpoint_name' => null, 'min_time' => null]);
         }
 

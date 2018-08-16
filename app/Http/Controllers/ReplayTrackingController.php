@@ -189,8 +189,7 @@ class ReplayTrackingController extends Controller {
         $dataArray = [];
         foreach ($data as $value) {
             $tempArray = [];
-            $tempArray[] = $value['bib_number'].' '.$value['name'];
-
+            $tempArray[] = '<b>'.$value['bib_number'].'</b> '.$value['name'];
 
             foreach ($tempCheckpoint as $index => $checkpoint) {
                 if( ($index != 0) && ($checkpoint->display == 1) ) {

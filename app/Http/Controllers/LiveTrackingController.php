@@ -87,7 +87,7 @@ class LiveTrackingController extends Controller {
 
         return response()->json($data);
     }
-    
+
     // poll checkpoint table related data
     public function checkpointTable($event_id){
         // if not empty localstorage
@@ -122,7 +122,7 @@ class LiveTrackingController extends Controller {
         $dataArray = [];
         foreach ($data as $value) {
             $tempArray = [];
-            $tempArray[] = $value['bib_number'].' '.$value['name'];
+            $tempArray[] = '<b>'.$value['bib_number'].'</b> '.$value['name'];
 
             foreach ($tempCheckpoint as $index => $checkpoint) {
                 if( ($index != 0) && ($checkpoint->display == 1) ) {

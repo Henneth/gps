@@ -217,12 +217,12 @@ foreach ($events as $event) {
 
                             // update distances
                             $accumulated_distance_since_last_ckpt = $accumulated_distance_since_last_ckpt + $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
-                            echo "current distance: {$routePoint['distance_from_start']}<br>";
-                            echo "previous distance: {$lastReachedPoint['distance_from_start']}<br>";
+                            // echo "current distance: {$routePoint['distance_from_start']}<br>";
+                            // echo "previous distance: {$lastReachedPoint['distance_from_start']}<br>";
                             // echo "difference: {($routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'])}<br>";
-                            echo "accumulated_distance_since_last_ckpt: {$accumulated_distance_since_last_ckpt}<br>";
+                            // echo "accumulated_distance_since_last_ckpt: {$accumulated_distance_since_last_ckpt}<br>";
                             $distance_to_next_ckpt = $checkpoints[$reachedCkptNo]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
-                            echo "distance_to_next_ckpt: {$distance_to_next_ckpt}<br>";
+                            // echo "distance_to_next_ckpt: {$distance_to_next_ckpt}<br>";
 
                             try {
                                 // insert into distance_data

@@ -22,13 +22,15 @@
                             {{-- <th style="width: 40px">Label</th> --}}
                         </tr>
                         @foreach ($events as $event)
-                            <tr>
-                                <td>{{$event->event_id}}<span style="color:red;text-transform: uppercase;font-style: italic;font-weight: bold;">{{$event->live === 1 ? '&nbsp;&nbsp;●&nbsp;Live' : ''}}</span></td>
-                                <td><a href="{{url('/')}}/event/{{$event->event_id}}">{{$event->event_name}}</a></td>
-                                <td>{{$event->datetime_from}}</td>
-                                <td>{{$event->datetime_to}}</td>
-                                {{-- <td><span class="badge bg-red">55%</span></td> --}}
-                            </tr>
+                            @if (Auth::check() || $event->live != 0)
+                                <tr>
+                                    <td>{{$event->event_id}}<span style="color:red;text-transform: uppercase;font-style: italic;font-weight: bold;">{{$event->live === 1 ? '&nbsp;&nbsp;●&nbsp;Live' : ''}}</span></td>
+                                    <td><a href="{{url('/')}}/event/{{$event->event_id}}">{{$event->event_name}}</a></td>
+                                    <td>{{$event->datetime_from}}</td>
+                                    <td>{{$event->datetime_to}}</td>
+                                    {{-- <td><span class="badge bg-red">55%</span></td> --}}
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>

@@ -82,19 +82,19 @@ foreach ($events as $event) {
         foreach ($device_ids as $device_id) {
             $gps_data_stmt = $pdo->prepare("SELECT * FROM {$db}.raw_data
                 WHERE :datetime_from <= datetime
-            	-- AND (:start_time1 IS NULL OR (:start_time2 IS NOT NULL AND datetime >= :start_time3))
-            	-- AND (:end_time1 IS NULL OR (:end_time2 IS NOT NULL AND datetime <= :end_time3))
+            	AND (:start_time1 IS NULL OR (:start_time2 IS NOT NULL AND datetime >= :start_time3))
+            	AND (:end_time1 IS NULL OR (:end_time2 IS NOT NULL AND datetime <= :end_time3))
                 AND device_id = :device_id AND processed = 0 ORDER BY datetime");
             $gps_data_stmt->execute(array(
                 ':datetime_from' => $eventInfo[0]['datetime_from'],
                 // ':datetime_to' => $eventInfo[0]['datetime_to'],
                 ':device_id' => $device_id['device_id'],
-                // ':start_time1' => $device_id['start_time'],
-                // ':start_time2' => $device_id['start_time'],
-                // ':start_time3' => $device_id['start_time'],
-                // ':end_time1' => $device_id['end_time'],
-                // ':end_time2' => $device_id['end_time'],
-                // ':end_time3' => $device_id['end_time'],
+                ':start_time1' => $device_id['start_time'],
+                ':start_time2' => $device_id['start_time'],
+                ':start_time3' => $device_id['start_time'],
+                ':end_time1' => $device_id['end_time'],
+                ':end_time2' => $device_id['end_time'],
+                ':end_time3' => $device_id['end_time'],
             ));
             $gps_data = $gps_data_stmt->fetchAll();
 
@@ -199,7 +199,7 @@ foreach ($events as $event) {
                             $pdo->rollBack();
 
                             // Report errors
-                            // echo "<pre>".print_r($e,1)."</pre>";
+                            echo "<pre>".print_r($e,1)."</pre>";
                             echo "=== MYSQL Error. Rollback. ===<br>";
                         }
                     }
@@ -217,12 +217,12 @@ foreach ($events as $event) {
 
                             // update distances
                             $accumulated_distance_since_last_ckpt = $accumulated_distance_since_last_ckpt + $routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'];
-                            // echo "current distance: {$routePoint['distance_from_start']}<br>";
-                            // echo "previous distance: {$lastReachedPoint['distance_from_start']}<br>";
+                            echo "current distance: {$routePoint['distance_from_start']}<br>";
+                            echo "previous distance: {$lastReachedPoint['distance_from_start']}<br>";
                             // echo "difference: {($routePoint['distance_from_start'] - $lastReachedPoint['distance_from_start'])}<br>";
-                            // echo "accumulated_distance_since_last_ckpt: {$accumulated_distance_since_last_ckpt}<br>";
+                            echo "accumulated_distance_since_last_ckpt: {$accumulated_distance_since_last_ckpt}<br>";
                             $distance_to_next_ckpt = $checkpoints[$reachedCkptNo]['distance_to_next_ckpt'] - $accumulated_distance_since_last_ckpt;
-                            // echo "distance_to_next_ckpt: {$distance_to_next_ckpt}<br>";
+                            echo "distance_to_next_ckpt: {$distance_to_next_ckpt}<br>";
 
                             try {
                                 // insert into distance_data
@@ -234,7 +234,7 @@ foreach ($events as $event) {
                                 $stmt->execute();
                             } catch(PDOException $e) {
                                 // Report errors
-                                // echo "<pre>".print_r($e,1)."</pre>";
+                                echo "<pre>".print_r($e,1)."</pre>";
                             }
 
                             // update $lastReachedPoint
@@ -265,7 +265,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    // echo "<pre>".print_r($e,1)."</pre>";
+                                    echo "<pre>".print_r($e,1)."</pre>";
                                 }
 
                                 // update $reachedCkpt
@@ -289,7 +289,7 @@ foreach ($events as $event) {
                                         $stmt->execute();
                                     } catch(PDOException $e) {
                                         // Report errors
-                                        // echo "<pre>".print_r($e,1)."</pre>";
+                                        echo "<pre>".print_r($e,1)."</pre>";
                                     }
 
                                     // end this loop
@@ -307,7 +307,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    // echo "<pre>".print_r($e,1)."</pre>";
+                                    echo "<pre>".print_r($e,1)."</pre>";
                                 }
                             } else {
                                 try {
@@ -321,7 +321,7 @@ foreach ($events as $event) {
                                     $stmt->execute();
                                 } catch(PDOException $e) {
                                     // Report errors
-                                    // echo "<pre>".print_r($e,1)."</pre>";
+                                    echo "<pre>".print_r($e,1)."</pre>";
                                 }
                             }
 

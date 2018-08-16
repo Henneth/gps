@@ -20,7 +20,7 @@
 {{-- AdminLTE App --}}
 <script src="{{ asset('/js/app.min.js') }}" type="text/javascript"></script>
 {{-- Custom --}}
-<script src="{{ asset('/js/custom.js') }}" type="text/javascript"></script>
+<script src="{{ asset('/js/custom.js') }}?v=0.0.1" type="text/javascript"></script>
 {{-- select2 --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 @yield('js')

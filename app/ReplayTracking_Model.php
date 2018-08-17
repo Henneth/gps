@@ -85,7 +85,7 @@ class ReplayTracking_Model extends Model
 	// 	return $data;
 	// }
 
-	public static function getLocationsViaBibNumber($event_id, $datetime_from, $datetime_to, $bib_number, $color, $elevation_chart = false) {
+	public static function getLocationsViaBibNumber($event_id, $datetime_from, $datetime_to, $bib_number, $color) {
 		// $athlete = DB::select("SELECT device_mapping.device_id, device_mapping.status, athletes.athlete_id, device_mapping.bib_number, athletes.first_name, athletes.first_name, athletes.last_name, athletes.zh_full_name, athletes.is_public, athletes.colour_code, countries.country, countries.code
 		// 	FROM device_mapping
 		// 	INNER JOIN athletes
@@ -149,25 +149,21 @@ class ReplayTracking_Model extends Model
 			]);
 		$finished_at = !empty($finished_at) ? $finished_at[0]->reached_at : null;
 
-		if (!$elevation_chart) {
-			$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM archive_valid_data
-				WHERE event_id = :event_id
-				AND bib_number = :bib_number
-				-- AND (:start_time IS NULL OR (:start_time1 IS NOT NULL AND datetime >= :start_time2))
-				-- AND (:end_time IS NULL OR (:end_time1 IS NOT NULL AND datetime <= :end_time2))
-				AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
-				ORDER BY datetime DESC", [
-					"event_id"=>$event_id,
-					"bib_number"=>$bib_number,
-					"finished_at1"=>$finished_at,
-					"finished_at2"=>$finished_at,
-					"finished_at3"=>$finished_at
-				]);
-		}
+		$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM archive_valid_data
+			WHERE event_id = :event_id
+			AND bib_number = :bib_number
+			AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
+			ORDER BY datetime DESC", [
+				"event_id"=>$event_id,
+				"bib_number"=>$bib_number,
+				"finished_at1"=>$finished_at,
+				"finished_at2"=>$finished_at,
+				"finished_at3"=>$finished_at
+			]);
 
 		$array = [];
 		$array['athlete'] = !empty($athlete) ? $athlete[0] : null;
-		$array['data'] = !$elevation_chart ? $data : null;
+		$array['data'] = $data;
 		$array['distances'] = $distances;
 		$array['reachedCheckpoint'] = $reachedCheckpoint;
 		return $array;

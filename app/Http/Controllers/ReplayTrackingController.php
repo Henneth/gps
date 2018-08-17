@@ -81,7 +81,7 @@ class ReplayTrackingController extends Controller {
 
         // if not empty localstorage
         if ( !empty($_GET['bib_numbers']) ){
-            $bib_numbers = json_decode($_GET['bib_numbers']);
+            $bib_numbers = json_decode($_GET['bib_numbers'],true);
             sort($bib_numbers);
 
             $data = [];

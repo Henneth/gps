@@ -122,7 +122,7 @@ class LiveTrackingController extends Controller {
         $dataArray = [];
         foreach ($data as $value) {
             $tempArray = [];
-            $tempArray[] = '<b>'.$value['bib_number'].'</b> '.$value['name'];
+            $tempArray[] = $value['name'].' ('.$value['bib_number'].')';
 
             foreach ($tempCheckpoint as $index => $checkpoint) {
                 if( ($index != 0) && ($checkpoint->display == 1) ) {

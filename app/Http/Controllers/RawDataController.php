@@ -36,7 +36,7 @@ class RawDataController extends Controller {
         }
         $live_event_ids = DB::table('events')
                     ->select('event_id', 'event_name')
-                    ->where('live', '!=', 2)
+                    ->where('live', 1)
                     ->get();
         return view('raw-data')->with(array('device_ids' => $device_ids, 'live_event_ids' => $live_event_ids));
     }

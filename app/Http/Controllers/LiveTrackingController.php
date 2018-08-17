@@ -56,7 +56,7 @@ class LiveTrackingController extends Controller {
 
         // if not empty localstorage
         if ( !empty($_GET['bib_numbers']) ){
-            $bib_numbers = json_decode($_GET['bib_numbers']);
+            $bib_numbers = json_decode($_GET['bib_numbers'], true);
             sort($bib_numbers);
 
             $data = [];
@@ -77,6 +77,7 @@ class LiveTrackingController extends Controller {
 
             $data = [];
             $count = 0; // count index of $colorArray
+            // print_r($athletes);
             foreach ($athletes as $key => $athlete) {
                 $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $athlete->bib_number, $colorArray[$count]);
                 $data[$athlete->bib_number] = $deviceData;

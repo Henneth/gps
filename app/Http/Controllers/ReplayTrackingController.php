@@ -88,7 +88,7 @@ class ReplayTrackingController extends Controller {
             $count = 0; // count index of $colorArray
             foreach ($bib_numbers as $key => $bib_number) {
                 if ($event->live == 1){
-                    $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $bib_number, $colorArray[$count]);
+                    $deviceData = LiveTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $bib_number, $colorArray[$count], false);
                 } else {
                     $deviceData = ReplayTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $bib_number, $colorArray[$count]);
                 }

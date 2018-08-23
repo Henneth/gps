@@ -63,6 +63,7 @@
                     "data": {'bib_numbers': localStorageArray ? JSON.stringify(localStorageArray) : null},
                     "type": "GET",
                 },
+                "pageLength": 20,
                 "scrollX": true,
                 "ordering": false,
                 "searching": false,

@@ -44,15 +44,15 @@ class ReplayTrackingController extends Controller {
         if (!empty($_GET['tab']) && $_GET['tab'] == 2) {
             if (Auth::check()) {
                 if ($event->live == 1){
-                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 } else {
-                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, true, false, false); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 }
             }else{
                 if ($event->live == 1){
-                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 } else {
-                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $profile = DeviceMapping_Model::getAthletesProfile($event_id, false, false, false); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 }
             }
 
@@ -92,7 +92,6 @@ class ReplayTrackingController extends Controller {
                 } else {
                     $deviceData = ReplayTracking_Model::getLocationsViaBibNumber($event_id, $event->datetime_from, $event->datetime_to, $bib_number, $colorArray[$count]);
                 }
-
                 $data[$bib_number] = $deviceData;
                 $count++;
             }
@@ -100,15 +99,15 @@ class ReplayTrackingController extends Controller {
             // get 20 athletes from db
             if (Auth::check()){
                 if ($event->live == 1){
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 }else {
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, false); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 }
             } else {
                 if  ($event->live == 1){
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 } else{
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
+                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, false); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
                 }
             }
 
@@ -138,47 +137,47 @@ class ReplayTrackingController extends Controller {
         $event = DB::table('events')->where('event_id', $event_id)->first();
 
         // if not empty localstorage
-        if ( !empty($_GET['bib_numbers']) ){
-            $bib_numbers = json_decode($_GET['bib_numbers']);
-            sort($bib_numbers);
+        // if ( !empty($_GET['bib_numbers']) ){
+        //     $bib_numbers = json_decode($_GET['bib_numbers']);
+        //     sort($bib_numbers);
+        //
+        //     $data = [];
+        //     foreach ($bib_numbers as $key => $bib_number) {
+        //         if ($event->live == 1){
+        //             $reachedCheckpointData = LiveTracking_Model::getReachedCheckpointData($event_id, $bib_number);
+        //         } else {
+        //             $reachedCheckpointData = ReplayTracking_Model::getReachedCheckpointData($event_id, $bib_number);
+        //         }
+        //         $data[$bib_number] = $reachedCheckpointData;
+        //     }
+        // } else {
 
-            $data = [];
-            foreach ($bib_numbers as $key => $bib_number) {
-                if ($event->live == 1){
-                    $reachedCheckpointData = LiveTracking_Model::getReachedCheckpointData($event_id, $bib_number);
-                } else {
-                    $reachedCheckpointData = ReplayTracking_Model::getReachedCheckpointData($event_id, $bib_number);
-                }
-
-
-                $data[$bib_number] = $reachedCheckpointData;
+        // get all athletes from db
+        if (Auth::check()){
+            if ($event->live == 1){
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
+            } else {
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
             }
         } else {
-            // get 20 athletes from db
-            if (Auth::check()){
-                if ($event->live == 1){
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
-                }else {
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
-                }
-            } else {
-                if  ($event->live == 1){
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
-                } else{
-                    $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not
-                }
-            }
-
-            $data = [];
-            foreach ($athletes as $key => $athlete) {
-                if  ($event->live == 1){
-                    $reachedCheckpointData = LiveTracking_Model::getReachedCheckpointData($event_id, $athlete->bib_number);
-                } else {
-                    $reachedCheckpointData = ReplayTracking_Model::getReachedCheckpointData($event_id, $athlete->bib_number);
-                }
-                $data[$athlete->bib_number] = $reachedCheckpointData;
+            if ($event->live == 1){
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, true, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
+            } else{
+                $athletes = DeviceMapping_Model::getAthletesProfile($event_id, false, true, false, true); // 2: auth, 3: map (hide hidden athletes) or participants list (show hidden athletes), 4: live or not, 5: get all athletes or not
             }
         }
+
+        $data = [];
+        foreach ($athletes as $key => $athlete) {
+            if  ($event->live == 1){
+                $reachedCheckpointData = LiveTracking_Model::getReachedCheckpointData($event_id, $athlete->bib_number);
+            } else {
+                $reachedCheckpointData = ReplayTracking_Model::getReachedCheckpointData($event_id, $athlete->bib_number);
+            }
+            $data[$athlete->bib_number] = $reachedCheckpointData;
+        }
+
+        // }
 
         usort($data, array($this, "cmp"));
         if ($event->live == 1){

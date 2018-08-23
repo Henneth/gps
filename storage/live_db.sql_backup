@@ -1,20 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.2
--- http://www.phpmyadmin.net
+-- version 4.7.7
+-- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 22, 2018 at 09:14 PM
--- Server version: 5.6.28-log
--- PHP Version: 5.5.31
+-- Generation Time: Aug 02, 2018 at 07:40 AM
+-- Server version: 5.6.38
+-- PHP Version: 7.2.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `gps_live_17`
@@ -31,8 +25,6 @@ CREATE TABLE `athletes` (
   `first_name` varchar(128) DEFAULT NULL,
   `last_name` varchar(128) DEFAULT NULL,
   `zh_full_name` varchar(255) DEFAULT NULL,
-  `gender` enum('M','F') DEFAULT NULL,
-  `category` varchar(64) DEFAULT NULL,
   `is_public` tinyint(1) NOT NULL DEFAULT '1',
   `status` enum('visible','hidden') NOT NULL DEFAULT 'visible',
   `country_code` varchar(64) DEFAULT NULL
@@ -285,6 +277,17 @@ INSERT INTO `countries` (`code`, `country`, `country_zh_hk`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `data_processing`
+--
+
+CREATE TABLE `data_processing` (
+  `elapsed_time` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `device_mapping`
 --
 
@@ -370,8 +373,6 @@ CREATE TABLE `participants` (
   `first_name` varchar(128) DEFAULT NULL,
   `last_name` varchar(128) DEFAULT NULL,
   `zh_full_name` varchar(255) DEFAULT NULL,
-  `gender` enum('M','F') DEFAULT NULL,
-  `category` varchar(64) DEFAULT NULL,
   `is_public` tinyint(1) DEFAULT '1',
   `country_code` varchar(128) DEFAULT NULL,
   `country` varchar(255) DEFAULT NULL,
@@ -456,6 +457,12 @@ ALTER TABLE `distance_data`
   ADD PRIMARY KEY (`distance_data_id`);
 
 --
+-- Indexes for table `invalid_data`
+--
+ALTER TABLE `invalid_data`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `map_point`
 --
 ALTER TABLE `map_point`
@@ -486,6 +493,12 @@ ALTER TABLE `reached_checkpoint`
   ADD UNIQUE KEY `bib_number` (`bib_number`,`checkpoint_id`);
 
 --
+-- Indexes for table `valid_data`
+--
+ALTER TABLE `valid_data`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -494,26 +507,27 @@ ALTER TABLE `reached_checkpoint`
 --
 ALTER TABLE `checkpoint`
   MODIFY `checkpoint_id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `device_mapping`
 --
 ALTER TABLE `device_mapping`
   MODIFY `device_mapping_id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `distance_data`
 --
 ALTER TABLE `distance_data`
   MODIFY `distance_data_id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `map_point`
 --
 ALTER TABLE `map_point`
   MODIFY `point_order` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `raw_data`
 --
 ALTER TABLE `raw_data`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

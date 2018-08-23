@@ -12,7 +12,7 @@ class EditEvent_Model extends Model
 	// Tables will be copied to live DB
 	public static function processAthletes($event_id) {
 		$live_db = "gps_live_{$event_id}";
-		DB::insert("INSERT INTO {$live_db}.participants (bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, country_zh_hk, start_time, end_time, status) SELECT bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, country_zh_hk, null, null, status FROM {$live_db}.athletes AS a LEFT JOIN {$live_db}.countries AS c ON a.country_code = c.code");
+		DB::insert("INSERT INTO {$live_db}.participants (bib_number, first_name, last_name, zh_full_name, gender, category, is_public, country_code, country, country_zh_hk, start_time, end_time, status) SELECT bib_number, first_name, last_name, zh_full_name, gender, category, is_public, country_code, country, country_zh_hk, null, null, status FROM {$live_db}.athletes AS a LEFT JOIN {$live_db}.countries AS c ON a.country_code = c.code");
 	}
 	// Tables will be copied to archive DB
 	public static function copyToArchiveDB($event_id) {

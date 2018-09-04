@@ -94,7 +94,6 @@ class LiveTracking_Model extends Model
 		if ($livetracking) {
 			$data = DB::select("SELECT *, unix_timestamp(datetime) AS timestamp FROM gps_live_{$event_id}.valid_data
 				WHERE bib_number = :bib_number
-				AND DATE_SUB('".$upperTimeLimit."', INTERVAL 10 MINUTE) < datetime
 				AND (:finished_at1 IS NULL OR (:finished_at2 IS NOT NULL AND datetime <= :finished_at3))
 				ORDER BY datetime DESC", [
 					"bib_number"=>$bib_number,

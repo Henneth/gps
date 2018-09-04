@@ -19,7 +19,7 @@ class DeviceMapping_Model extends Model
 	}
 
 
-	public static function getAthletesProfile($event_id, $auth, $visible_only, $live = false) {
+	public static function getAthletesProfile($event_id, $auth, $visible_only, $live = false, $all = false) {
 
 		if (!$auth) {
 			$checkIsPublic = "AND is_public = 1 ";
@@ -45,6 +45,10 @@ class DeviceMapping_Model extends Model
 			// echo '<pre>'.print_r($profile, 1).'</pre>';
 		}
 
+		if ($all) {
+			return $profile;
+		}
+
 		$count = 1;
 		foreach ($profile as $key => &$athlete) {
 			if ($athlete->status == 'visible'){
@@ -59,6 +63,11 @@ class DeviceMapping_Model extends Model
 			}
 		}
 		return $profile;
+	}
+
+}
+
+
 // ------
 		// if (!$auth) {
 		// 	$checkIsPublic = "AND athletes.is_public = 1 ";
@@ -87,6 +96,3 @@ class DeviceMapping_Model extends Model
 		// 			"event_id"=>$event_id
 		// 		]);
 		// }
-	}
-
-}

@@ -32,10 +32,11 @@ $columns = array(
     array( 'db' => 'datetime', 'dt' => 0 ),
     array( 'db' => 'created_at', 'dt' => 1 ),
     array( 'db' => 'TIMEDIFF(datetime, created_at)', 'dt' => 2 ),
-    array( 'db' => 'device_id', 'dt' => 3 ),
-    array( 'db' => 'longitude', 'dt' => 4 ),
-    array( 'db' => 'latitude', 'dt' => 5 ),
-    array( 'db' => 'battery_level', 'dt' => 6 )
+    array( 'db' => 'TIMEDIFF(datetime, (SELECT MAX(datetime) FROM raw_data AS r1 WHERE r1.device_id = r2.device_id AND r1.datetime < r2.datetime LIMIT 1))', 'dt' => 3 ),
+    array( 'db' => 'device_id', 'dt' => 4 ),
+    array( 'db' => 'longitude', 'dt' => 5 ),
+    array( 'db' => 'latitude', 'dt' => 6),
+    array( 'db' => 'battery_level', 'dt' => 7 )
 );
 
 require_once('../setEnv.php');
@@ -44,7 +45,7 @@ require_once('../setEnv.php');
 $sql_details = array(
     'user' => 'root',
     'pass' => ($env == 'server') ? 'rts123' : 'root',
-    'db'   => !empty($_GET['live']) ? "gps_live_".$_GET['live'] : 'gps',
+    'db'   => !empty($_GET['event_id']) ? "gps_live_".$_GET['event_id'] : 'gps',
     'host' => '127.0.0.1'
 );
 

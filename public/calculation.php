@@ -106,7 +106,7 @@ foreach ($events as $event) {
             $data_array = array_merge($data_array, $gps_data);
         }
 
-        if ($eventInfo[0]['event_type'] == 'fixed route') {
+        // if ($eventInfo[0]['event_type'] == 'fixed route') {
 
             // get checkpoints and last reached checkpoint
             $checkpoints = $pdo->query("SELECT * FROM {$db}.checkpoint")->fetchAll();
@@ -209,7 +209,7 @@ foreach ($events as $event) {
                         }
                     }
 
-                    if ($validData){
+                    if ($validData && $eventInfo[0]['event_type'] == 'fixed route'){
                         // Check if distance has progress
                         if (!$finished && $point_order > $lastReachedPointNo) {
                             if (getCurrentCheckpoint($point_order, $checkpoints) > $reachedCkptNo + 1) {
@@ -335,9 +335,9 @@ foreach ($events as $event) {
                 }
             }
 
-        } else {
-
-        }
+        // } else {
+        //
+        // }
 
     }
 
@@ -346,7 +346,7 @@ foreach ($events as $event) {
 
 //Create a variable for end time
 $time_end = microtime(true);
- 
+
 //Subtract the two times to get seconds
 $time = $time_end - $time_start;
 try{
@@ -506,5 +506,3 @@ function pdoMultiInsert($tableName, $data, $pdoObject){
 
 ?>
 <!-- End -->
-
-

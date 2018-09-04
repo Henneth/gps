@@ -15,7 +15,7 @@
 <div class="pull-right">
     <form role="form" action="{{url('/')}}/raw-data/export-raw-data" method="post" enctype="multipart/form-data">
         {{ csrf_field() }}
-        <button type="submit" class="btn btn-success exportToExcel disabled" style="{{ isset($_GET['live']) ? 'display:none' : ''}}"><i class="fas fa-download"></i>&nbsp; Export to Excel</button>
+        <button type="submit" class="btn btn-success exportToExcel disabled" style="{{ isset($_GET['event_id']) ? 'display:none' : ''}}"><i class="fas fa-download"></i>&nbsp; Export to Excel</button>
         <input type="hidden" id="time-from-value" name="time-from">
         <input type="hidden" id="time-to-value" name="time-to">
         <input type="hidden" id="deviceID-value" name="deviceID">
@@ -29,9 +29,9 @@
             <!-- /.box-header -->
             <div class="box-body">
                 <ul class="nav nav-tabs">
-                    <li class="{{ !isset($_GET['live']) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data">Achive</a></li>
+                    <li class="{{ !isset($_GET['event_id']) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data">Archive</a></li>
                     @foreach ($live_event_ids as $live_event_id)
-                        <li class="{{ (isset($_GET['live']) && $_GET['live'] == $live_event_id->event_id) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data?live={{$live_event_id->event_id}}">{{$live_event_id->event_name}}</a></li>
+                        <li class="{{ (isset($_GET['event_id']) && $_GET['event_id'] == $live_event_id->event_id) ? 'active' : ''}}" ><a href="{{url('/')}}/raw-data?event_id={{$live_event_id->event_id}}">{{$live_event_id->event_name}}</a></li>
                     @endforeach
                 </ul>
                 <table id="table1" class="table table-bordered table-striped display responsive no-wrap" width="100%">
@@ -57,6 +57,7 @@
                             </th>
                             <th></th>
                             <th></th>
+                            <th></th>
                             <th>
                                 <select class="device_list form-control" style="width: 100%;">
                                     <option></option>
@@ -76,6 +77,7 @@
                             <th>Timestamp</th>
                             <th>Received At</th>
                             <th>Delay</th>
+                            <th>Interval</th>
                             <th>
                                 <span style="padding-right: 8px;">Device ID</span>
                             </th>
@@ -145,7 +147,7 @@
             "processing": true,
             "serverSide": true,
             "ajax": {
-                "url": '{{url('/')}}{{ isset($_GET['live']) ? "/datatables-processing.php?live=".$_GET['live'] : "/datatables-processing.php"}}',
+                "url": '{{url('/')}}{{ isset($_GET['event_id']) ? "/datatables-processing.php?event_id=".$_GET['event_id'] : "/datatables-processing.php"}}',
                 "data": function ( d ) {
                     d.datetime_from = $('#time-from').val(),
                     d.datetime_to = $('#time-to').val(),
@@ -171,6 +173,7 @@
                 { 'orderable': false, 'targets': 4 },
                 { 'orderable': false, 'targets': 5 },
                 { 'orderable': false, 'targets': 6 },
+                { 'orderable': false, 'targets': 7 },
 
             ]
         })
@@ -178,7 +181,7 @@
 
         $('.device_list').change(function () {
             table
-                .columns( 3 )
+                .columns( 4 )
                 .search( this.value )
                 .draw();
 

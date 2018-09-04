@@ -307,7 +307,7 @@ class SSP {
 		// Main query to actually get the data
 		$data = self::sql_exec( $db, $bindings,
 			"SELECT ".implode(", ", self::pluck($columns, 'db'))."
-			 FROM `$table`
+			 FROM `$table` AS r2
 			 $where
 			 $groupby
 			 $order
@@ -399,7 +399,7 @@ class SSP {
 		// Main query to actually get the data
 		$data = self::sql_exec( $db, $bindings,
 			"SELECT ".implode(", ", self::pluck($columns, 'db'))."
-			 FROM `$table`
+			 FROM `$table` AS r2
 			 $where
 			 $order
 			 $limit"

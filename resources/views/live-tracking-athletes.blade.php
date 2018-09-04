@@ -133,7 +133,9 @@
                     { 'orderable': false, 'targets': 3 },
                     { 'orderable': false, 'targets': 4 },
                     { 'orderable': false, 'targets': 5 }
-                ]
+                ],
+                "lengthMenu": [[10, 20, 50, 100], [10, 20, 50, 100]],
+                "pageLength": 20
             });
         });
 

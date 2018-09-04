@@ -21,8 +21,8 @@ class RawDataController extends Controller {
         //     }
         // }
 
-        if (isset($_GET['live'])){
-            $device_ids = DB::table('gps_live_'.$_GET['live'].'.raw_data')
+        if (isset($_GET['event_id'])){
+            $device_ids = DB::table('gps_live_'.$_GET['event_id'].'.raw_data')
                         ->select('device_id')
                         ->orderBy('device_id', 'asc')
                         ->groupBy('device_id')
@@ -38,6 +38,7 @@ class RawDataController extends Controller {
                     ->select('event_id', 'event_name')
                     ->where('live', 1)
                     ->get();
+                    
         return view('raw-data')->with(array('device_ids' => $device_ids, 'live_event_ids' => $live_event_ids));
     }
 

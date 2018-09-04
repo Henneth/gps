@@ -48,6 +48,8 @@ class AthletesController extends Controller {
             'is_public' => (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0,
             'status' => !empty($_POST['status']) ? $_POST['status'] : 'visible',
             'country_code' => !empty($_POST['country_code']) ? $_POST['country_code'] : NULL,
+            'gender' => !empty($_POST['gender']) ? $_POST['gender'] : NULL,
+            'category' => !empty($_POST['category']) ? $_POST['category'] : NULL,
         ]);
 
         return redirect('event/'.$event_id.'/athletes')->with('success', 'Athlete is added.');
@@ -81,6 +83,8 @@ class AthletesController extends Controller {
         $arr['is_public'] = (!empty($_POST['is_public']) && $_POST['is_public'] == "on") ? 1 : 0;
         $arr['status'] = !empty($_POST['status']) ? $_POST['status'] : 'visible';
         $arr['country_code'] = !empty($_POST['country_code']) ? $_POST['country_code'] : NULL;
+        $arr['gender'] = !empty($_POST['gender']) ? $_POST['gender'] : NULL;
+        $arr['category'] = !empty($_POST['category']) ? $_POST['category'] : NULL;
         DB::table('gps_live_'.$event_id.'.athletes')
             ->where('bib_number', $_POST['old_bib_number'])
             ->update($arr);
@@ -90,7 +94,7 @@ class AthletesController extends Controller {
                 DB::table('gps_live_'.$event_id.'.participants')->truncate();
 
                 $live_db = "gps_live_{$event_id}";
-        		DB::insert("INSERT INTO {$live_db}.participants (bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, country_zh_hk, start_time, end_time, status) SELECT bib_number, first_name, last_name, zh_full_name, is_public, country_code, country, country_zh_hk, null, null, status FROM {$live_db}.athletes AS a LEFT JOIN {$live_db}.countries AS c ON a.country_code = c.code");
+        		DB::insert("INSERT INTO {$live_db}.participants (bib_number, first_name, last_name, zh_full_name, gender, category, is_public, country_code, country, country_zh_hk, start_time, end_time, status) SELECT bib_number, first_name, last_name, zh_full_name, gender, category, is_public, country_code, country, country_zh_hk, null, null, status FROM {$live_db}.athletes AS a LEFT JOIN {$live_db}.countries AS c ON a.country_code = c.code");
             });
 
         }
@@ -115,6 +119,7 @@ class AthletesController extends Controller {
 		//     echo "Sorry, your file is too large. ";
 		//     $uploadOk = 0;
 		// }
+        
 		// Allow certain file formats
 		if ($imageFileType != "xls" && $imageFileType != "xlsx") {
             return redirect('event/'.$event_id.'/athletes')->with('error', 'Sorry, only XLS & XLSX files are allowed.');
@@ -157,10 +162,19 @@ class AthletesController extends Controller {
                     $errors[] = "#".$count." - Country code \"$temp[4]\" is not vaild!";
                     $hasError = true;
                 }
+
                 if (!empty($temp[5]) && $temp[5] == '1') {
                     $status = "visible";
                 } else {
                     $status = "hidden";
+                }
+
+                if (!empty($temp[6]) && $temp[6] == 'M') {
+                    $gender = "M";
+                } else if (!empty($temp[6]) && $temp[6] == 'F') {
+                    $gender = "F";
+                } else {
+                    $gender = NULL;
                 }
 
                 // else if (!empty($temp[5]) && !preg_match('/^[a-f0-9]{6}$/i', $temp[5])) { //hex color is valid
@@ -175,6 +189,8 @@ class AthletesController extends Controller {
     	        		'last_name' => !empty($temp[2]) ? $temp[2] : NULL,
     	        		'zh_full_name' => !empty($temp[3]) ? $temp[3] : NULL,
     	        		'country_code' => !empty($temp[4]) ? $temp[4] : NULL,
+    	        		'category' => !empty($temp[7]) ? $temp[7] : NULL,
+                        'gender' => $gender,
                         'status' => $status
     	        		// 'colour_code' => !empty($temp[5]) ? $temp[5] : NULL
     	        	);

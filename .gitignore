@@ -3,3 +3,4 @@
 .env
 .DS_Store
 setEnv.php
+storage/ports_events_mapping.txt

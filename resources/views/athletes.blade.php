@@ -56,7 +56,9 @@
                             <th>First Name</th>
                             <th>Last Name</th>
                             <th>Chinese Full Name</th>
+                            <th>Gender</th>
                             <th>Country</th>
+                            <th>Category</th>
                             <th>Is Public</th>
                             <th>Default Visibility</th>
                             <th style="width: 64px;">&nbsp;</th>
@@ -76,6 +78,13 @@
                                 {{-- <td>@include('partials/countries-dropdown')</td> --}}
                                 <td><input form="form_add" class="form-control" name="zh_full_name" placeholder="Chinese Full Name" {{$is_live? 'disabled' : ''}}></td>
                                 <td>
+                                    <select name="gender" class="form-control" {{$is_live? 'disabled' : ''}}>
+                                        <option disabled selected>---- Select a gender ----</option>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                    </select>
+                                </td>
+                                <td>
                                     <select name="country_code" class="form-control" {{$is_live? 'disabled' : ''}}>
                                         <option disabled selected>---- Select a country ----</option>
                                         @foreach($countries as $country)
@@ -83,6 +92,7 @@
                                         @endforeach
                                     </select>
                                 </td>
+                                <td><input form="form_add" class="form-control" name="category" placeholder="Category" {{$is_live? 'disabled' : ''}}></td>
                                 <td>
                                     <div>
                                         <input class="tgl tgl-ios" id="1" name="is_public" type="checkbox" checked="checked" {{$is_live? 'disabled' : ''}}/>
@@ -114,6 +124,15 @@
                                     <td class="text"><span>{{$athlete->first_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="first_name" value="{{$athlete->first_name}}" placeholder="First Name"></td>
                                     <td class="text"><span>{{$athlete->last_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="last_name" value="{{$athlete->last_name}}" placeholder="Last Name"></td>
                                     <td class="text"><span>{{$athlete->zh_full_name}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="zh_full_name" value="{{$athlete->zh_full_name}}" placeholder="Chinese Full Name"></td>
+                                    <td class="gender" data-gender="{{$athlete->gender}}">
+                                        <span>{{$athlete->gender}}</span>
+                                        <div style="display: none;">
+                                            <select name="gender" class="form-control">
+                                                <option value="M">Male</option>
+                                                <option value="F">Female</option>
+                                            </select>
+                                        </div>
+                                    </td>
                                     <td class="country_code" data-code="{{$athlete->country_code}}">
                                         <span>{{$athlete->country}}</span>
                                         <div style="display: none;">
@@ -124,6 +143,7 @@
                                             </select>
                                         </div>
                                     </td>
+                                    <td class="text"><span>{{$athlete->category}}</span><input form="form_edit_{{$athlete->bib_number}}" class="form-control" style="display: none;" name="category" value="{{$athlete->category}}" placeholder="Category"></td>
                                     <td class="is_public">
                                         <span>{{($athlete->is_public == 1) ? 'True' :'False'}}</span>
                                         <div style="display: none;">
@@ -189,9 +209,13 @@
             });
             form.find('.is_public span').hide();
             form.find('.is_public div').show();
-            var countryCode = form.find('.country_code').attr('data-code');
             form.find('.status span').hide();
             form.find('.status select').show();
+            var gender = form.find('.gender').attr('data-gender');
+            form.find('.gender span').hide();
+            form.find('.gender div').show();
+            form.find('.gender div select').val(gender);
+            var countryCode = form.find('.country_code').attr('data-code');
             form.find('.country_code span').hide();
             form.find('.country_code div').show();
             form.find('.country_code div select').val(countryCode);

@@ -34,7 +34,7 @@ class DrawRouteController extends Controller {
 
 		$route = $_POST['route'];
         $routeDecode = json_decode($route);
-        // echo "<pre>".print_r($checkpoints,1)."</pre>";
+        // echo "<pre>".print_r($routeDecode,1)."</pre>";
 
         $index = 0;
         $totalDistance = 0;
@@ -54,11 +54,12 @@ class DrawRouteController extends Controller {
                 $tempArray['longitude'] = $lon2;
                 $tempArray['distance_from_last_point'] = $currentDistance;
                 $tempArray['distance_from_start'] = $totalDistance;
-                $tempArray['display'] = $routeDecode[$index]->display;
+                $tempArray['display'] = 1;
 
                 $tempArray ['is_checkpoint'] = property_exists($value, 'is_checkpoint') ? $value->is_checkpoint : 0;
                 if (property_exists($value, 'is_checkpoint') && $value->is_checkpoint == 1) {
                     $tempArray['checkpoint_no'] = $checkpoint_no;
+                    $tempArray['display'] = !empty($routeDecode[$index]->display) ? $routeDecode[$index]->display : 0;
                     $checkpointRow = $tempArray;
 
                     $checkpointRow['point_order'] = $index + 1;

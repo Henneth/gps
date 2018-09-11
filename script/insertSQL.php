@@ -15,7 +15,7 @@ $host = '127.0.0.1';
 $user = 'root';
 $pass = 'root';
 $charset = 'utf8mb4';
-$db = 'gps_live_7';
+$db = 'gps_live_43';
 
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

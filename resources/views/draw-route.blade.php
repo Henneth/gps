@@ -217,7 +217,7 @@
             mirrorCoordinates = [];
             if(data){
 
-                console.log(data);
+                // console.log(data);
                 for(var key in data){
                     gpxLat = parseFloat(data[key]["latitude"]);
                     gpxLng = parseFloat(data[key]["longitude"]);
@@ -367,7 +367,7 @@
                     markerList[i]['display'] = 1;
                     // markerList[i].setOptions({'opacity' : 1});
                     infoWindow.close(map, this);
-                    console.log(markerList[i]);
+                    // console.log(markerList[i]);
                 }
 
             }
@@ -380,7 +380,7 @@
                     markerList[i]['display'] = 0;
                     // markerList[i].setOptions({'opacity' : 0.6});
                     infoWindow.close(map, this);
-                    console.log(markerList[i]);
+                    // console.log(markerList[i]);
                 }
 
             }
@@ -415,6 +415,12 @@
                 markerList[0].setIcon(null);
                 markerList[0].is_checkpoint = 0;
                 markerList[0].display = 1;
+            }
+
+            if (markerList.length <= 1) {
+                document.getElementById('save').disabled = true;
+            } else {
+                document.getElementById('save').disabled = false;
             }
         }
 
@@ -480,8 +486,8 @@
         $('#save').click(function(e){
             e.preventDefault();
             var array = [];
+
             for (var i = 0; i < markerList.length; i++) {
-                markerList[i];
                 if (i == markerList.length - 1) {
                     var temp = {'lat': markerList[i].position.lat(), 'lon': markerList[i].position.lng(), 'is_checkpoint': 1, 'display': 1};
                     array.push(temp);
@@ -496,7 +502,7 @@
             // encodeString = google.maps.geometry.encoding.encodePath(path);
             $('#route').val(encodeString);
 
-            // Set save-route value
+            // // Set save-route value
             document.getElementById('save-route').submit();
         });
 

@@ -163,7 +163,7 @@
             'ordering'    : true,
             'info'        : true,
             'autoWidth'   : false,
-            'pageLength'  : 5,
+            'pageLength'  : 50,
             'order'       : [
                 [ 0, "desc"],
                 [ 1, "desc"],

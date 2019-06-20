@@ -395,6 +395,7 @@ CREATE TABLE `raw_data` (
   `battery_level` varchar(64) NOT NULL,
   `datetime` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `sent_at` datetime DEFAULT NULL,
   `processed` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

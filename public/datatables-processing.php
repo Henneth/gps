@@ -30,13 +30,14 @@ $primaryKey = 'id';
 // indexes
 $columns = array(
     array( 'db' => 'datetime', 'dt' => 0 ),
-    array( 'db' => 'created_at', 'dt' => 1 ),
-    array( 'db' => 'TIMEDIFF(created_at, datetime)', 'dt' => 2 ),
-    array( 'db' => 'TIMEDIFF(datetime, (SELECT MAX(datetime) FROM raw_data AS r1 WHERE r1.device_id = r2.device_id AND r1.datetime < r2.datetime LIMIT 1))', 'dt' => 3 ),
-    array( 'db' => 'device_id', 'dt' => 4 ),
-    array( 'db' => 'longitude', 'dt' => 5 ),
-    array( 'db' => 'latitude', 'dt' => 6),
-    array( 'db' => 'battery_level', 'dt' => 7 )
+    array( 'db' => 'sent_at', 'dt' => 1 ),
+    array( 'db' => 'created_at', 'dt' => 2 ),
+    array( 'db' => 'TIMEDIFF(created_at, datetime)', 'dt' => 3 ),
+    array( 'db' => 'TIMEDIFF(datetime, (SELECT MAX(datetime) FROM raw_data AS r1 WHERE r1.device_id = r2.device_id AND r1.datetime < r2.datetime LIMIT 1))', 'dt' => 4 ),
+    array( 'db' => 'device_id', 'dt' => 5 ),
+    array( 'db' => 'longitude', 'dt' => 6 ),
+    array( 'db' => 'latitude', 'dt' => 7 ),
+    array( 'db' => 'battery_level', 'dt' => 8 )
 );
 
 require_once('../setEnv.php');

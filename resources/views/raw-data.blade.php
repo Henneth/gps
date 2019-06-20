@@ -58,6 +58,7 @@
                             <th></th>
                             <th></th>
                             <th></th>
+                            <th></th>
                             <th>
                                 <select class="device_list form-control" style="width: 100%;">
                                     <option></option>
@@ -75,6 +76,7 @@
                         </tr>
                         <tr>
                             <th>Timestamp</th>
+                            <th>Sent At</th>
                             <th>Received At</th>
                             <th>Delay</th>
                             <th>Interval</th>
@@ -164,16 +166,17 @@
             'pageLength'  : 50,
             'order'       : [
                 [ 0, "desc"],
-                [ 1, "desc"]
+                [ 1, "desc"],
+                [ 2, "desc"]
             ],
             'dom' : "lrtip",
             'columnDefs': [
-                { 'orderable': false, 'targets': 2 },
                 { 'orderable': false, 'targets': 3 },
                 { 'orderable': false, 'targets': 4 },
                 { 'orderable': false, 'targets': 5 },
                 { 'orderable': false, 'targets': 6 },
                 { 'orderable': false, 'targets': 7 },
+                { 'orderable': false, 'targets': 8 },
 
             ]
         })
@@ -181,7 +184,7 @@
 
         $('.device_list').change(function () {
             table
-                .columns( 4 )
+                .columns( 5 )
                 .search( this.value )
                 .draw();
 

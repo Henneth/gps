@@ -24,7 +24,7 @@ class EditEvent_Model extends Model
 				DB::insert("INSERT INTO {$target} SELECT {$event_id}, {$origin}.* FROM {$origin}");
 			}
 
-			DB::insert("INSERT INTO raw_data (event_id, device_id, latitude, longitude, battery_level, datetime, created_at) SELECT {$event_id}, device_id, latitude, longitude, battery_level, datetime, created_at FROM gps_live_{$event_id}.raw_data");
+			DB::insert("INSERT INTO raw_data (event_id, device_id, latitude, longitude, battery_level, datetime, created_at, sent_at) SELECT {$event_id}, device_id, latitude, longitude, battery_level, datetime, created_at, sent_at FROM gps_live_{$event_id}.raw_data");
 		});
 	}
 

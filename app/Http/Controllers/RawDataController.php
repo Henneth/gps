@@ -38,7 +38,7 @@ class RawDataController extends Controller {
                     ->select('event_id', 'event_name')
                     ->where('live', 1)
                     ->get();
-                    
+
         return view('raw-data')->with(array('device_ids' => $device_ids, 'live_event_ids' => $live_event_ids));
     }
 
@@ -50,7 +50,7 @@ class RawDataController extends Controller {
 
         if (!empty($timeFrom) && !empty($timeTo) && empty($deviceID)){
             $data = DB::table('raw_data')
-                ->select('datetime', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->select('datetime', 'sent_at', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude', 'latitude', 'battery_level')
                 ->where('datetime', '>=', $timeFrom)
                 ->where('datetime', '<=', $timeTo)
                 ->orderby('datetime', 'desc')
@@ -59,7 +59,7 @@ class RawDataController extends Controller {
         }
         if (!empty($timeFrom) && !empty($timeTo) && !empty($deviceID)){
             $data = DB::table('raw_data')
-                ->select('datetime', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->select('datetime', 'sent_at', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude', 'latitude', 'battery_level')
                 ->where('datetime', '>=', $timeFrom)
                 ->where('datetime', '<=', $timeTo)
                 ->where('device_id', $deviceID)
@@ -69,7 +69,7 @@ class RawDataController extends Controller {
         }
         if (empty($timeFrom) && empty($timeTo) && !empty($deviceID)){
             $data = DB::table('raw_data')
-                ->select('datetime', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude_final', 'latitude_final', 'battery_level')
+                ->select('datetime', 'sent_at', 'created_at', DB::raw('TIMEDIFF(datetime, created_at) AS delay'), 'device_id', 'longitude', 'latitude', 'battery_level')
                 ->where('device_id', $deviceID)
                 ->orderby('datetime', 'desc')
                 ->orderby('created_at', 'desc')
@@ -106,7 +106,7 @@ class RawDataController extends Controller {
         // }
         // $array = json_decode(json_encode($data), true);
 
-        $colNames = ["Timestamp", "Received At", "Delay", "Device ID", "Longitude", "Latitude", "Battery Level"];
+        $colNames = ["Timestamp", "Sent At", "Received At", "Delay", "Device ID", "Longitude", "Latitude", "Battery Level"];
         $sheets[] = ['colNames' => $colNames, 'data' => $data, 'sheetname' => "raw-gps-data"];
 
         require_once '../libs/Excel.php';

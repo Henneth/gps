@@ -259,9 +259,9 @@ class SSP {
 		$groupbyItems = array();
 
 		// Low battery filtering
-		if ( isset( $request['low_battery_filter'] ) && $request['low_battery_filter'] == 'true') {
-			$groupbyItems[] = "`device_id`";
-		}
+		// if ( isset( $request['low_battery_filter'] ) && $request['low_battery_filter'] == 'true') {
+		// 	$groupbyItems[] = "`device_id`";
+		// }
 
 		// Combine the filters into a single string
 		$groupby = '';
